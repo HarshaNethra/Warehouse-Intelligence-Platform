@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# VS Code
+.vscode/
+
+# Large source videos
+videos/*.mp4
+videos/**/*.mp4
+
+# Model weights
+models/*.pt
+models/*.pth
+models/*.onnx
+
+# Temporary/generated outputs
+data/events/
+data/summaries/
+data/outputs/
+
+# OS files
+.DS_Store
+Thumbs.db
