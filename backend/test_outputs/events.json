@@ -1,0 +1,57 @@
+[
+  {
+    "event_id": "EVT-1001",
+    "timestamp": "2026-09-08T14:22:10Z",
+    "bay_id": "Loading Bay 2",
+    "behavior_type": "Product Dropped",
+    "risk_level": "HIGH",
+    "risk_score": 8.5,
+    "details": {
+      "drop_height_meters": 1.2,
+      "stationary_after_impact": true,
+      "product_type": "Fragile Carton"
+    },
+    "clip_reference": "Rolling and dropping carton.mp4"
+  },
+  {
+    "event_id": "EVT-1002",
+    "timestamp": "2026-09-08T14:35:45Z",
+    "bay_id": "Loading Bay 4",
+    "behavior_type": "Product Dragged",
+    "risk_level": "HIGH",
+    "risk_score": 7.9,
+    "details": {
+      "drag_distance_meters": 4.5,
+      "surface": "Wet Concrete Floor",
+      "product_type": "Wooden Furniture Cupboard"
+    },
+    "clip_reference": "Dock level, dragging cupboard.mp4"
+  },
+  {
+    "event_id": "EVT-1003",
+    "timestamp": "2026-09-08T15:10:00Z",
+    "bay_id": "Loading Bay 1",
+    "behavior_type": "Throwing Mattresses",
+    "risk_level": "CRITICAL",
+    "risk_score": 9.4,
+    "details": {
+      "impact_impulse": "High",
+      "stacking_violation": "Thrown on top of seating cartons",
+      "product_type": "Heavy Mattress"
+    },
+    "clip_reference": "Throwing Mattresses.mp4"
+  },
+  {
+    "event_id": "EVT-1004",
+    "timestamp": "2026-09-08T15:45:20Z",
+    "bay_id": "Loading Bay 3",
+    "behavior_type": "Improper Stacking",
+    "risk_level": "MEDIUM",
+    "risk_score": 5.2,
+    "details": {
+      "stacking_order": "Heavy box kept on top of light KD packets",
+      "product_type": "KD Flatpack Packets"
+    },
+    "clip_reference": "KD packets dragged, heavy box kept on other packets.mp4"
+  }
+]

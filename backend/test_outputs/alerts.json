@@ -1,0 +1,26 @@
+[
+  {
+    "alert_id": "ALT-EVT-1001",
+    "message": "\u26a0\ufe0f HIGH RISK: Product Dropped detected at Loading Bay 2.",
+    "timestamp": "2026-09-08T14:22:10Z",
+    "status": "UNREAD"
+  },
+  {
+    "alert_id": "ALT-EVT-1002",
+    "message": "\u26a0\ufe0f HIGH RISK: Product Dragged detected at Loading Bay 4.",
+    "timestamp": "2026-09-08T14:35:45Z",
+    "status": "UNREAD"
+  },
+  {
+    "alert_id": "ALT-EVT-1003",
+    "message": "\u26a0\ufe0f CRITICAL RISK: Throwing Mattresses detected at Loading Bay 1.",
+    "timestamp": "2026-09-08T15:10:00Z",
+    "status": "UNREAD"
+  },
+  {
+    "alert_id": "ALT-EVT-1004",
+    "message": "\u26a0\ufe0f MEDIUM RISK: Improper Stacking detected at Loading Bay 3.",
+    "timestamp": "2026-09-08T15:45:20Z",
+    "status": "UNREAD"
+  }
+]

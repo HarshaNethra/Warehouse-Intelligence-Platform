@@ -1,0 +1,333 @@
+{
+  "evidence_run_id": "RUN-A5E5ECCB",
+  "timestamp_utc": "2026-09-08T22:58:59.911807Z",
+  "input_video": {
+    "filename": "Rolling and dropping carton.mp4",
+    "video_id": "Rolling and dropping carton",
+    "total_file_frames": 282,
+    "duration_sec": 9.4,
+    "fps": 20.7
+  },
+  "inference_run": {
+    "id": "RUN-3F9ED46ECF",
+    "video_id": "Rolling and dropping carton",
+    "camera_id": "CAM-01",
+    "model_name": "YOLO11s-Baseline",
+    "model_version": "best.pt",
+    "inference_engine": "LOCAL_YOLO11",
+    "device": "cpu",
+    "status": "COMPLETED",
+    "started_at": "2026-09-08 22:58:54.107971",
+    "completed_at": "2026-09-08 22:58:59.902031",
+    "provenance_type": "REAL_INFERENCE"
+  },
+  "model": {
+    "model_name": "YOLO11s-Baseline",
+    "model_version": "best.pt",
+    "inference_engine": "LOCAL_YOLO11",
+    "device": "cpu"
+  },
+  "execution_telemetry": {
+    "frames_processed": 120,
+    "total_detections": 675,
+    "unique_tracks": 17,
+    "processing_time_sec": 5.81,
+    "effective_fps": 20.7
+  },
+  "sample_detections": [
+    {
+      "id": 1,
+      "frame_number": 1,
+      "track_id": 101,
+      "object_type": "PERSON",
+      "confidence": 0.61,
+      "bbox": [
+        626.1,
+        192.0,
+        113.10000000000002,
+        357.20000000000005
+      ]
+    },
+    {
+      "id": 2,
+      "frame_number": 1,
+      "track_id": 102,
+      "object_type": "PERSON",
+      "confidence": 0.39,
+      "bbox": [
+        484.0,
+        296.4,
+        141.29999999999995,
+        264.70000000000005
+      ]
+    },
+    {
+      "id": 3,
+      "frame_number": 1,
+      "track_id": 103,
+      "object_type": "CARTON",
+      "confidence": 0.3,
+      "bbox": [
+        709.0,
+        421.3,
+        157.39999999999998,
+        134.2
+      ]
+    },
+    {
+      "id": 4,
+      "frame_number": 1,
+      "track_id": 104,
+      "object_type": "PERSON",
+      "confidence": 0.28,
+      "bbox": [
+        630.4,
+        198.1,
+        109.60000000000002,
+        136.6
+      ]
+    },
+    {
+      "id": 5,
+      "frame_number": 1,
+      "track_id": 105,
+      "object_type": "PERSON",
+      "confidence": 0.2,
+      "bbox": [
+        515.6,
+        260.5,
+        73.10000000000002,
+        114.80000000000001
+      ]
+    }
+  ],
+  "object_tracks": [
+    {
+      "id": 1,
+      "track_id": 101,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.61
+    },
+    {
+      "id": 2,
+      "track_id": 102,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.39
+    },
+    {
+      "id": 3,
+      "track_id": 103,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.3
+    },
+    {
+      "id": 4,
+      "track_id": 104,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.28
+    },
+    {
+      "id": 5,
+      "track_id": 105,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.2
+    },
+    {
+      "id": 6,
+      "track_id": 106,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.14
+    },
+    {
+      "id": 7,
+      "track_id": 107,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.14
+    },
+    {
+      "id": 8,
+      "track_id": 108,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 133.0,
+      "end_timestamp_ms": 133.0,
+      "confidence": 0.11
+    },
+    {
+      "id": 9,
+      "track_id": 109,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.19
+    },
+    {
+      "id": 10,
+      "track_id": 110,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.15
+    },
+    {
+      "id": 11,
+      "track_id": 111,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.14
+    },
+    {
+      "id": 12,
+      "track_id": 112,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 13,
+      "track_id": 113,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 14,
+      "track_id": 114,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 15,
+      "track_id": 115,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 16,
+      "track_id": 2,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 1133.0,
+      "end_timestamp_ms": 1133.0,
+      "confidence": 0.74
+    },
+    {
+      "id": 17,
+      "track_id": 3,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 1133.0,
+      "end_timestamp_ms": 1133.0,
+      "confidence": 0.64
+    }
+  ],
+  "behaviour_observation": {
+    "id": "OBS-9BBE2997",
+    "behaviour_type": "Product Freefall / Drop (carton)",
+    "confidence": 0.92,
+    "details": {
+      "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "rule_id": "RULE_KINEMATICS_FREEFALL"
+    }
+  },
+  "risk_assessment": {
+    "id": "RA-A944326B",
+    "risk_level": "CRITICAL",
+    "risk_score": 92.4,
+    "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+    "confidence": 0.92
+  },
+  "incident_event": {
+    "event_id": "EVT-46BDD734",
+    "video_id": "Rolling and dropping carton",
+    "camera_id": "CAM-01",
+    "bay_id": "Loading Bay 1",
+    "frame_number": 8,
+    "video_fps": 30.0,
+    "timestamp_seconds": 0.267,
+    "evidence_frame": "/api/videos/Rolling and dropping carton/frames/8",
+    "video_reference": "/stream/video/Rolling and dropping carton.mp4#t=0.27",
+    "evidence_clip_start": 0.0,
+    "evidence_clip_end": 3.267,
+    "behaviour": "Product Freefall / Drop (carton)",
+    "risk_score": 92.4,
+    "risk_level": "CRITICAL",
+    "description": "Product Freefall / Drop (carton) detected in Loading Bay 1. Target object #107 triggered violation: Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+    "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+    "status": "UNRESOLVED",
+    "inference_run_id": "RUN-3F9ED46ECF",
+    "behaviour_observation_id": "OBS-9BBE2997",
+    "risk_assessment_id": "RA-A944326B",
+    "provenance_type": "REAL_INFERENCE",
+    "model_name": "YOLO11s-Baseline",
+    "model_version": "best.pt",
+    "inference_engine": "LOCAL_YOLO11"
+  },
+  "api_responses": {
+    "get_incident": {},
+    "supervisor_acknowledge": {},
+    "incident_resolve": {}
+  },
+  "websocket_notification": {
+    "event_type": "INCIDENT_DETECTED",
+    "event_id": "EVT-46BDD734",
+    "inference_run_id": "RUN-3F9ED46ECF",
+    "facility_id": "FAC-001",
+    "bay_id": "Loading Bay 1",
+    "behaviour": "Product Freefall / Drop (carton)",
+    "risk_score": 92.4,
+    "risk_level": "CRITICAL",
+    "timestamp_seconds": 0.267,
+    "frame_number": 8,
+    "evidence_frame": "/api/videos/Rolling and dropping carton/frames/8",
+    "provenance_type": "REAL_INFERENCE"
+  },
+  "database_state": {
+    "before": {
+      "inference_runs_count": 2,
+      "detections_count": 0,
+      "object_tracks_count": 0,
+      "behaviour_observations_count": 0,
+      "risk_assessments_count": 2,
+      "events_count": 22
+    },
+    "after": {
+      "inference_runs_count": 3,
+      "detections_count": 132,
+      "object_tracks_count": 17,
+      "behaviour_observations_count": 6,
+      "risk_assessments_count": 8,
+      "events_count": 28
+    },
+    "diff": {
+      "inference_runs": 1,
+      "detections": 132,
+      "object_tracks": 17,
+      "behaviour_observations": 6,
+      "risk_assessments": 6,
+      "events": 6
+    }
+  },
+  "analytics": {
+    "before": {},
+    "after": {}
+  }
+}

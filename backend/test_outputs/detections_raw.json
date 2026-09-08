@@ -1,0 +1,2702 @@
+[
+  {
+    "frame_id": 0,
+    "timestamp_sec": 0.0,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          193.6,
+          393.8,
+          235.8,
+          403.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 0,
+    "timestamp_sec": 0.0,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          866.4,
+          194.7,
+          129.7,
+          168.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 1,
+    "timestamp_sec": 0.03,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          193.6,
+          397.7,
+          233.5,
+          399.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 1,
+    "timestamp_sec": 0.03,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          868.8,
+          186.9,
+          131.3,
+          170.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 2,
+    "timestamp_sec": 0.07,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          199.1,
+          390.0,
+          223.8,
+          382.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 2,
+    "timestamp_sec": 0.07,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          866.5,
+          182.9,
+          128.1,
+          165.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 3,
+    "timestamp_sec": 0.1,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          207.2,
+          389.4,
+          221.9,
+          377.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 3,
+    "timestamp_sec": 0.1,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          879.0,
+          177.9,
+          127.1,
+          164.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 4,
+    "timestamp_sec": 0.13,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          223.2,
+          393.0,
+          225.2,
+          377.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 5,
+    "timestamp_sec": 0.17,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          247.1,
+          405.2,
+          230.0,
+          376.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 5,
+    "timestamp_sec": 0.17,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          889.4,
+          164.5,
+          112.5,
+          147.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 6,
+    "timestamp_sec": 0.2,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          265.9,
+          407.9,
+          232.4,
+          376.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 6,
+    "timestamp_sec": 0.2,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          895.4,
+          159.1,
+          110.0,
+          144.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 7,
+    "timestamp_sec": 0.23,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          286.6,
+          411.1,
+          232.0,
+          374.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 7,
+    "timestamp_sec": 0.23,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          889.7,
+          162.3,
+          106.5,
+          139.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 8,
+    "timestamp_sec": 0.27,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          310.8,
+          419.1,
+          230.7,
+          367.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 8,
+    "timestamp_sec": 0.27,
+    "objects": [
+      {
+        "id": 2,
+        "class": "person",
+        "bbox": [
+          896.7,
+          162.0,
+          108.4,
+          140.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 9,
+    "timestamp_sec": 0.3,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          341.1,
+          427.2,
+          217.0,
+          339.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 10,
+    "timestamp_sec": 0.33,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          364.5,
+          437.5,
+          207.3,
+          318.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 11,
+    "timestamp_sec": 0.37,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          386.9,
+          452.5,
+          200.6,
+          300.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 12,
+    "timestamp_sec": 0.4,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          412.2,
+          462.4,
+          198.5,
+          287.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 12,
+    "timestamp_sec": 0.4,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          952.3,
+          169.7,
+          69.6,
+          127.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 12,
+    "timestamp_sec": 0.4,
+    "objects": [
+      {
+        "id": 9,
+        "class": "person",
+        "bbox": [
+          325.1,
+          337.2,
+          629.1,
+          610.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 13,
+    "timestamp_sec": 0.43,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          429.8,
+          470.7,
+          199.0,
+          278.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 13,
+    "timestamp_sec": 0.43,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          953.0,
+          169.9,
+          69.4,
+          127.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 13,
+    "timestamp_sec": 0.43,
+    "objects": [
+      {
+        "id": 9,
+        "class": "person",
+        "bbox": [
+          327.0,
+          330.0,
+          626.5,
+          607.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 14,
+    "timestamp_sec": 0.47,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          447.9,
+          479.4,
+          190.2,
+          254.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 14,
+    "timestamp_sec": 0.47,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          956.2,
+          164.3,
+          65.0,
+          118.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 15,
+    "timestamp_sec": 0.5,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          471.1,
+          486.8,
+          187.6,
+          238.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 15,
+    "timestamp_sec": 0.5,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          958.4,
+          156.3,
+          60.3,
+          109.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 15,
+    "timestamp_sec": 0.5,
+    "objects": [
+      {
+        "id": 9,
+        "class": "person",
+        "bbox": [
+          317.6,
+          332.0,
+          622.7,
+          603.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 16,
+    "timestamp_sec": 0.53,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          502.3,
+          494.2,
+          187.0,
+          223.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 16,
+    "timestamp_sec": 0.53,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          961.1,
+          152.8,
+          58.7,
+          105.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 17,
+    "timestamp_sec": 0.57,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          540.1,
+          500.1,
+          181.1,
+          202.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 17,
+    "timestamp_sec": 0.57,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          962.1,
+          150.3,
+          57.5,
+          103.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 18,
+    "timestamp_sec": 0.6,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          565.2,
+          507.1,
+          176.9,
+          182.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 18,
+    "timestamp_sec": 0.6,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          964.7,
+          148.0,
+          58.1,
+          103.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 19,
+    "timestamp_sec": 0.63,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          583.4,
+          519.2,
+          166.0,
+          162.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 19,
+    "timestamp_sec": 0.63,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          970.8,
+          147.5,
+          55.8,
+          98.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 20,
+    "timestamp_sec": 0.67,
+    "objects": [
+      {
+        "id": 1,
+        "class": "person",
+        "bbox": [
+          605.6,
+          531.3,
+          140.9,
+          133.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 20,
+    "timestamp_sec": 0.67,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          972.1,
+          148.7,
+          53.8,
+          95.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 21,
+    "timestamp_sec": 0.7,
+    "objects": [
+      {
+        "id": 8,
+        "class": "person",
+        "bbox": [
+          970.1,
+          153.6,
+          54.8,
+          95.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 32,
+    "timestamp_sec": 1.07,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          663.5,
+          191.1,
+          101.0,
+          155.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 33,
+    "timestamp_sec": 1.1,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          655.2,
+          192.8,
+          102.5,
+          157.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 34,
+    "timestamp_sec": 1.13,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          647.1,
+          190.7,
+          104.2,
+          159.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 35,
+    "timestamp_sec": 1.17,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          646.3,
+          188.1,
+          106.2,
+          161.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 36,
+    "timestamp_sec": 1.2,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          647.3,
+          186.5,
+          108.1,
+          163.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 37,
+    "timestamp_sec": 1.23,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          645.9,
+          186.8,
+          110.7,
+          164.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 38,
+    "timestamp_sec": 1.27,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          647.7,
+          190.0,
+          108.5,
+          159.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 39,
+    "timestamp_sec": 1.3,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          658.5,
+          190.3,
+          110.2,
+          160.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 40,
+    "timestamp_sec": 1.33,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          663.2,
+          186.9,
+          112.7,
+          164.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 41,
+    "timestamp_sec": 1.37,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          665.4,
+          186.7,
+          112.9,
+          163.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 42,
+    "timestamp_sec": 1.4,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          665.4,
+          188.5,
+          111.5,
+          160.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 43,
+    "timestamp_sec": 1.43,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          667.6,
+          190.4,
+          109.9,
+          157.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 44,
+    "timestamp_sec": 1.47,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          664.1,
+          193.7,
+          114.5,
+          161.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 45,
+    "timestamp_sec": 1.5,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          669.1,
+          195.9,
+          114.5,
+          162.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 46,
+    "timestamp_sec": 1.53,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          673.0,
+          198.2,
+          113.4,
+          161.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 47,
+    "timestamp_sec": 1.57,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          676.6,
+          198.1,
+          115.1,
+          164.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 48,
+    "timestamp_sec": 1.6,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          681.0,
+          195.0,
+          116.0,
+          164.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 49,
+    "timestamp_sec": 1.63,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          680.0,
+          189.3,
+          117.0,
+          166.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 50,
+    "timestamp_sec": 1.67,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          680.6,
+          187.2,
+          117.5,
+          167.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 51,
+    "timestamp_sec": 1.7,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          679.1,
+          186.8,
+          116.5,
+          165.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 52,
+    "timestamp_sec": 1.73,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          677.8,
+          188.2,
+          116.5,
+          164.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 52,
+    "timestamp_sec": 1.73,
+    "objects": [
+      {
+        "id": 14,
+        "class": "person",
+        "bbox": [
+          845.2,
+          539.7,
+          237.9,
+          123.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 55,
+    "timestamp_sec": 1.83,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          686.4,
+          186.7,
+          113.7,
+          162.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 68,
+    "timestamp_sec": 2.27,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          679.5,
+          197.7,
+          113.9,
+          165.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 69,
+    "timestamp_sec": 2.3,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          678.3,
+          196.0,
+          114.3,
+          169.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 70,
+    "timestamp_sec": 2.33,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          680.1,
+          194.6,
+          113.8,
+          168.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 71,
+    "timestamp_sec": 2.37,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          681.8,
+          192.3,
+          111.8,
+          165.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 72,
+    "timestamp_sec": 2.4,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          683.3,
+          187.6,
+          111.8,
+          164.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 73,
+    "timestamp_sec": 2.43,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          684.9,
+          184.9,
+          111.9,
+          163.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 74,
+    "timestamp_sec": 2.47,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          690.7,
+          181.5,
+          111.3,
+          160.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 75,
+    "timestamp_sec": 2.5,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          694.4,
+          179.8,
+          113.7,
+          161.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 78,
+    "timestamp_sec": 2.6,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          703.7,
+          185.2,
+          111.5,
+          155.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 79,
+    "timestamp_sec": 2.63,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          712.0,
+          185.1,
+          113.6,
+          155.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 80,
+    "timestamp_sec": 2.67,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          716.4,
+          184.8,
+          115.6,
+          156.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 81,
+    "timestamp_sec": 2.7,
+    "objects": [
+      {
+        "id": 12,
+        "class": "person",
+        "bbox": [
+          716.6,
+          184.7,
+          117.4,
+          157.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 87,
+    "timestamp_sec": 2.9,
+    "objects": [
+      {
+        "id": 21,
+        "class": "person",
+        "bbox": [
+          1125.0,
+          175.7,
+          89.6,
+          115.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 114,
+    "timestamp_sec": 3.8,
+    "objects": [
+      {
+        "id": 28,
+        "class": "person",
+        "bbox": [
+          724.5,
+          179.1,
+          137.7,
+          153.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 115,
+    "timestamp_sec": 3.83,
+    "objects": [
+      {
+        "id": 28,
+        "class": "person",
+        "bbox": [
+          723.0,
+          184.9,
+          138.6,
+          154.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 116,
+    "timestamp_sec": 3.87,
+    "objects": [
+      {
+        "id": 28,
+        "class": "person",
+        "bbox": [
+          727.6,
+          188.4,
+          140.8,
+          155.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 117,
+    "timestamp_sec": 3.9,
+    "objects": [
+      {
+        "id": 28,
+        "class": "person",
+        "bbox": [
+          730.6,
+          190.4,
+          141.0,
+          156.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 120,
+    "timestamp_sec": 4.0,
+    "objects": [
+      {
+        "id": 28,
+        "class": "person",
+        "bbox": [
+          753.3,
+          201.4,
+          141.2,
+          151.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 149,
+    "timestamp_sec": 4.97,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          409.9,
+          234.9,
+          559.2,
+          246.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 150,
+    "timestamp_sec": 5.0,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          414.6,
+          231.4,
+          565.9,
+          249.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 151,
+    "timestamp_sec": 5.03,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          417.9,
+          232.2,
+          577.0,
+          254.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 152,
+    "timestamp_sec": 5.07,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          418.5,
+          231.0,
+          569.6,
+          250.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 153,
+    "timestamp_sec": 5.1,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          425.9,
+          231.5,
+          568.3,
+          250.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 154,
+    "timestamp_sec": 5.13,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          428.0,
+          230.7,
+          564.8,
+          248.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 155,
+    "timestamp_sec": 5.17,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          424.6,
+          232.2,
+          562.9,
+          247.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 156,
+    "timestamp_sec": 5.2,
+    "objects": [
+      {
+        "id": 30,
+        "class": "person",
+        "bbox": [
+          422.8,
+          232.2,
+          562.0,
+          247.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 182,
+    "timestamp_sec": 6.07,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          1117.7,
+          503.2,
+          217.4,
+          206.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 183,
+    "timestamp_sec": 6.1,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          1080.5,
+          500.6,
+          232.4,
+          220.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 184,
+    "timestamp_sec": 6.13,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          1040.6,
+          492.6,
+          250.7,
+          238.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 185,
+    "timestamp_sec": 6.17,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          1001.5,
+          485.2,
+          281.0,
+          268.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 186,
+    "timestamp_sec": 6.2,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          975.8,
+          477.1,
+          305.8,
+          296.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 187,
+    "timestamp_sec": 6.23,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          947.2,
+          471.2,
+          316.5,
+          311.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 188,
+    "timestamp_sec": 6.27,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          921.8,
+          462.8,
+          321.1,
+          323.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 189,
+    "timestamp_sec": 6.3,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          893.9,
+          452.6,
+          328.3,
+          339.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 190,
+    "timestamp_sec": 6.33,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          866.7,
+          438.2,
+          331.9,
+          352.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 191,
+    "timestamp_sec": 6.37,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          830.1,
+          415.4,
+          317.9,
+          342.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 192,
+    "timestamp_sec": 6.4,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          795.7,
+          394.6,
+          340.7,
+          376.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 193,
+    "timestamp_sec": 6.43,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          780.1,
+          386.5,
+          317.9,
+          358.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 194,
+    "timestamp_sec": 6.47,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          761.4,
+          353.9,
+          294.6,
+          343.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 195,
+    "timestamp_sec": 6.5,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          745.4,
+          346.9,
+          269.3,
+          323.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 196,
+    "timestamp_sec": 6.53,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          731.1,
+          341.8,
+          258.6,
+          321.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 197,
+    "timestamp_sec": 6.57,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          714.1,
+          336.4,
+          250.4,
+          320.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 198,
+    "timestamp_sec": 6.6,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          715.6,
+          328.9,
+          247.4,
+          322.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 199,
+    "timestamp_sec": 6.63,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          713.0,
+          306.8,
+          221.6,
+          288.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 200,
+    "timestamp_sec": 6.67,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          705.3,
+          301.0,
+          219.7,
+          283.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 201,
+    "timestamp_sec": 6.7,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          671.9,
+          300.5,
+          215.9,
+          284.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 202,
+    "timestamp_sec": 6.73,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          661.2,
+          300.2,
+          210.3,
+          282.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 203,
+    "timestamp_sec": 6.77,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          651.8,
+          293.1,
+          202.4,
+          276.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 204,
+    "timestamp_sec": 6.8,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          648.4,
+          282.1,
+          193.5,
+          264.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 205,
+    "timestamp_sec": 6.83,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          652.8,
+          273.1,
+          188.1,
+          256.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 206,
+    "timestamp_sec": 6.87,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          648.4,
+          269.6,
+          188.2,
+          257.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 207,
+    "timestamp_sec": 6.9,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          639.6,
+          266.4,
+          184.1,
+          255.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 208,
+    "timestamp_sec": 6.93,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          640.0,
+          262.2,
+          176.2,
+          248.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 209,
+    "timestamp_sec": 6.97,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          644.9,
+          252.0,
+          159.3,
+          226.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 210,
+    "timestamp_sec": 7.0,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          649.4,
+          245.7,
+          151.6,
+          216.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 211,
+    "timestamp_sec": 7.03,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          653.6,
+          245.0,
+          149.8,
+          215.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 212,
+    "timestamp_sec": 7.07,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          650.9,
+          244.3,
+          147.4,
+          213.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 213,
+    "timestamp_sec": 7.1,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          651.1,
+          239.1,
+          142.0,
+          203.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 214,
+    "timestamp_sec": 7.13,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          655.8,
+          233.1,
+          136.3,
+          190.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 215,
+    "timestamp_sec": 7.17,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          658.0,
+          229.1,
+          131.5,
+          179.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 216,
+    "timestamp_sec": 7.2,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          663.0,
+          228.0,
+          133.7,
+          179.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 217,
+    "timestamp_sec": 7.23,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          666.9,
+          226.2,
+          135.3,
+          180.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 218,
+    "timestamp_sec": 7.27,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          674.3,
+          227.2,
+          135.6,
+          179.2
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 219,
+    "timestamp_sec": 7.3,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          683.9,
+          227.7,
+          134.4,
+          176.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 220,
+    "timestamp_sec": 7.33,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          691.5,
+          228.0,
+          138.1,
+          177.5
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 221,
+    "timestamp_sec": 7.37,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          689.7,
+          228.5,
+          135.9,
+          175.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 222,
+    "timestamp_sec": 7.4,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          697.8,
+          228.5,
+          137.1,
+          176.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 223,
+    "timestamp_sec": 7.43,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          696.1,
+          226.6,
+          133.7,
+          173.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 224,
+    "timestamp_sec": 7.47,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          691.7,
+          224.2,
+          131.3,
+          169.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 225,
+    "timestamp_sec": 7.5,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          691.8,
+          223.0,
+          132.0,
+          167.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 226,
+    "timestamp_sec": 7.53,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          687.0,
+          221.0,
+          130.1,
+          165.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 227,
+    "timestamp_sec": 7.57,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          689.3,
+          223.9,
+          133.1,
+          168.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 228,
+    "timestamp_sec": 7.6,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          706.0,
+          228.1,
+          142.7,
+          173.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 229,
+    "timestamp_sec": 7.63,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          715.0,
+          225.8,
+          145.3,
+          169.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 230,
+    "timestamp_sec": 7.67,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          686.5,
+          230.5,
+          149.0,
+          180.0
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 231,
+    "timestamp_sec": 7.7,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          675.1,
+          227.6,
+          143.3,
+          178.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 232,
+    "timestamp_sec": 7.73,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          664.4,
+          233.2,
+          144.5,
+          187.6
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 233,
+    "timestamp_sec": 7.77,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          658.3,
+          234.3,
+          143.2,
+          192.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 234,
+    "timestamp_sec": 7.8,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          651.7,
+          233.6,
+          146.3,
+          200.3
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 235,
+    "timestamp_sec": 7.83,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          650.7,
+          235.7,
+          148.8,
+          206.9
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 236,
+    "timestamp_sec": 7.87,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          656.7,
+          242.8,
+          148.0,
+          209.7
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 237,
+    "timestamp_sec": 7.9,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          664.7,
+          252.3,
+          150.7,
+          216.1
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 238,
+    "timestamp_sec": 7.93,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          673.0,
+          253.4,
+          150.7,
+          216.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 239,
+    "timestamp_sec": 7.97,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          683.9,
+          257.2,
+          153.4,
+          220.8
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  },
+  {
+    "frame_id": 240,
+    "timestamp_sec": 8.0,
+    "objects": [
+      {
+        "id": 35,
+        "class": "person",
+        "bbox": [
+          694.3,
+          267.3,
+          170.7,
+          249.4
+        ]
+      }
+    ],
+    "detected_behavior": "NORMAL_HANDLING",
+    "confidence": 0.91
+  }
+]

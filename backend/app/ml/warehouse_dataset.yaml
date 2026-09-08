@@ -1,0 +1,15 @@
+path: /Users/gankai/Desktop/training-data/Godrej/warehouse_training/MASTER_PUBLIC_V1
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: person
+  1: carton
+  2: pallet
+  3: pallet_jack
+  4: forklift
+  5: trolley
+  6: truck
+  7: mattress
+  8: dock_gap
+  9: strap
