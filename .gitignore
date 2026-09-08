@@ -78,3 +78,5 @@ desktop.ini
 *.swp
 *.swo
 *~
+
+frontend/
