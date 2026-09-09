@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db.database import engine, Base, SessionLocal
 from app.db.seed import init_db
-from app.api import health, videos, events, analytics, assistant, routes, auth, ml_metrics, facilities, safety_rules
+from app.api import health, videos, events, analytics, assistant, routes, auth, ml_metrics, facilities, safety_rules, pipeline
 from app.services.websocket_manager import ws_router
 
 from fastapi.staticfiles import StaticFiles
@@ -491,6 +491,7 @@ app.include_router(analytics.router, prefix=settings.API_PREFIX, tags=["analytic
 app.include_router(assistant.router, prefix=settings.API_PREFIX, tags=["assistant"])
 app.include_router(ml_metrics.router, prefix=f"{settings.API_PREFIX}/ml", tags=["ml"])
 app.include_router(routes.router, prefix=settings.API_PREFIX, tags=["routes"])
+app.include_router(pipeline.router, prefix=settings.API_PREFIX, tags=["pipeline"])
 app.include_router(ws_router, tags=["websocket"])
 
 if __name__ == "__main__":
