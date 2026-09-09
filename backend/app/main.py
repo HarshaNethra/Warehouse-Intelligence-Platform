@@ -17,7 +17,10 @@ from app.services.websocket_manager import ws_router
 from fastapi.staticfiles import StaticFiles
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f'[Main] Table init notice: {e}')
 
 # Auto-seed default facility and demo user accounts on startup
 try:
