@@ -2,6 +2,7 @@ import re
 import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -74,8 +75,13 @@ async def chat(
                 model_used="Security-Facility-Scope-Guard"
             )
 
-    # 2. SQL Retrieval - Filtered strictly by authorized facility_id
-    events_query = db.query(models.Event).filter(models.Event.facility_id == target_facility_id)
+    # 2. SQL Retrieval - Filtered strictly by authorized facility_id and excluding demo/test fixtures
+    events_query = db.query(models.Event).filter(
+        models.Event.facility_id == target_facility_id,
+        or_(models.Event.is_demo_data == False, models.Event.is_demo_data.is_(None)),
+        or_(models.Event.is_test_data == False, models.Event.is_test_data.is_(None)),
+        or_(models.Event.provenance_type != "DEMO_FIXTURE", models.Event.provenance_type.is_(None))
+    )
     if request.camera_id:
         events_query = events_query.filter(models.Event.camera_id == request.camera_id)
     if request.bay_id:
@@ -151,9 +157,9 @@ async def chat(
     # 5. Empty Retrieval / Non-existent Incident / Insufficient Evidence Handling
     if retrieval_count == 0:
         if specific_event_requested:
-            ans_text = f"Insufficient evidence: Incident '{', '.join(evt_ids)}' was not found in authorized database records for facility '{target_facility_id}'."
+            ans_text = f"No verified warehouse events are available matching '{', '.join(evt_ids)}' for facility '{target_facility_id}' and time range."
         else:
-            ans_text = f"Insufficient evidence: Zero matching warehouse incidents or operational records were found in the database for facility '{target_facility_id}'."
+            ans_text = "No verified warehouse events are available for this facility and time range."
 
         return assistant_schema.ChatResponse(
             answer=ans_text,

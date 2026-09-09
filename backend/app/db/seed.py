@@ -606,8 +606,10 @@ def init_db(db: Session) -> None:
                 recommended_action=ev["recommended_action"],
                 status=ev["status"],
                 acknowledged_by_user_id=ev.get("acknowledged_by"),
-                acknowledged_at=datetime.datetime.utcnow() if ev.get("acknowledged_by") else None,
-                provenance_type="DEVELOPMENT_SEED",
+                provenance_type="DEMO_FIXTURE",
+                is_demo_data=True,
+                is_test_data=False,
+                environment="DEVELOPMENT",
                 inference_run_id=None,
                 created_at=datetime.datetime.utcnow()
             )

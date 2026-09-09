@@ -34,6 +34,8 @@ class EventBase(BaseModel):
     risk_level: str
     description: str
     reason: str
+    potential_consequence: Optional[str] = None
+    risk_factors_json: Optional[str] = None
     evidence_frame: Optional[str] = None
     video_reference: Optional[str] = None
     recommended_action: Optional[str] = None

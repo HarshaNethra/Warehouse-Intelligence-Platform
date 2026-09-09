@@ -32,8 +32,7 @@ def apply_facility_filter(
         query = query.filter(
             (models.Event.is_test_data.is_(False) | models.Event.is_test_data.is_(None)),
             (models.Event.is_demo_data.is_(False) | models.Event.is_demo_data.is_(None)),
-            (models.Event.provenance_type.in_(["REAL_INFERENCE", "DEVELOPMENT_SEED"])) |
-            (models.Event.provenance_type.is_(None))
+            (models.Event.provenance_type != "DEMO_FIXTURE")
         )
     return query
 

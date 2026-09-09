@@ -39,37 +39,11 @@ class RAGVectorStore:
         self._seed_initial_benchmarks()
 
     def _seed_initial_benchmarks(self):
-        initial_incidents = [
-            {
-                "event_id": "EVT-101",
-                "behaviour": "Package Stepping & Improper Heavy Stacking",
-                "bay_id": "Loading Bay 3",
-                "risk_score": 96.1,
-                "risk_level": "Critical",
-                "description": "Heavy box stacked on top of KD flatpacks + operator stepping on cartons in Loading Bay 3.",
-                "reason": "Vertical stack overhang ratio > 1.4x + COCO Pose Keypoint #15/#16 ankle containment inside carton box."
-            },
-            {
-                "event_id": "EVT-102",
-                "behaviour": "Product Dropped from 1.2m Height",
-                "bay_id": "Loading Bay 1",
-                "risk_score": 85.2,
-                "risk_level": "High",
-                "description": "Vertical impact acceleration spike measured at 11.5 m/s² during manual vehicle unloading.",
-                "reason": "Kinematics engine recorded freefall Y-acceleration ay = 11.5 m/s² > 8.0 m/s² threshold."
-            },
-            {
-                "event_id": "EVT-103",
-                "behaviour": "Carton Dragging on Wet Floor",
-                "bay_id": "Loading Bay 2",
-                "risk_score": 78.8,
-                "risk_level": "High",
-                "description": "Continuous carton dragging translation velocity v = 1.8 m/s on wet concrete floor.",
-                "reason": "Kinematic translation vector vx = 1.8 m/s sustained over 2.5 seconds."
-            }
-        ]
-        for inc in initial_incidents:
-            self.add_incident(inc)
+        """
+        Data Integrity: Automatic synthetic incident seeding disabled.
+        Vector store initializes strictly empty unless real verified events are indexed.
+        """
+        pass
 
     def add_incident(
         self, 

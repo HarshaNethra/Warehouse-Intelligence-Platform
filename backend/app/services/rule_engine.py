@@ -15,6 +15,27 @@ LEFT_KNEE = 13
 RIGHT_KNEE = 14
 
 
+# Centralized Consequence & Action Mapping for Safety Rules
+CONSEQUENCE_MAP = {
+    "RULE_KINEMATICS_FREEFALL": {
+        "potential_consequence": "Potential product/package structural damage or content breakage.",
+        "recommended_action": "Inspect carton and contents for structural integrity before dispatch."
+    },
+    "RULE_01_PERSON_ON_INVENTORY": {
+        "potential_consequence": "Potential inventory contamination, crushing, or personnel fall injury.",
+        "recommended_action": "Halt stepping activity immediately and inspect affected inventory stack."
+    },
+    "RULE_02_VEHICLE_PROXIMITY": {
+        "potential_consequence": "Potential vehicle-pedestrian collision or personnel injury.",
+        "recommended_action": "Enforce 2-meter safety zone between pedestrian and mobile equipment."
+    },
+    "RULE_03_UNSTABLE_STACKING": {
+        "potential_consequence": "Potential stack tipping, carton crush, or pallet fall.",
+        "recommended_action": "Re-stack cartons placing heavier/larger units at the base."
+    }
+}
+
+
 class TrackedObject:
     """
     State container for a tracked object storing bounding box history
@@ -62,7 +83,7 @@ class KinematicsEngine:
         """
         Processes frame-level object detections with track_ids.
         Computes velocity vectors and vertical acceleration (ay).
-        Returns active freefall/dropping alerts.
+        Returns active freefall/dropping alerts with structured risk factors.
         """
         alerts = []
         active_ids = set()
@@ -88,14 +109,40 @@ class KinematicsEngine:
                 
                 # Freefall / Throwing condition: object class in carton/mattress and ay_metric > 8.0 m/s^2
                 if obj.object_class in ["carton", "mattress", "package", "box", "large_carton"] and ay_metric > 8.0:
+                    measured_ay = round(ay_metric, 2)
+                    threshold_ay = 8.0
+                    persistence_f = 3
+                    severity = "CRITICAL" if ay_metric > 12.0 else "HIGH"
+                    reason_str = f"Carton vertical acceleration ay = {measured_ay} m/s² exceeded {threshold_ay} m/s² threshold for {persistence_f} consecutive frames."
+                    
+                    risk_factors = {
+                        "rule_id": "RULE_KINEMATICS_FREEFALL",
+                        "behaviour": f"Product Freefall / Drop ({obj.object_class})",
+                        "measured_value": measured_ay,
+                        "threshold": threshold_ay,
+                        "unit": "m/s²",
+                        "persistence_frames": persistence_f,
+                        "object_type": obj.object_class,
+                        "severity": severity
+                    }
+
+                    mapping = CONSEQUENCE_MAP.get("RULE_KINEMATICS_FREEFALL", {})
+
                     alerts.append({
                         "track_id": track_id,
                         "object_class": obj.object_class,
                         "rule": "FREEFALL_DETECTED",
+                        "rule_id": "RULE_KINEMATICS_FREEFALL",
+                        "behaviour": f"Product Freefall / Drop ({obj.object_class})",
                         "acceleration_y": ay_metric,
                         "acceleration_y_px": ay_pixels,
                         "velocity": (vx, vy),
-                        "severity": "CRITICAL" if ay_metric > 12.0 else "HIGH"
+                        "severity": severity,
+                        "risk_score": 92.4 if severity == "CRITICAL" else 84.0,
+                        "reason": reason_str,
+                        "risk_factors": risk_factors,
+                        "potential_consequence": mapping.get("potential_consequence"),
+                        "recommended_action": mapping.get("recommended_action")
                     })
 
         # Purge stale tracks not present in current frame
@@ -145,7 +192,7 @@ class SafetyRuleEngine:
       - Rule 01: Person on Inventory (COCO Pose Keypoints #15/#16 contained in inventory box)
       - Rule 02: Vehicle-Pedestrian Proximity (<50px distance to vehicle base)
       - Rule 03: Heavy Box on Unstable Stack (Overhang & area ratio > 1.3x)
-      - Database Persistence & 15-frame State-Machine Thresholding
+      - Database Persistence & Consecutive Frame State-Machine Thresholding
     """
     def __init__(self, fps: float = 30.0):
         self.fps = fps
@@ -172,21 +219,14 @@ class SafetyRuleEngine:
     ) -> List[Dict[str, Any]]:
         """
         Evaluates a single frame for safety rule violations and kinematic anomalies.
-        Returns list of active rule alerts and persists events triggered for >15 consecutive frames.
+        Returns list of active rule alerts and persists events triggered for state-machine threshold.
         """
         frame_alerts = []
 
         # 1. Kinematic Analytics Update
         kinematic_alerts = self.kinematics.update_tracks(detections, timestamp)
         for ka in kinematic_alerts:
-            frame_alerts.append({
-                "rule_id": "RULE_KINEMATICS_FREEFALL",
-                "behaviour": f"Product Freefall / Drop ({ka['object_class']})",
-                "severity": ka["severity"],
-                "risk_score": 92.4 if ka["severity"] == "CRITICAL" else 84.0,
-                "reason": f"Vertical Y-acceleration ay = {ka['acceleration_y']:.1f} m/s² exceeds 8.0 m/s² threshold.",
-                "object_id": ka["track_id"]
-            })
+            frame_alerts.append(ka)
 
         # 2. Rule 01: Person Stepping on Inventory
         rule1_alerts = self._check_person_on_inventory(poses, detections)
@@ -200,7 +240,7 @@ class SafetyRuleEngine:
         rule3_alerts = self._check_unstable_stacking(detections)
         frame_alerts.extend(rule3_alerts)
 
-        # 5. Consecutive Frame State Machine (> 15 consecutive frames = 0.5s @ 30 FPS)
+        # 5. Consecutive Frame State Machine (3 frames for kinematic, 15 frames for sustained rules)
         persisted_events = []
         active_keys = set()
 
@@ -209,7 +249,6 @@ class SafetyRuleEngine:
             active_keys.add(rule_key)
             self.rule_counters[rule_key] += 1
 
-            # Trigger database insert: 3 consecutive frames for fast kinematic freefall/drop, 15 for sustained rules
             trigger_threshold = 3 if ("FREEFALL" in alert.get("rule_id", "") or alert.get("severity") == "CRITICAL") else 15
             if self.rule_counters[rule_key] == trigger_threshold:
                 event_record = self._persist_event_to_db(
@@ -250,7 +289,7 @@ class SafetyRuleEngine:
         ]
 
         for pose in poses:
-            keypoints = pose.get("keypoints", []) # List of [x, y, conf]
+            keypoints = pose.get("keypoints", [])
             if len(keypoints) < 17:
                 continue
 
@@ -260,18 +299,39 @@ class SafetyRuleEngine:
             for inv in inventory_boxes:
                 x1, y1, x2, y2 = inv.get("bbox", [0.0, 0.0, 0.0, 0.0])
                 
-                # Verify confidence > 0.3 and keypoint containment
                 l_inside = (x1 <= left_ankle[0] <= x2) and (y1 <= left_ankle[1] <= y2) and (left_ankle[2] > 0.3)
                 r_inside = (x1 <= right_ankle[0] <= x2) and (y1 <= right_ankle[1] <= y2) and (right_ankle[2] > 0.3)
 
                 if l_inside or r_inside:
+                    obj_class = inv.get("class", "carton")
+                    track_id = inv.get("track_id", 0)
+                    measured_val = "COCO Pose Ankle keypoint #15/#16 contained in inventory box"
+                    threshold_val = "Keypoint confidence > 0.3"
+                    persistence_f = 15
+                    reason_str = f"Person detected stepping directly on inventory item {obj_class} (track #{track_id})."
+                    
+                    risk_factors = {
+                        "rule_id": "RULE_01_PERSON_ON_INVENTORY",
+                        "behaviour": "Person Stepping on Inventory / Pallet",
+                        "measured_value": measured_val,
+                        "threshold": threshold_val,
+                        "persistence_frames": persistence_f,
+                        "object_type": obj_class,
+                        "severity": "CRITICAL"
+                    }
+
+                    mapping = CONSEQUENCE_MAP.get("RULE_01_PERSON_ON_INVENTORY", {})
+
                     alerts.append({
                         "rule_id": "RULE_01_PERSON_ON_INVENTORY",
                         "behaviour": "Person Stepping on Inventory / Pallet",
                         "severity": "CRITICAL",
                         "risk_score": 96.1,
-                        "reason": f"COCO Pose Ankle keypoints #15/#16 detected inside {inv.get('class')} bounding box.",
-                        "object_id": inv.get("track_id", 0)
+                        "reason": reason_str,
+                        "risk_factors": risk_factors,
+                        "potential_consequence": mapping.get("potential_consequence"),
+                        "recommended_action": mapping.get("recommended_action"),
+                        "object_id": track_id
                     })
                     break
         return alerts
@@ -294,14 +354,37 @@ class SafetyRuleEngine:
                     px, py = keypoints[NOSE][0], keypoints[NOSE][1]
                     dist = np.sqrt((px - v_center[0])**2 + (py - v_center[1])**2)
                     
-                    if dist < 120.0: # Close spatial distance in pixel domain
+                    if dist < 120.0:
+                        measured_dist = round(dist, 1)
+                        threshold_dist = 120.0
+                        persistence_f = 15
+                        obj_class = v.get("class", "forklift")
+                        track_id = v.get("track_id", 0)
+                        reason_str = f"Pedestrian detected within {measured_dist}px radius of operational vehicle {obj_class} (threshold < {threshold_dist}px)."
+                        
+                        risk_factors = {
+                            "rule_id": "RULE_02_VEHICLE_PROXIMITY",
+                            "behaviour": "Unsafe Vehicle-Pedestrian Proximity",
+                            "measured_value": measured_dist,
+                            "threshold": threshold_dist,
+                            "unit": "px",
+                            "persistence_frames": persistence_f,
+                            "object_type": obj_class,
+                            "severity": "HIGH"
+                        }
+
+                        mapping = CONSEQUENCE_MAP.get("RULE_02_VEHICLE_PROXIMITY", {})
+
                         alerts.append({
                             "rule_id": "RULE_02_VEHICLE_PROXIMITY",
                             "behaviour": "Unsafe Vehicle-Pedestrian Proximity",
                             "severity": "HIGH",
                             "risk_score": 82.0,
-                            "reason": f"Pedestrian detected within {dist:.1f}px radius of operational {v.get('class')}.",
-                            "object_id": v.get("track_id", 0)
+                            "reason": reason_str,
+                            "risk_factors": risk_factors,
+                            "potential_consequence": mapping.get("potential_consequence"),
+                            "recommended_action": mapping.get("recommended_action"),
+                            "object_id": track_id
                         })
                         break
         return alerts
@@ -328,17 +411,38 @@ class SafetyRuleEngine:
 
                 top_cx = (tx1 + tx2) / 2.0
 
-                # Check if top box is larger/heavier and positioned above smaller base box
                 if top_area > 1.3 * bot_area and bot_area > 0:
-                    # Centroid of top box is vertically above bottom box
                     if (bx1 <= top_cx <= bx2) and (ty2 <= by1 + 15.0):
+                        area_ratio = round(top_area / bot_area, 2)
+                        threshold_ratio = 1.3
+                        persistence_f = 15
+                        obj_class = top_box.get("class", "carton")
+                        track_id = top_box.get("track_id", 0)
+                        reason_str = f"Large carton (area {top_area:.0f}px) stacked on smaller base (area {bot_area:.0f}px), area ratio {area_ratio} exceeds threshold {threshold_ratio}."
+
+                        risk_factors = {
+                            "rule_id": "RULE_03_UNSTABLE_STACKING",
+                            "behaviour": "Heavy Package Stacked on Unstable Base",
+                            "measured_value": area_ratio,
+                            "threshold": threshold_ratio,
+                            "unit": "ratio",
+                            "persistence_frames": persistence_f,
+                            "object_type": obj_class,
+                            "severity": "HIGH"
+                        }
+
+                        mapping = CONSEQUENCE_MAP.get("RULE_03_UNSTABLE_STACKING", {})
+
                         alerts.append({
                             "rule_id": "RULE_03_UNSTABLE_STACKING",
                             "behaviour": "Heavy Package Stacked on Unstable Base",
                             "severity": "HIGH",
                             "risk_score": 88.5,
-                            "reason": f"Large carton (area {top_area:.0f}px) stacked on top of smaller base (area {bot_area:.0f}px).",
-                            "object_id": top_box.get("track_id", 0)
+                            "reason": reason_str,
+                            "risk_factors": risk_factors,
+                            "potential_consequence": mapping.get("potential_consequence"),
+                            "recommended_action": mapping.get("recommended_action"),
+                            "object_id": track_id
                         })
         return alerts
 
@@ -365,7 +469,6 @@ class SafetyRuleEngine:
         obj_id = alert.get("object_id", "42")
         dyn_description = f"{alert['behaviour']} detected in {bay_name}. Target object #{obj_id} triggered violation: {alert['reason']}"
 
-        # Dynamic evidence timestamp correlation
         calc_fps = video_fps if (video_fps and video_fps > 0) else 30.0
         if frame_number is not None and frame_number > 0:
             timestamp_sec = round(frame_number / calc_fps, 3)
@@ -379,6 +482,11 @@ class SafetyRuleEngine:
         v_filename = video_filename or f"{video_id}.mp4"
         video_ref = f"/stream/video/{v_filename}#t={timestamp_sec:.2f}"
         evidence_frm = f"/api/videos/{video_id}/frames/{frame_number or 0}"
+
+        risk_factors_data = alert.get("risk_factors")
+        risk_factors_json_str = json.dumps(risk_factors_data) if risk_factors_data else None
+        potential_cons = alert.get("potential_consequence") or "Potential inventory or personnel risk."
+        rec_action = alert.get("recommended_action") or f"Dispatch supervisor to inspect {alert['behaviour']}"
 
         event_dict = {
             "event_id": event_id,
@@ -399,9 +507,11 @@ class SafetyRuleEngine:
             "risk_level": alert["severity"],
             "description": dyn_description,
             "reason": alert["reason"],
+            "potential_consequence": potential_cons,
+            "recommended_action": rec_action,
+            "risk_factors_json": risk_factors_json_str,
             "evidence_frame": evidence_frm,
             "video_reference": video_ref,
-            "recommended_action": f"Dispatch supervisor to inspect {alert['behaviour']}",
             "model_name": model_name,
             "model_version": model_version,
             "inference_engine": inference_engine,
@@ -419,6 +529,7 @@ class SafetyRuleEngine:
                 ra_id = f"RA-{uuid.uuid4().hex[:8].upper()}"
 
                 if inference_run_id:
+                    # BehaviourObservation Layer: PURE CV Observation (track, frame, timestamp, rule_id)
                     obs = BehaviourObservation(
                         id=obs_id,
                         inference_run_id=inference_run_id,
@@ -428,11 +539,17 @@ class SafetyRuleEngine:
                         timestamp=float(timestamp),
                         behaviour_type=alert["behaviour"],
                         confidence=confidence,
-                        details_json=json.dumps({"reason": alert["reason"], "rule_id": alert.get("rule_id")})
+                        details_json=json.dumps({
+                            "rule_id": alert.get("rule_id"),
+                            "track_id": alert.get("object_id"),
+                            "frame_number": frame_number,
+                            "timestamp": float(timestamp)
+                        })
                     )
                     db_session.add(obs)
                     event_dict["behaviour_observation_id"] = obs_id
 
+                    # RiskAssessment Layer: Canonical Risk Reasoning Container
                     ra = RiskAssessment(
                         id=ra_id,
                         event_id=event_id,
@@ -441,6 +558,8 @@ class SafetyRuleEngine:
                         risk_score=float(alert["risk_score"]),
                         confidence=confidence,
                         reason=alert["reason"],
+                        risk_factors_json=risk_factors_json_str,
+                        potential_consequence=potential_cons,
                         model_version=model_version
                     )
                     db_session.add(ra)
@@ -462,3 +581,4 @@ class SafetyRuleEngine:
             print(f"RAG Vector Store index error: {e}")
 
         return event_dict
+

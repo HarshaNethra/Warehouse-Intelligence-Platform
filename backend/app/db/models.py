@@ -189,7 +189,6 @@ class Event(Base):
     __table_args__ = (
         Index("ix_events_facility_timestamp", "facility_id", "timestamp"),
         Index("ix_events_status_facility", "status", "facility_id"),
-        Index("ix_events_provenance_type", "provenance_type"),
     )
 
     event_id = Column(String, primary_key=True, index=True)
@@ -205,6 +204,8 @@ class Event(Base):
     risk_level = Column(String, index=True)
     description = Column(Text)
     reason = Column(Text)
+    potential_consequence = Column(Text, nullable=True)
+    risk_factors_json = Column(Text, nullable=True)
     evidence_frame = Column(String, nullable=True)
     video_reference = Column(String, nullable=True)
     recommended_action = Column(Text, nullable=True)
@@ -250,9 +251,11 @@ class InferenceRun(Base):
     camera_id = Column(String, ForeignKey("cameras.id"), nullable=True, index=True)
     model_name = Column(String, nullable=False, default="YOLO11s")
     model_version = Column(String, nullable=False, default="v1.4.2-tensorrt")
+    model_path = Column(String, nullable=True)
+    model_sha256 = Column(String, nullable=True)
     inference_engine = Column(String, nullable=False, default="LOCAL_YOLO11")
     device = Column(String, default="cpu")
-    status = Column(String, default="COMPLETED")
+    status = Column(String, default="RUNNING")
     started_at = Column(DateTime, default=datetime.datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
     error_message = Column(Text, nullable=True)
@@ -272,6 +275,7 @@ class RiskAssessment(Base):
     confidence = Column(Float, nullable=False, default=0.92)
     reason = Column(Text, nullable=True)
     risk_factors_json = Column(Text, nullable=True)
+    potential_consequence = Column(Text, nullable=True)
     model_version = Column(String, default="warehouse-risk-v1.4")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 

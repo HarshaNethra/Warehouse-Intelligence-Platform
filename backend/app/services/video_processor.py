@@ -42,9 +42,11 @@ class ProductionVideoProcessor:
             self.godrej_dir = self.base_dir.parent / "Godrej"
         self.model = None
         self.model_path = None
+        self.model_sha256 = None
         self.model_name = "YOLO11s-Baseline"
         self.model_version = "v1.4.2"
         self.inference_engine = "LOCAL_YOLO11"
+        self.model_load_error = None
         self._load_yolo_model()
 
     def _load_yolo_model(self):
@@ -55,19 +57,29 @@ class ProductionVideoProcessor:
             self.base_dir / "yolo11s.pt",
         ]
         for w in possible_weights:
-            if w.exists():
+            if w.exists() and w.is_file():
                 self.model_path = str(w)
                 self.model_version = w.name
                 break
 
-        if ULTRALYTICS_AVAILABLE and self.model_path:
-            try:
+        if not self.model_path:
+            self.model_load_error = "YOLO model weights file not found in storage directories."
+            print(f"[VideoProcessor] FAIL CLOSED: {self.model_load_error}")
+            return
+
+        from app.services.inference import compute_file_sha256, ModelLoadError
+        try:
+            self.model_sha256 = compute_file_sha256(self.model_path)
+            if ULTRALYTICS_AVAILABLE:
                 self.model = YOLO(self.model_path)
-                print(f"[VideoProcessor] Loaded Ultralytics YOLO model from '{self.model_path}' on device '{self.device}'")
-            except Exception as e:
-                print(f"[VideoProcessor] Warning: Could not initialize YOLO model ({e}). Will run in synthetic fallback mode.")
-        else:
-            print("[VideoProcessor] Notice: Ultralytics YOLO weights unavailable or model load error. Pipeline ready.")
+                print(f"[VideoProcessor] Loaded Ultralytics YOLO model from '{self.model_path}' (SHA256: {self.model_sha256[:12]}...) on device '{self.device}'")
+            else:
+                self.model_load_error = "Ultralytics package is not installed."
+                print(f"[VideoProcessor] FAIL CLOSED: {self.model_load_error}")
+        except Exception as e:
+            self.model_load_error = f"Could not initialize YOLO model from '{self.model_path}': {e}"
+            self.model = None
+            print(f"[VideoProcessor] FAIL CLOSED: {self.model_load_error}")
 
     def resolve_video_path(self, filename_or_path: str) -> Tuple[str, Path]:
         clean_name = os.path.basename(filename_or_path)
@@ -109,6 +121,8 @@ class ProductionVideoProcessor:
                         camera_id=camera_id,
                         model_name=self.model_name,
                         model_version=self.model_version,
+                        model_path=self.model_path,
+                        model_sha256=self.model_sha256,
                         inference_engine=self.inference_engine,
                         device=self.device,
                         status="FAILED",
@@ -144,6 +158,8 @@ class ProductionVideoProcessor:
                         camera_id=camera_id,
                         model_name=self.model_name,
                         model_version=self.model_version,
+                        model_path=self.model_path,
+                        model_sha256=self.model_sha256,
                         inference_engine=self.inference_engine,
                         device=self.device,
                         status="FAILED",
@@ -203,23 +219,26 @@ class ProductionVideoProcessor:
                 camera_id=camera_id,
                 model_name=self.model_name,
                 model_version=self.model_version,
+                model_path=self.model_path,
+                model_sha256=self.model_sha256,
                 inference_engine=self.inference_engine,
                 device=self.device,
-                status="PROCESSING",
+                status="RUNNING",
                 started_at=datetime.datetime.utcnow(),
                 provenance_type="REAL_INFERENCE"
             )
             db_session.add(inf_run)
             db_session.commit()
 
-        # CASE 1: YOLO Model Runtime Unavailable
+        # CASE 1: YOLO Model Runtime Unavailable -> FAIL CLOSED
         if self.model is None:
+            err_msg = self.model_load_error or "YOLO ML model or runtime unavailable"
             if db_session:
                 try:
                     inf_run = db_session.query(models.InferenceRun).filter(models.InferenceRun.id == run_id).first()
                     if inf_run:
                         inf_run.status = "FAILED"
-                        inf_run.error_message = "YOLO ML model or runtime unavailable"
+                        inf_run.error_message = err_msg
                         inf_run.completed_at = datetime.datetime.utcnow()
                     vid_rec = db_session.query(models.Video).filter(models.Video.video_id == video_id).first()
                     if vid_rec:
@@ -233,7 +252,7 @@ class ProductionVideoProcessor:
                 "video_id": video_id,
                 "inference_run_id": run_id,
                 "status": "FAILED",
-                "error": "YOLO ML model or runtime unavailable",
+                "error": err_msg,
                 "events_generated_count": 0,
                 "events": [],
                 "frames_processed": 0,
@@ -444,6 +463,10 @@ class ProductionVideoProcessor:
                     "behaviour": ev.behaviour,
                     "risk_score": ev.risk_score,
                     "risk_level": ev.risk_level,
+                    "reason": ev.reason,
+                    "potential_consequence": ev.potential_consequence,
+                    "recommended_action": ev.recommended_action,
+                    "risk_factors_json": ev.risk_factors_json,
                     "timestamp": ev.timestamp,
                     "evidence_frame": ev.evidence_frame,
                     "inference_run_id": ev.inference_run_id,
@@ -454,7 +477,7 @@ class ProductionVideoProcessor:
             # Update Video & InferenceRun status
             inf_run = db_session.query(models.InferenceRun).filter(models.InferenceRun.id == run_id).first()
             if inf_run:
-                inf_run.status = "COMPLETED"
+                inf_run.status = "SUCCESS"
                 inf_run.completed_at = datetime.datetime.utcnow()
 
             vid_rec = db_session.query(models.Video).filter(models.Video.video_id == video_id).first()
