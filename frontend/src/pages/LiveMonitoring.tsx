@@ -4,7 +4,6 @@ import { VideoIngestionSection } from '../components/VideoIngestionSection';
 import { RiskTimeline } from '../components/RiskTimeline';
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
 import { MultiCameraGrid, type CameraFeedItem } from '../components/MultiCameraGrid';
-import { WarehouseFloorMap, type WarehouseZone } from '../components/WarehouseFloorMap';
 import { 
   Camera, 
   RefreshCw, 
@@ -17,8 +16,7 @@ import {
   Send,
   XCircle,
   LayoutGrid,
-  Maximize2,
-  MapPin
+  Maximize2
 } from 'lucide-react';
 import { getLoadingBays, type LoadingBay } from '../api/facilities';
 import { useEvents } from '../hooks/useEvents';
@@ -50,7 +48,7 @@ export const LiveMonitoring: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [videoDuration, setVideoDuration] = useState<number>(60);
   const [videoPayload, setVideoPayload] = useState<VideoTelemetryPayload>(INITIAL_VIDEO_PAYLOAD);
-  const [viewMode, setViewMode] = useState<'SINGLE' | 'GRID' | 'FLOOR_MAP'>('SINGLE');
+  const [viewMode, setViewMode] = useState<'SINGLE' | 'GRID'>('SINGLE');
 
   const handleGridFeedSelect = (feed: CameraFeedItem) => {
     const payload = generateTelemetryForVideo(
@@ -62,17 +60,6 @@ export const LiveMonitoring: React.FC = () => {
     );
     handleVideoSelect(payload);
     setViewMode('SINGLE');
-  };
-
-  const handleFloorZoneSelect = (zone: WarehouseZone) => {
-    const payload = generateTelemetryForVideo(
-      zone.videoTitle,
-      18 * 1024 * 1024,
-      zone.name,
-      zone.primaryVideoUrl,
-      60
-    );
-    handleVideoSelect(payload);
   };
 
   const fetchCameraFeeds = async () => {
@@ -247,20 +234,7 @@ export const LiveMonitoring: React.FC = () => {
                 }`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
-                <span>7-Camera Grid</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode('FLOOR_MAP')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  viewMode === 'FLOOR_MAP'
-                    ? 'bg-white text-blue-600 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Floor Map</span>
+                <span>7-Camera Live Wall</span>
               </button>
             </div>
 
@@ -333,11 +307,6 @@ export const LiveMonitoring: React.FC = () => {
               activeFeedFilename={videoPayload.filename}
             />
           </div>
-        )}
-
-        {/* View Mode Switching: Warehouse Digital Twin Floor Map */}
-        {viewMode === 'FLOOR_MAP' && (
-          <WarehouseFloorMap onSelectZone={handleFloorZoneSelect} />
         )}
 
         {/* View Mode Switching: Single Optical Stream Deep-Dive */}
