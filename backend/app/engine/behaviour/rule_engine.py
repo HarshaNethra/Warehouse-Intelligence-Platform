@@ -6,8 +6,11 @@ applies debouncing/merging, and produces deduplicated behaviour candidates.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
-import pandas as pd
+from typing import Dict, List, Optional, Union, Any
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 from app.engine.behaviour.base_rule import BaseRule, BehaviourCandidate, TrajectoryContext
 from app.engine.behaviour.config import BehaviourConfig, DEFAULT_CONFIG
@@ -52,29 +55,53 @@ class RuleEngine:
             SequenceRule(self.config),
         ]
 
-    def parse_trajectory_csv(self, csv_source: Union[str, Path, pd.DataFrame]) -> Dict[int, List[TrackPoint]]:
+    def parse_trajectory_csv(self, csv_source: Union[str, Path, Any]) -> Dict[int, List[TrackPoint]]:
         """
         Parses trajectory CSV (or DataFrame) into a dictionary mapping:
         object_id -> List[TrackPoint] sorted by frame.
         """
-        if isinstance(csv_source, (str, Path)):
-            df = pd.read_csv(csv_source)
-        else:
-            df = csv_source
-
         tracks: Dict[int, List[TrackPoint]] = {}
 
-        for _, row in df.iterrows():
-            obj_id = int(row["object_id"])
-            pt = TrackPoint(
-                frame=int(row["frame"]),
-                x=float(row["x"]),
-                y=float(row["y"]),
-                width=float(row["width"]),
-                height=float(row["height"]),
-                class_name=str(row.get("class", "person")),
-            )
-            tracks.setdefault(obj_id, []).append(pt)
+        if pd is not None and not isinstance(csv_source, (str, Path)):
+            for _, row in csv_source.iterrows():
+                obj_id = int(row["object_id"])
+                pt = TrackPoint(
+                    frame=int(row["frame"]),
+                    x=float(row["x"]),
+                    y=float(row["y"]),
+                    width=float(row["width"]),
+                    height=float(row["height"]),
+                    class_name=str(row.get("class", "person")),
+                )
+                tracks.setdefault(obj_id, []).append(pt)
+        elif pd is not None:
+            df = pd.read_csv(csv_source)
+            for _, row in df.iterrows():
+                obj_id = int(row["object_id"])
+                pt = TrackPoint(
+                    frame=int(row["frame"]),
+                    x=float(row["x"]),
+                    y=float(row["y"]),
+                    width=float(row["width"]),
+                    height=float(row["height"]),
+                    class_name=str(row.get("class", "person")),
+                )
+                tracks.setdefault(obj_id, []).append(pt)
+        else:
+            import csv
+            with open(csv_source, mode="r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    obj_id = int(row["object_id"])
+                    pt = TrackPoint(
+                        frame=int(row["frame"]),
+                        x=float(row["x"]),
+                        y=float(row["y"]),
+                        width=float(row["width"]),
+                        height=float(row["height"]),
+                        class_name=str(row.get("class", "person")),
+                    )
+                    tracks.setdefault(obj_id, []).append(pt)
 
         # Sort each track strictly by frame
         for obj_id in tracks:
