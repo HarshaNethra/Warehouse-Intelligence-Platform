@@ -36,7 +36,7 @@ const TAXONOMY_DEFINITIONS: TaxonomyItem[] = [
   {
     id: 'BEH-001',
     category: 'Handling',
-    name: 'Product Dropped / Impact Spike',
+    name: 'Product Dropped / Freefall Impact',
     matchKeys: ['product dropped', 'dropped', 'drop', 'impact spike', 'freefall'],
     riskLevel: 'Critical',
     aiObservedBad: 'Package released mid-air or allowed to fall with excessive vertical velocity (>15 m/s²).',
@@ -46,8 +46,8 @@ const TAXONOMY_DEFINITIONS: TaxonomyItem[] = [
   {
     id: 'BEH-002',
     category: 'Handling',
-    name: 'Dragging Cartons or KD Packets',
-    matchKeys: ['product dragged', 'dragged', 'dragging', 'drag', 'kd packet'],
+    name: 'Dragging Cartons or Cupboards on Floor',
+    matchKeys: ['product dragged', 'dragged', 'dragging', 'drag', 'cupboard', 'kd packet'],
     riskLevel: 'High',
     aiObservedBad: 'Carton dragged across warehouse floor surface instead of being lifted or placed on a trolley.',
     expectedGoodPractice: 'Use a trolley, pallet truck, or team lifting for moving heavy cartons.',
@@ -56,28 +56,28 @@ const TAXONOMY_DEFINITIONS: TaxonomyItem[] = [
   {
     id: 'BEH-003',
     category: 'Stacking',
-    name: 'Improper Stacking (Heavy over Light)',
-    matchKeys: ['improper stacking', 'stacking', 'heavy over light', 'unstable stack'],
+    name: 'Improper Stacking Hierarchy (Heavy on Light)',
+    matchKeys: ['improper stacking', 'stacking', 'heavy over light', 'unstable stack', 'heavy on light'],
     riskLevel: 'High',
-    aiObservedBad: 'Heavy cartons placed on top of smaller or lighter fragile packaging.',
+    aiObservedBad: 'Heavy cartons placed on top of smaller or lighter fragile packaging tiers.',
     expectedGoodPractice: 'Stack larger, heavier packets at the base and smaller/lighter packages on top.',
     whyItMatters: 'Uneven load distribution crushes bottom packages, causing stack destabilization and tipping risks.',
   },
   {
     id: 'BEH-004',
     category: 'Handling',
-    name: 'Rolling Cartons or Mattresses',
-    matchKeys: ['rough handling', 'rolling', 'tossed', 'throwing mattresses', 'mattress'],
-    riskLevel: 'High',
-    aiObservedBad: 'End-over-end rolling of product cartons or mattress packages across loading bay.',
-    expectedGoodPractice: 'Carry or transport products using appropriate material-handling equipment.',
-    whyItMatters: 'Rolling creates uncontrolled trajectory movement, repeated impact points, and edge destruction.',
+    name: 'Throwing or Rolling Cartons / Mattresses',
+    matchKeys: ['rough handling', 'rolling', 'tossed', 'throwing mattresses', 'mattress', 'thrown', 'product thrown'],
+    riskLevel: 'Critical',
+    aiObservedBad: 'End-over-end rolling or airborne throwing of product cartons or mattress packages across loading bay.',
+    expectedGoodPractice: 'Carry or transport products using appropriate material-handling equipment and two-person teams.',
+    whyItMatters: 'Rolling and throwing creates uncontrolled trajectory movement, repeated impact shocks, and edge destruction.',
   },
   {
     id: 'BEH-005',
     category: 'Process',
     name: 'Stepping or Standing on Cartons',
-    matchKeys: ['stepping on carton', 'stepping', 'standing', 'unstable stacking'],
+    matchKeys: ['stepping on carton', 'stepping', 'standing', 'crush hazard'],
     riskLevel: 'Critical',
     aiObservedBad: 'Operator stepping, walking, or standing directly on top of stored product packages.',
     expectedGoodPractice: 'Never step or stand on packages. Maintain clear designated walking paths.',
@@ -86,12 +86,52 @@ const TAXONOMY_DEFINITIONS: TaxonomyItem[] = [
   {
     id: 'BEH-006',
     category: 'Equipment',
-    name: 'Using Packaging Straps as Handles',
-    matchKeys: ['strap', 'packaging straps', 'handle strap'],
+    name: 'Using Packaging Straps as Lifting Handles',
+    matchKeys: ['strap', 'packaging straps', 'handle strap', 'strap pulling'],
     riskLevel: 'Medium',
     aiObservedBad: 'Lifting or pulling heavy cartons using plastic packaging securing straps.',
     expectedGoodPractice: 'Handle cartons using designated hand-holes or proper lifting equipment.',
     whyItMatters: 'Packaging straps can snap under tension, dropping the load instantly.',
+  },
+  {
+    id: 'BEH-007',
+    category: 'Stacking',
+    name: 'Unstable Stacking & Pallet Overhang',
+    matchKeys: ['unstable stacking', 'overhang', 'pallet overhang', 'load balance'],
+    riskLevel: 'High',
+    aiObservedBad: 'Boxes protruding beyond pallet perimeter edges without interlocking or stretch wrapping.',
+    expectedGoodPractice: 'Ensure all package edges align within pallet boundary and secure with stretch wrap.',
+    whyItMatters: 'Overhanging boxes snag against dock doors or adjacent forklift traffic, risking total load topple.',
+  },
+  {
+    id: 'BEH-008',
+    category: 'Process',
+    name: 'Off-Orientation Placement (Vertical Stored Horizontally)',
+    matchKeys: ['off-orientation', 'orientation', 'vertical', 'horizontal', 'labeling'],
+    riskLevel: 'Medium',
+    aiObservedBad: 'Products marked "This Side Up" stored horizontally or inverted against directional arrows.',
+    expectedGoodPractice: 'Orient packages strictly according to carton arrows and internal suspension design.',
+    whyItMatters: 'Incorrect orientation compromises internal cushioning and can cause internal fluid or glass breakage.',
+  },
+  {
+    id: 'BEH-009',
+    category: 'Handling',
+    name: 'Rough Handling & Excessive Impulse Acceleration',
+    matchKeys: ['rough handling', 'impulse', 'kinetic impulse', 'violent'],
+    riskLevel: 'High',
+    aiObservedBad: 'Rapid abrupt shoving, shoving pallets into dock walls, or aggressive forklift blade impact.',
+    expectedGoodPractice: 'Execute smooth acceleration and deceleration curves during all material transit.',
+    whyItMatters: 'Dynamic impulse spikes transmit directly through carton walls to sensitive internal components.',
+  },
+  {
+    id: 'BEH-010',
+    category: 'Process',
+    name: 'Unsafe Loading & Unloading Sequence',
+    matchKeys: ['unsafe loading', 'workflow', 'loading sequence', 'process violation'],
+    riskLevel: 'High',
+    aiObservedBad: 'Removing base supports before top cargo, creating unsupported overhangs inside container.',
+    expectedGoodPractice: 'Follow top-to-bottom step unloading and maintain a step-down load profile at all times.',
+    whyItMatters: 'Top-heavy unsupported cargo can collapse outward toward operators upon door opening.',
   }
 ];
 
@@ -151,25 +191,26 @@ export const BehaviourLibrary: React.FC = () => {
 
   const handleOpenVideoClip = (event: Event) => {
     let rawUrl = event.evidence_frame || event.video_reference || '';
-    let timestampSec = 0;
+    let timestampSec = extractVideoOffsetSeconds(event);
 
     if (rawUrl.includes('#t=')) {
       const parts = rawUrl.split('#t=');
       rawUrl = parts[0];
-      timestampSec = parseFloat(parts[1]) || 0;
-    } else if (event.timestamp != null) {
-      timestampSec = Number(event.timestamp) || 0;
+      const parsedTime = parseFloat(parts[1]);
+      if (!isNaN(parsedTime)) {
+        timestampSec = parsedTime;
+      }
     }
 
     if (!rawUrl || !rawUrl.endsWith('.mp4')) {
       const beh = (event.behaviour || '').toLowerCase();
       if (beh.includes('drop')) {
         rawUrl = '/videos/Rolling%20and%20dropping%20carton.mp4';
-      } else if (beh.includes('drag')) {
+      } else if (beh.includes('drag') || beh.includes('cupboard')) {
         rawUrl = '/videos/Dock%20level%2C%20dragging%20cupboard.mp4';
       } else if (beh.includes('stack')) {
         rawUrl = '/videos/Improper%20stacking.mp4';
-      } else if (beh.includes('mattress')) {
+      } else if (beh.includes('mattress') || beh.includes('throw')) {
         rawUrl = '/videos/throwing%20mattresses.mp4';
       } else if (beh.includes('step')) {
         rawUrl = '/videos/Stepping%20on%20carton.mp4';

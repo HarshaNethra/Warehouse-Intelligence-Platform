@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, AlertOctagon, X, ArrowUpRight, Volume2, VolumeX } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, X, ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRealtimeTelemetry } from '../hooks/useRealtimeTelemetry';
-import { soundSynthesizer } from '../utils/soundAlerts';
 
 export interface AlertNotification {
   id: string;
@@ -21,15 +20,20 @@ export const LiveAlertToast: React.FC = () => {
   const navigate = useNavigate();
   const { currentFrame } = useRealtimeTelemetry();
   const [alerts, setAlerts] = useState<AlertNotification[]>([]);
-  const [isMuted, setIsMuted] = useState<boolean>(soundSynthesizer.getMuted());
+  const lastAlertTimestampRef = useRef<number>(0);
 
-  // Listen for WebSocket Telemetry spikes
+  // Listen for WebSocket Telemetry spikes with throttle (at least 8 seconds between notifications)
   useEffect(() => {
     if (!currentFrame) return;
 
-    if (currentFrame.risk_score >= 60 || currentFrame.status === 'CRITICAL' || currentFrame.status === 'HIGH') {
+    const now = Date.now();
+    if (
+      (currentFrame.risk_score >= 70 || currentFrame.status === 'CRITICAL' || currentFrame.status === 'HIGH') &&
+      now - lastAlertTimestampRef.current > 8000
+    ) {
+      lastAlertTimestampRef.current = now;
       const newAlert: AlertNotification = {
-        id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        id: `alert-${now}-${Math.random().toString(36).substr(2, 4)}`,
         title: currentFrame.status === 'CRITICAL' ? 'Critical Safety Incident' : 'High Risk Anomaly Detected',
         bay: currentFrame.bay_id || 'Loading Bay 01',
         riskLevel: currentFrame.status === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
@@ -38,8 +42,7 @@ export const LiveAlertToast: React.FC = () => {
         timestamp: new Date().toLocaleTimeString(),
       };
 
-      setAlerts((prev) => [newAlert, ...prev.slice(0, 2)]);
-      soundSynthesizer.playAlert(newAlert.riskLevel);
+      setAlerts((prev) => [newAlert, ...prev.slice(0, 1)]);
     }
   }, [currentFrame]);
 
@@ -47,8 +50,7 @@ export const LiveAlertToast: React.FC = () => {
   useEffect(() => {
     const handleCustomAlert = (e: CustomEvent<AlertNotification>) => {
       if (e.detail) {
-        setAlerts((prev) => [e.detail, ...prev.slice(0, 2)]);
-        soundSynthesizer.playAlert(e.detail.riskLevel);
+        setAlerts((prev) => [e.detail, ...prev.slice(0, 1)]);
       }
     };
 
@@ -58,12 +60,6 @@ export const LiveAlertToast: React.FC = () => {
 
   const handleDismiss = (id: string) => {
     setAlerts((prev) => prev.filter((a) => a.id !== id));
-  };
-
-  const handleToggleMute = () => {
-    const nextMuted = !isMuted;
-    setIsMuted(nextMuted);
-    soundSynthesizer.setMuted(nextMuted);
   };
 
   const handleInspect = (alert: AlertNotification) => {
@@ -113,14 +109,6 @@ export const LiveAlertToast: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={handleToggleMute}
-                    title={isMuted ? 'Unmute alerts' : 'Mute alerts'}
-                    className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors"
-                  >
-                    {isMuted ? <VolumeX className="w-3.5 h-3.5 text-slate-400" /> : <Volume2 className="w-3.5 h-3.5 text-blue-600" />}
-                  </button>
                   <button
                     type="button"
                     onClick={() => handleDismiss(alert.id)}

@@ -70,10 +70,10 @@ export const RiskTimeline: React.FC<RiskTimelineProps> = ({
     if (payload.isPeakMaxima) {
       return (
         <g key={`dot-${payload.timestamp}`}>
-          <circle cx={cx} cy={cy} r={6} fill="#ef4444" stroke="#ffffff" strokeWidth={2} className="animate-pulse" />
-          <text x={cx} y={cy - 10} textAnchor="middle" fill="#f87171" fontSize={10} fontWeight="bold" fontFamily="monospace">
-            {payload.timestamp}s: {payload.riskScore}%
-          </text>
+          {/* Subtle Outer Glow Ring */}
+          <circle cx={cx} cy={cy} r={8} fill="#ef4444" fillOpacity={0.25} />
+          {/* Crisp Inner High-Risk Node */}
+          <circle cx={cx} cy={cy} r={4.5} fill="#ef4444" stroke="#ffffff" strokeWidth={2} />
         </g>
       );
     }
@@ -134,7 +134,7 @@ export const RiskTimeline: React.FC<RiskTimelineProps> = ({
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
-            margin={{ top: 18, right: 10, left: -20, bottom: 0 }}
+            margin={{ top: 22, right: 20, left: -20, bottom: 0 }}
             onClick={handleChartClick}
           >
             <defs>
@@ -154,10 +154,14 @@ export const RiskTimeline: React.FC<RiskTimelineProps> = ({
                   const data = payload[0].payload;
                   return (
                     <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xl text-xs font-mono space-y-1 text-slate-900">
-                      <p className="font-bold text-slate-900">Timecode: {data.timestamp}s</p>
-                      <p className="text-red-600 font-bold">Risk Score R(t): {data.riskScore}%</p>
-                      {data.event && <p className="text-amber-700 text-[11px] font-sans font-medium">{data.event}</p>}
-                      <p className="text-slate-500 text-[10px]">Click point to seek video & auto-play</p>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-bold text-slate-900">Time: {data.timestamp}s</span>
+                        <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${data.riskScore >= 80 ? 'bg-red-100 text-red-700' : data.riskScore >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                          {data.riskScore}%
+                        </span>
+                      </div>
+                      {data.event && <p className="text-slate-700 text-[11px] font-sans font-medium">{data.event}</p>}
+                      <p className="text-blue-600 text-[10px] font-sans">Click to jump video to {data.timestamp}s</p>
                     </div>
                   );
                 }
@@ -168,12 +172,13 @@ export const RiskTimeline: React.FC<RiskTimelineProps> = ({
             <ReferenceLine y={35} stroke="#f59e0b" strokeDasharray="3 3" />
             <ReferenceLine y={80} stroke="#ef4444" strokeDasharray="3 3" />
             
-            {/* Synchronized Real-Time Playhead Cursor */}
+            {/* Synchronized Real-Time Playhead Cursor (Blue Seek Line) */}
             <ReferenceLine 
               x={roundedCurrentTime} 
-              stroke="#ef4444" 
-              strokeWidth={2} 
-              label={{ value: `▶ ${roundedCurrentTime}s`, fill: '#ef4444', fontSize: 10, position: 'top' }} 
+              stroke="#2563eb" 
+              strokeWidth={2}
+              strokeDasharray="4 2" 
+              label={{ value: `▶ ${roundedCurrentTime}s`, fill: '#2563eb', fontSize: 10, fontWeight: 'bold', position: 'top' }} 
             />
 
             <Area 

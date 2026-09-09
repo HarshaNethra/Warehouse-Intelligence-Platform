@@ -16,15 +16,12 @@ import {
   BookOpen,
   Truck,
   Search,
-  ChevronDown,
-  Volume2,
-  VolumeX
+  ChevronDown
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UrgentAlertsDropdown } from './UrgentAlertsDropdown';
 import { FloatingChatbot } from './FloatingChatbot';
 import { LiveAlertToast } from './LiveAlertToast';
-import { soundSynthesizer } from '../utils/soundAlerts';
 import { useAuth } from '../context/AuthContext';
 import { getEvents } from '../api/events';
 import { getFacilities, type Facility } from '../api/facilities';
@@ -45,14 +42,6 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
   const [, setFacilities] = useState<Facility[]>([]);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [globalQuery, setGlobalQuery] = useState('');
-  const [isAlertAudioMuted, setIsAlertAudioMuted] = useState<boolean>(() => soundSynthesizer.getMuted());
-
-  const handleToggleAudio = () => {
-    const next = !isAlertAudioMuted;
-    setIsAlertAudioMuted(next);
-    soundSynthesizer.setMuted(next);
-  };
-
   const [readIds, setReadIds] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(READ_NOTIFICATIONS_KEY);
@@ -381,20 +370,6 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
 
           {/* Right Header Actions */}
           <div className="flex items-center gap-3">
-            {/* Real-time Hazard Audio Synth Alarm Toggle */}
-            <button
-              type="button"
-              onClick={handleToggleAudio}
-              className={`p-2 rounded-full border transition-all ${
-                isAlertAudioMuted
-                  ? 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
-                  : 'bg-blue-50 text-blue-600 border-blue-200 shadow-2xs hover:bg-blue-100'
-              }`}
-              title={isAlertAudioMuted ? "Unmute Hazard Audio Alarms" : "Mute Hazard Audio Alarms"}
-            >
-              {isAlertAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </button>
-
             <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-semibold text-emerald-800">AI Vision Active</span>

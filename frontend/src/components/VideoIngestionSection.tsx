@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, FileVideo, RefreshCw, ShieldAlert, Film, Sparkles, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateTelemetryForVideo, type VideoTelemetryPayload } from '../types/telemetry';
-import { createEvent } from '../api/events';
 
 export interface VideoIngestionSectionProps {
   onVideoSelect?: (video: VideoTelemetryPayload) => void;
@@ -46,22 +45,6 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
 
           if (payload.riskLevel === 'High' || payload.riskLevel === 'Critical') {
             setActiveAlert(`Critical Handling Risk Detected: ${payload.behaviors.join(', ')} in ${payload.title}`);
-            
-            // Persist detected incident directly to database
-            void createEvent({
-              facility_id: 'FAC-001',
-              video_id: payload.filename || payload.id,
-              bay_id: payload.bay || 'Loading Bay 01',
-              camera_id: 'CAM-01',
-              behaviour: payload.behaviors[0] || 'Material Handling Risk',
-              risk_score: payload.riskScore,
-              risk_level: payload.riskLevel,
-              timestamp: Date.now() / 1000,
-              timestamp_seconds: payload.duration * 0.3,
-              description: `Real-time optical anomaly: ${payload.behaviors.join(', ')} detected in ${payload.bay}.`,
-              reason: `Automated YOLO11 kinematic impulse threshold exceeded (${payload.riskScore.toFixed(1)}%).`,
-              recommended_action: `Inspect package structural integrity and enforce controlled handling at ${payload.bay}.`
-            }).catch((err) => console.warn('Incident persistence log:', err));
           } else {
             setActiveAlert(null);
           }

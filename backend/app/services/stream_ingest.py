@@ -59,19 +59,6 @@ class RTSPInferencePipeline(threading.Thread):
                 "status": "CRITICAL" if is_anomaly else "NOMINAL"
             }
 
-            # If an anomaly is detected, persist it instantly into ChromaDB vector memory
-            if is_anomaly and frame_idx % 30 == 0:
-                incident_id = f"EVT-{int(timestamp)}"
-                summary = f"High kinematic anomaly in {self.bay_id}. Peak risk score reached {calculated_risk}% at timestamp {relative_seconds}s."
-                try:
-                    rag_vector_store.add_incident(
-                        incident_id=incident_id,
-                        summary_text=summary,
-                        metadata={"bay_id": self.bay_id, "risk_score": calculated_risk, "risk_level": "Critical"}
-                    )
-                except Exception as err:
-                    print(f"[RTSPInferencePipeline] ChromaDB index error: {err}")
-
             # Broadcast frame telemetry asynchronously
             try:
                 try:
