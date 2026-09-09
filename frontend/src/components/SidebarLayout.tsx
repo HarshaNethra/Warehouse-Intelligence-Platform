@@ -435,8 +435,8 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
         </main>
       </div>
 
-      {/* Floating Global AI Chatbot Widget */}
-      {location.pathname !== '/assistant' && <FloatingChatbot />}
+      {/* Floating Global AI Chatbot Widget (suppressed on routes with dedicated chat views) */}
+      {location.pathname !== '/assistant' && !location.pathname.startsWith('/incident') && <FloatingChatbot />}
     </div>
   );
 };

@@ -6,6 +6,12 @@ from sqlalchemy.orm import Session
 from app.services.rule_engine import SafetyRuleEngine
 from app.db.models import TelemetryPoint
 
+# Supported warehouse class mapping
+CLASS_NAMES = [
+    "person", "carton", "pallet", "forklift", "pallet_jack", 
+    "trolley", "mattress", "truck", "dock_gap", "strap"
+]
+
 import hashlib
 from pathlib import Path
 
@@ -13,17 +19,11 @@ class ModelLoadError(Exception):
     """Raised when real YOLO ML model weights fail to load or hash verification fails."""
     pass
 
-# Canonical trained model class mapping (models/best.pt)
-CANONICAL_CLASS_MAP = {
-    0: "person",
-    1: "carton",
-    2: "pallet",
-    3: "pallet_jack",
-    4: "forklift",
-    5: "trolley",
-    6: "truck"
-}
-CLASS_NAMES = [CANONICAL_CLASS_MAP[i] for i in range(len(CANONICAL_CLASS_MAP))]
+# Supported warehouse class mapping
+CLASS_NAMES = [
+    "person", "carton", "pallet", "forklift", "pallet_jack", 
+    "trolley", "mattress", "truck", "dock_gap", "strap"
+]
 
 try:
     from ultralytics import YOLO
@@ -115,10 +115,7 @@ class MultiModelInferencePipeline:
             if boxes is not None:
                 for i in range(len(boxes)):
                     cls_id = int(boxes.cls[i].item())
-                    if hasattr(self.det_model, "names") and isinstance(self.det_model.names, dict):
-                        cls_name = self.det_model.names.get(cls_id, CANONICAL_CLASS_MAP.get(cls_id, f"class_{cls_id}"))
-                    else:
-                        cls_name = CANONICAL_CLASS_MAP.get(cls_id, f"class_{cls_id}")
+                    cls_name = CLASS_NAMES[cls_id] if cls_id < len(CLASS_NAMES) else f"class_{cls_id}"
                     track_id = int(boxes.id[i].item()) if boxes.id is not None else i + 100
                     xyxy = boxes.xyxy[i].tolist()
                     detections.append({

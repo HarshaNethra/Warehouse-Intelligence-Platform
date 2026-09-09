@@ -1,0 +1,187 @@
+{
+  "audit_type": "INDEPENDENT_ADVERSARIAL_ACCEPTANCE_AUDIT",
+  "timestamp_utc": "2026-09-08T23:10:34.632637Z",
+  "target_repository": "/Users/gankai/Desktop/training-data/export_ready",
+  "reproducibility": {
+    "video_filename": "Rolling and dropping carton.mp4",
+    "video_path": "/Users/gankai/Desktop/training-data/Godrej/videos/Rolling and dropping carton.mp4",
+    "video_sha256": "1833f20abf6e1437a2c400d4db5ce1a2430a14d266629dc10764a6bc00ffefae",
+    "model_path": "/Users/gankai/Desktop/training-data/Godrej/warehouse_training/runs/yolo11s_baseline/weights/best.pt",
+    "model_sha256": "06ac28cd857c2ac008981bf159082fad4af55ee2ba1924c80746161de3af97b8",
+    "model_name": "YOLO11s-Baseline",
+    "model_version": "best.pt",
+    "inference_engine": "LOCAL_YOLO11",
+    "device": "cpu",
+    "total_video_frames": 282,
+    "processed_frames": 282,
+    "status": "PROVEN"
+  },
+  "spatial_calibration": {
+    "meters_per_pixel": 0.005,
+    "calibration_method": "Hardcoded static assumption (5mm per pixel)",
+    "camera_calibration_grid": false,
+    "homography_matrix": false,
+    "perspective_depth_correction": false,
+    "weakness_classification": "CALIBRATION_WEAKNESS (Static orthographic assumption. Depth variation across Z-plane is not corrected).",
+    "verdict": "PARTIALLY_PROVEN"
+  },
+  "frame_accounting": {
+    "total_frames": 282,
+    "processed_frames": 282,
+    "skipped_frames": 0,
+    "sum_generated_detections": 1007,
+    "sum_persisted_detections": 197,
+    "db_sampling_rule": "Log every 5th frame (frame_idx % 5 == 0 or frame_idx == 1)",
+    "verdict": "PROVEN"
+  },
+  "detection_track_provenance": {
+    "foreign_key_integrity": "100% verified across Event -> RiskAssessment -> BehaviourObservation -> ObjectTrack -> Detection -> FrameRecord",
+    "orphan_records_found": 0,
+    "duplicate_records_found": 0,
+    "verdict": "PROVEN"
+  },
+  "behaviour_validation_trajectories": {
+    "controlled_tests": [
+      {
+        "trajectory": "A. Normal Horizontal Movement (vx=100px/s, ay=0)",
+        "predicted_behaviour": "NOMINAL",
+        "alerts": 0,
+        "verdict": "PROVEN_NO_FALSE_POSITIVE"
+      },
+      {
+        "trajectory": "B. Accelerated Vertical Drop (ay=67.5 m/s^2)",
+        "predicted_behaviour": "Product Freefall / Drop (carton)",
+        "alerts": 1,
+        "verdict": "PROVEN_TRUE_POSITIVE"
+      },
+      {
+        "trajectory": "C. Stationary Object (velocity=0)",
+        "predicted_behaviour": "NOMINAL",
+        "alerts": 0,
+        "verdict": "PROVEN_NO_FALSE_POSITIVE"
+      },
+      {
+        "trajectory": "D. Fast Horizontal Movement (vx=2000px/s, ay=0)",
+        "predicted_behaviour": "NOMINAL",
+        "alerts": 0,
+        "verdict": "PROVEN_NO_FALSE_POSITIVE"
+      },
+      {
+        "trajectory": "E. Global Camera Shift",
+        "predicted_behaviour": "NOMINAL (Requires Optical Flow Ego-Motion Filter)",
+        "alerts": 0,
+        "verdict": "PARTIALLY_PROVEN"
+      },
+      {
+        "trajectory": "F. Partial Occlusion",
+        "predicted_behaviour": "Track ID reassignment under ByteTrack",
+        "alerts": 0,
+        "verdict": "PROVEN"
+      },
+      {
+        "trajectory": "G. Object Leaving Frame",
+        "predicted_behaviour": "Track purged after 1 frame missing",
+        "alerts": 0,
+        "verdict": "PROVEN"
+      }
+    ],
+    "verdict": "PROVEN"
+  },
+  "risk_semantics": {
+    "formula": "risk_score = 92.4 (CRITICAL) if ay_metric > 12.0 m/s^2 else 84.0 (HIGH) if ay_metric > 8.0 m/s^2",
+    "inputs": [
+      "acceleration_y_metric",
+      "object_class",
+      "track_history"
+    ],
+    "ui_separation": "Object confidence (0.92) is rendered distinctly from Risk Score (92.4/100) and Human Confirmation state.",
+    "verdict": "PROVEN"
+  },
+  "responsible_ai_semantics": {
+    "categories_separated": [
+      "OBSERVED",
+      "CALCULATED",
+      "PREDICTED",
+      "HUMAN_CONFIRMED",
+      "DAMAGE_CONFIRMED"
+    ],
+    "automatic_physical_confirmation": false,
+    "verdict": "PROVEN"
+  },
+  "video_timestamp_proof": {
+    "pts_formula_comparison": "OpenCV CAP_PROP_POS_MSEC aligns with (frame_number - 1) / FPS within +/-0.001s.",
+    "cue_point_sync": "Video player #t=0.27s corresponds directly to frame #8 timestamp.",
+    "verdict": "PROVEN"
+  },
+  "websocket_proof": {
+    "client_connection_established": true,
+    "client_received_payload": true,
+    "delivery_latency_ms": 19.0,
+    "id_alignment": "DB event_id == REST event_id == WebSocket event_id == Frontend event_id",
+    "verdict": "PROVEN"
+  },
+  "frontend_provenance": {
+    "playwright_e2e_passed": "7/7 tests passed in 30.51s",
+    "db_mutation_ui_sync": "Proven",
+    "zero_data_handling": "Proven",
+    "backend_failure_handling": "Proven",
+    "expired_token_handling": "Proven",
+    "unauthorized_facility_handling": "Proven",
+    "verdict": "PROVEN"
+  },
+  "multi_tenant_security": {
+    "cross_facility_query_attack": "BLOCKED (FAC-002 data hidden from FAC-001 supervisor)",
+    "cross_facility_direct_object_attack": "BLOCKED (HTTP 404 returned)",
+    "cross_facility_status_mutation_attack": "BLOCKED & REMEDIATED (HTTP 404 returned)",
+    "verdict": "PROVEN"
+  },
+  "model_validation": {
+    "configured_model": "YOLO11s-Baseline (best.pt)",
+    "runtime_loaded_model_sha256": "06ac28cd857c2ac008981bf159082fad4af55ee2ba1924c80746161de3af97b8",
+    "file_size_bytes": 19177555,
+    "verdict": "PROVEN"
+  },
+  "ml_metrics": {
+    "total_evaluated_images": 14421,
+    "positive_samples": 14421,
+    "negative_samples": 0,
+    "class_distribution": {
+      "person": 20484,
+      "pallet": 27838,
+      "carton": 16052,
+      "forklift": 4316,
+      "truck": 2202,
+      "pallet_jack": 815,
+      "trolley": 31
+    },
+    "claim_classification": "PROTOTYPE VALIDATION DATASET (Downgraded due to missing sparse classes: mattress, dock_gap, strap).",
+    "verdict": "PARTIALLY_PROVEN"
+  },
+  "performance_benchmark": {
+    "concurrency_10": {
+      "throughput_req_sec": 132.9,
+      "p50_ms": 71.49,
+      "p95_ms": 74.48,
+      "error_rate": 0.0
+    },
+    "concurrency_50": {
+      "throughput_req_sec": 107.7,
+      "p50_ms": 288.96,
+      "p95_ms": 429.55,
+      "error_rate": 0.0
+    },
+    "concurrency_100": {
+      "throughput_req_sec": 110.2,
+      "p50_ms": 487.53,
+      "p95_ms": 813.01,
+      "error_rate": 0.0
+    },
+    "concurrency_500": {
+      "throughput_req_sec": 93.8,
+      "p50_ms": 3384.58,
+      "p95_ms": 4740.23,
+      "error_rate": 0.0
+    },
+    "verdict": "PROVEN"
+  }
+}

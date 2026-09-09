@@ -1,25 +1,26 @@
 import sys
 from pathlib import Path
 
-# Ensure backend directory and project root are in sys.path so 'app', 'behaviour_engine', and 'risk_engine' are always resolvable
+# Ensure backend directory is in sys.path so 'app' package is always resolvable
 backend_dir = Path(__file__).resolve().parent.parent
-project_root = backend_dir.parent
-for p in [str(backend_dir), str(project_root)]:
-    if p not in sys.path:
-        sys.path.insert(0, p)
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db.database import engine, Base, SessionLocal
 from app.db.seed import init_db
-from app.api import health, videos, events, analytics, assistant, routes, auth, ml_metrics, facilities, safety_rules, pipeline
+from app.api import health, videos, events, analytics, assistant, routes, auth, ml_metrics, facilities, safety_rules
 from app.services.websocket_manager import ws_router
 
 from fastapi.staticfiles import StaticFiles
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f'[Main] Table init notice: {e}')
 
 # Auto-seed default facility and demo user accounts on startup
 try:
@@ -31,12 +32,7 @@ except Exception as e:
 app = FastAPI(title=settings.TITLE, version=settings.VERSION)
 
 # Mount static videos folder if available
-candidates_videos = [
-    project_root / "videos",
-    backend_dir / "storage" / "videos",
-    Path.cwd() / "videos",
-]
-godrej_videos_dir = next((p for p in candidates_videos if p.exists() and p.is_dir()), project_root / "videos")
+godrej_videos_dir = backend_dir.parent.parent / "Godrej" / "videos"
 if godrej_videos_dir.exists():
     app.mount("/static/videos", StaticFiles(directory=str(godrej_videos_dir)), name="videos")
 
@@ -494,9 +490,7 @@ app.include_router(events.router, prefix=settings.API_PREFIX, tags=["events"])
 app.include_router(analytics.router, prefix=settings.API_PREFIX, tags=["analytics"])
 app.include_router(assistant.router, prefix=settings.API_PREFIX, tags=["assistant"])
 app.include_router(ml_metrics.router, prefix=f"{settings.API_PREFIX}/ml", tags=["ml"])
-app.include_router(ml_metrics.router, prefix=settings.API_PREFIX, tags=["ml"])
 app.include_router(routes.router, prefix=settings.API_PREFIX, tags=["routes"])
-app.include_router(pipeline.router, prefix=settings.API_PREFIX, tags=["pipeline"])
 app.include_router(ws_router, tags=["websocket"])
 
 if __name__ == "__main__":

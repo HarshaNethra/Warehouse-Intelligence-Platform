@@ -1,15 +1,37 @@
-# ==============================================================================
-# Warehouse Intelligence Platform - Git Ignore Rules
-# ==============================================================================
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
 
-# ------------------------------------------------------------------------------
-# 1. Python & Virtual Environments
-# ------------------------------------------------------------------------------
+# Node / Frontend dependencies and build outputs
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+dist-ssr/
+*.local
+
+# Node package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Python bytecode and cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Python virtual environments
 .venv/
 venv/
 ENV/
@@ -17,146 +39,43 @@ env/
 env.bak/
 venv.bak/
 
-# ------------------------------------------------------------------------------
-# 2. Testing, Coverage & Type Checking
-# ------------------------------------------------------------------------------
-.pytest_cache/
-**/.pytest_cache/
-.coverage
-htmlcov/
-.mypy_cache/
-.ruff_cache/
-
-# ------------------------------------------------------------------------------
-# 3. Frontend & Node.js
-# ------------------------------------------------------------------------------
-node_modules/
-**/node_modules/
-dist/
-**/dist/
-build/
-**/build/
-.output/
-.next/
-.nuxt/
-.turbo/
-.parcel-cache/
-*.tsbuildinfo
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# ------------------------------------------------------------------------------
-# 4. Secrets & Local Environment Configs
-# ------------------------------------------------------------------------------
-.env
-.env.*
-*.env
-!.env.example
-!.env.template
-
-# ------------------------------------------------------------------------------
-# 5. Databases, Local Storage & Backups
-# ------------------------------------------------------------------------------
+# Databases and runtime data
 *.db
-*.db-journal
-*.db-wal
-*.db-shm
 *.sqlite
 *.sqlite3
-*.backup
-*.clean_canonical_*
-warehouse.db*
-backend/warehouse.db*
-backend/*.db*
-backend/storage/
-backend/test_outputs/
+backend/warehouse.db
+backend/data/*.db
 
-# ------------------------------------------------------------------------------
-# 6. Video & Heavy Media Files (Transferred Out-of-Band)
-# ------------------------------------------------------------------------------
-videos/*.mp4
-videos/*.avi
-videos/*.mov
-videos/*.mkv
-videos/*.webm
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.webm
-*.webp
-frontend/public/videos/
-frontend/dist/videos/
-backend/storage/videos/
-
-# ------------------------------------------------------------------------------
-# 7. Machine Learning Model Weights & Checkpoints
-# ------------------------------------------------------------------------------
+# Large media / datasets / model weights (preserving directory structures via .gitkeep)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/trajectories/*
+!data/trajectories/.gitkeep
+data/events/*
+!data/events/.gitkeep
+data/database/*
+!data/database/.gitkeep
+models/*
+!models/.gitkeep
 *.pt
 *.pth
+*.bin
 *.onnx
 *.weights
-*.safetensors
-*.bin
-models/*.pt
-models/*.pth
-models/*.onnx
-runs/
-**/runs/
+*.h5
 
-# ------------------------------------------------------------------------------
-# 8. Large Datasets, Extracted Frames & Training Caches
-# ------------------------------------------------------------------------------
-Logistics-2/
-Warehouse-1/
-Warehouse-Item-1/
-warehouse_training/MASTER_PUBLIC_V1/
-warehouse_training/processed/
-warehouse_training/runs/
-warehouse_training/*.cache
-*.cache
-
-# ------------------------------------------------------------------------------
-# 9. Generated Inspection Frames & Images
-# ------------------------------------------------------------------------------
-analytics/*.jpg
-analytics/*.png
-analytics/inspection_frames/
-
-# ------------------------------------------------------------------------------
-# 10. Trajectory Backups & Experimental Runs
-# ------------------------------------------------------------------------------
-data/Trajectories/*backup*/
-data/Trajectories_yolo11s_backup/
-data/Trajectories_yolo26n/
-data/Trajectories/baseline_backup/
-
-# ------------------------------------------------------------------------------
-# 11. Scratch, Notebooks & Temporary Files
-# ------------------------------------------------------------------------------
-scratch/
-.ipynb_checkpoints/
-**/.ipynb_checkpoints/
-warehouse_training/\!11.ipynb
-warehouse_training/!11.ipynb
-*.zip
-*.tar.gz
-
-# ------------------------------------------------------------------------------
-# 12. Local Iteration Dumps & Embedded Repositories
-# ------------------------------------------------------------------------------
-1/
-2/
-
-# ------------------------------------------------------------------------------
-# 13. IDE, OS & Agent Tool Artifacts
-# ------------------------------------------------------------------------------
-.vscode/
-.idea/
+# OS generated files
 .DS_Store
 Thumbs.db
 desktop.ini
-.codegraph/
-.serena/
+
+# IDEs and editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+

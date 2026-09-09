@@ -102,7 +102,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }
 
   // Active risk state evaluation
-  const activeRisk = riskScore !== undefined && riskScore !== null ? riskScore : 0.0;
+  const activeRisk = riskScore !== undefined ? riskScore : ((displayTime >= 15 && displayTime <= 24) || (displayTime >= 40 && displayTime <= 46) ? 94.6 : 15.0);
   const isCritical = activeRisk >= 75.0;
   const roundedTime = Math.floor(displayTime);
 

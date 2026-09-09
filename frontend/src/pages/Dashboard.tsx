@@ -209,41 +209,33 @@ export const Dashboard: React.FC = () => {
           <div className="p-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> Loading live event feed...
           </div>
-        ) : events.length === 0 ? (
-          <div className="p-6 text-center text-xs text-slate-400 font-mono bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            No active anomalies detected across monitored bays. System operating normally.
-          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {events.slice(0, 3).map((e) => {
-              const rLevel = (e.risk_level || '').toLowerCase();
-              return (
-                <Link
-                  key={e.event_id}
-                  to={`/incident/${e.event_id}`}
-                  className="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-all block group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-bold text-slate-500">#{e.event_id}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${
-                      rLevel === 'critical' ? 'bg-rose-100 text-rose-800' :
-                      rLevel === 'high' ? 'bg-amber-100 text-amber-800' :
-                      rLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-emerald-100 text-emerald-800'
-                    }`}>
-                      {e.risk_level} ({e.risk_score}%)
-                    </span>
-                  </div>
-                  <p className="text-xs font-bold text-slate-900 mt-1 truncate group-hover:text-blue-600 transition-colors">
-                    {e.behaviour}
-                  </p>
-                  <p className="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center justify-between">
-                    <span>{e.bay_id || 'Loading Bay 01'}</span>
-                    <span>{formatTimestamp(e.timestamp)}</span>
-                  </p>
-                </Link>
-              );
-            })}
+            {events.slice(0, 3).map((e) => (
+              <Link
+                key={e.event_id}
+                to={`/incident/${e.event_id}`}
+                className="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-all block group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold text-slate-500">#{e.event_id}</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${
+                    e.risk_level === 'Critical' ? 'bg-rose-100 text-rose-800' :
+                    e.risk_level === 'High' ? 'bg-amber-100 text-amber-800' :
+                    'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {e.risk_level} ({e.risk_score}%)
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-slate-900 mt-1 truncate group-hover:text-blue-600 transition-colors">
+                  {e.behaviour}
+                </p>
+                <p className="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center justify-between">
+                  <span>{e.bay_id || 'Loading Bay 01'}</span>
+                  <span>{formatTimestamp(e.timestamp)}</span>
+                </p>
+              </Link>
+            ))}
           </div>
         )}
       </div>

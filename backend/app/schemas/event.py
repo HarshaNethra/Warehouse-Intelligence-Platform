@@ -1,10 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from typing import Optional, List, Union
 from datetime import datetime
 
 class VideoMetadataBase(BaseModel):
     video_id: str
-    camera_id: Optional[str] = None
     filename: Optional[str] = None
     frame_count: int
     fps: float
@@ -19,7 +18,8 @@ class VideoMetadataCreate(VideoMetadataBase):
 class VideoMetadata(VideoMetadataBase):
     created_at: Optional[datetime] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 class EventBase(BaseModel):
     event_id: str
@@ -63,7 +63,8 @@ class EventCreate(EventBase):
 class Event(EventBase):
     created_at: Optional[datetime] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class InferenceRunBase(BaseModel):
@@ -84,4 +85,5 @@ class InferenceRun(InferenceRunBase):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True

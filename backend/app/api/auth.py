@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 from app.db.database import get_db
@@ -24,7 +24,8 @@ class UserOut(BaseModel):
     role: str
     facility_id: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class TokenResponse(BaseModel):

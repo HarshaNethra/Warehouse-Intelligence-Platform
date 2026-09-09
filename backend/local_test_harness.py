@@ -214,7 +214,11 @@ async def step4_ai_assistant_grounding(user_query, events_file):
         "If an answer is not in the log, state that no such event was recorded."
     )
 
-    full_prompt = f"LOGGED EVENTS DATABASE:\n{json.dumps(events_context, indent=2)}\n\nSupervisor Question: {user_query}"
+    events_summary = [
+        f"[{e.get('event_id')} | {e.get('bay_id')} | {e.get('risk_level')} | {e.get('behavior_type')} | {e.get('details')}]"
+        for e in events_context[:8]
+    ]
+    full_prompt = f"LOGGED EVENTS:\n" + "\n".join(events_summary) + f"\n\nSupervisor Question: {user_query}"
 
     if not gemini_client.is_configured():
         print("⚠️ Gemini API Key not set. Running in local zero-cost fallback mode.")
@@ -247,8 +251,9 @@ async def main():
     # 3. Alerting Engine Verification
     alerts_file = step3_alert_engine_verification(events_file)
     
-    # 4. AI Assistant Grounding Queries
+    # 4. AI Assistant Grounding Queries (paced safely to protect 15 RPM quota)
     await step4_ai_assistant_grounding("Show me all high-risk events recorded today.", events_file)
+    await asyncio.sleep(1.5)
     await step4_ai_assistant_grounding("Why was event EVT-1001 classified as high risk?", events_file)
 
     print("=" * 70)

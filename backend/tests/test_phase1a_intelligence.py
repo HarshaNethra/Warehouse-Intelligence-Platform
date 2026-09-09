@@ -200,14 +200,9 @@ def test_analytics_and_fixture_filtering_intact(in_memory_db):
 
 
 def test_database_migration_row_count_integrity():
-    """Test 12: Database migration safety check on backend/warehouse.db."""
-    from pathlib import Path
-    backend_dir = Path(__file__).resolve().parent.parent
-    db_path = backend_dir / "warehouse.db"
-    if not db_path.exists():
-        pytest.skip("warehouse.db does not exist in backend directory")
-
-    conn = sqlite3.connect(str(db_path))
+    """Test 12: Database migration safety check on backend/warehouse.db (before row count == after row count)."""
+    db_path = "/Users/gankai/Desktop/training-data/export_ready/backend/warehouse.db"
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     cursor.execute("SELECT COUNT(*) FROM inference_runs")
@@ -216,7 +211,11 @@ def test_database_migration_row_count_integrity():
     cursor.execute("SELECT COUNT(*) FROM events")
     evt_count = cursor.fetchone()[0]
 
+    cursor.execute("SELECT COUNT(*) FROM detections")
+    det_count = cursor.fetchone()[0]
+
     conn.close()
 
-    assert inf_count >= 0
-    assert evt_count >= 0
+    assert inf_count == 6
+    assert evt_count == 20
+    assert det_count == 528

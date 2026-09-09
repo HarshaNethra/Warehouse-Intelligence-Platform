@@ -6,7 +6,7 @@ import datetime
 from app.db.database import get_db
 from app.db import models
 from app.api.deps import get_current_user
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -21,7 +21,8 @@ class CameraDTO(BaseModel):
     status: str
     last_seen_at: Optional[datetime.datetime] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class LoadingBayDTO(BaseModel):
@@ -35,7 +36,8 @@ class LoadingBayDTO(BaseModel):
     latest_incident_behaviour: Optional[str] = None
     risk_level: str = "Low"
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class FacilityDTO(BaseModel):
@@ -46,7 +48,8 @@ class FacilityDTO(BaseModel):
     timezone: str = "Asia/Kolkata"
     status: str = "ACTIVE"
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 @router.get("/facilities", response_model=List[FacilityDTO])

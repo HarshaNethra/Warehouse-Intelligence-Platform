@@ -6,7 +6,6 @@ from io import StringIO
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
 from typing import List, Optional
 from pydantic import BaseModel
 from app.db.database import get_db
@@ -33,19 +32,14 @@ def get_events(
     query = db.query(models.Event)
 
     if current_user and current_user.facility_id and current_user.role != "ADMIN":
-        query = query.filter(or_(models.Event.facility_id == current_user.facility_id, models.Event.facility_id.is_(None)))
+        query = query.filter(models.Event.facility_id == current_user.facility_id)
         if facility_id:
             query = query.filter(models.Event.facility_id == facility_id)
     elif facility_id:
         query = query.filter(models.Event.facility_id == facility_id)
     
     if risk_level and risk_level.strip().upper() != "ALL":
-        clean_risk = risk_level.strip()
-        if "/" in clean_risk or "," in clean_risk:
-            levels = [lvl.strip() for lvl in clean_risk.replace("/", ",").split(",") if lvl.strip()]
-            query = query.filter(or_(*[models.Event.risk_level.ilike(lvl) for lvl in levels]))
-        else:
-            query = query.filter(models.Event.risk_level.ilike(clean_risk))
+        query = query.filter(models.Event.risk_level.ilike(risk_level.strip()))
     if behaviour:
         query = query.filter(models.Event.behaviour.ilike(f"%{behaviour}%"))
     if bay_id:
@@ -76,7 +70,7 @@ def export_events_csv(
     if facility_id:
         query = query.filter(models.Event.facility_id == facility_id)
     elif current_user and current_user.facility_id and current_user.role != "ADMIN":
-        query = query.filter(or_(models.Event.facility_id == current_user.facility_id, models.Event.facility_id.is_(None)))
+        query = query.filter(models.Event.facility_id == current_user.facility_id)
     events = query.order_by(models.Event.timestamp.desc()).all()
     
     output = StringIO()
@@ -109,7 +103,7 @@ def get_event(
 ):
     query = db.query(models.Event).filter(models.Event.event_id == event_id)
     if current_user and current_user.facility_id and current_user.role != "ADMIN":
-        query = query.filter(or_(models.Event.facility_id == current_user.facility_id, models.Event.facility_id.is_(None)))
+        query = query.filter(models.Event.facility_id == current_user.facility_id)
     event = query.first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -119,8 +113,6 @@ def get_event(
 class StatusChangePayload(BaseModel):
     status: str
     comment: Optional[str] = None
-
-StatusUpdateRequest = StatusChangePayload
 
 
 VALID_TRANSITIONS = {
@@ -269,4 +261,3 @@ def create_event(
     db.commit()
     db.refresh(db_event)
     return db_event
-

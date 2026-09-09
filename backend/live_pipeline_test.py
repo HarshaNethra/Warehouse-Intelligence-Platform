@@ -208,13 +208,19 @@ async def run_live_pipeline_test():
     print("-" * 75)
 
     # Test Live Gemini Assistant Query
-    print("\n💬 TESTING LIVE GEMINI 3.6 FLASH QUERY OVER DETECTED PIPELINE EVENTS...")
-    context_str = json.dumps(processed_events, indent=2)
-    prompt = f"Here are the live detected warehouse video events:\n{context_str}\n\nQuestion: Summarize all critical risk handling actions and what interventions supervisors should take immediately."
+    print(f"\n💬 TESTING LIVE GEMINI ({gemini_client.model}) QUERY OVER DETECTED PIPELINE EVENTS...")
+    compact_summary = [
+        f"[{e['event_id']} | Bay {e['bay']} | {e['risk_level']} ({e['risk_score']:.1f}) | {e['behavior']}]"
+        for e in processed_events[:8]
+    ]
+    prompt = (
+        f"Detected warehouse video events:\n" + "\n".join(compact_summary) +
+        f"\n\nQuestion: Summarize all critical risk handling actions and what interventions supervisors should take immediately."
+    )
     
     if gemini_client.is_configured():
         response = await gemini_client.generate_response(prompt)
-        print("\n--- Gemini 3.6 Flash Grounded Output ---")
+        print(f"\n--- Grounded Assistant Output ({gemini_client.model}) ---")
         print(response)
         print("---------------------------------------")
     else:

@@ -43,50 +43,44 @@ export const BehaviourChart: React.FC = () => {
         <span className="text-[11px] text-slate-400 font-medium">Click bar to filter queue</span>
       </div>
 
-      {data.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-xs text-slate-400 font-mono bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
-          No behaviour patterns recorded yet.
-        </div>
-      ) : (
-        <div className="flex-1 w-full min-h-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 40, bottom: 5 }}>
-              <XAxis type="number" stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                stroke="#64748B" 
-                fontSize={11} 
-                tickLine={false} 
-                axisLine={false}
-                width={110}
-              />
-              <Tooltip 
-                cursor={{ fill: 'rgba(241, 245, 249, 0.6)' }}
-                contentStyle={{ 
-                  backgroundColor: '#FFFFFF', 
-                  border: '1px solid #E2E8F0', 
-                  borderRadius: '8px', 
-                  color: '#111827', 
-                  boxShadow: '0 4px 6px -1px rgb(15 23 42 / 0.08)',
-                  fontSize: '12px'
-                }}
-                formatter={(value: any) => [`${value} incidents`, 'Detected Count']}
-              />
-              <Bar 
-                dataKey="count" 
-                radius={[0, 4, 4, 0]}
-                onClick={handleBarClick}
-                className="cursor-pointer"
-              >
-                {data.map((entry: { name: string; count: number; color: string }, index: number) => (
-                  <Cell key={`behaviour-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity cursor-pointer" />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+      <div className="flex-1 w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 40, bottom: 5 }}>
+            <XAxis type="number" stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} />
+            <YAxis 
+              type="category" 
+              dataKey="name" 
+              stroke="#64748B" 
+              fontSize={11} 
+              tickLine={false} 
+              axisLine={false}
+              width={110}
+            />
+            <Tooltip 
+              cursor={{ fill: 'rgba(241, 245, 249, 0.6)' }}
+              contentStyle={{ 
+                backgroundColor: '#FFFFFF', 
+                border: '1px solid #E2E8F0', 
+                borderRadius: '8px', 
+                color: '#111827', 
+                boxShadow: '0 4px 6px -1px rgb(15 23 42 / 0.08)',
+                fontSize: '12px'
+              }}
+              formatter={(value: any) => [`${value} incidents`, 'Detected Count']}
+            />
+            <Bar 
+              dataKey="count" 
+              radius={[0, 4, 4, 0]}
+              onClick={handleBarClick}
+              className="cursor-pointer"
+            >
+              {data.map((entry: { name: string; count: number; color: string }, index: number) => (
+                <Cell key={`behaviour-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity cursor-pointer" />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

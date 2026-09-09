@@ -4,7 +4,7 @@ from typing import List, Optional
 import datetime
 import json
 import uuid
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 from app.db.database import get_db
 from app.db import models
@@ -23,7 +23,8 @@ class SafetyRuleDTO(BaseModel):
     risk_level: str
     enabled: bool
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class SafetyRuleToggleRequest(BaseModel):

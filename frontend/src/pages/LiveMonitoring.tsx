@@ -16,7 +16,6 @@ import {
   XCircle
 } from 'lucide-react';
 import { getLoadingBays, type LoadingBay } from '../api/facilities';
-import { getVideos } from '../api/videos';
 import { useEvents } from '../hooks/useEvents';
 import { useRealtimeTelemetry } from '../hooks/useRealtimeTelemetry';
 import { generateTelemetryForVideo, type VideoTelemetryPayload } from '../types/telemetry';
@@ -64,22 +63,6 @@ export const LiveMonitoring: React.FC = () => {
 
   useEffect(() => {
     fetchCameraFeeds();
-    getVideos().then(vids => {
-      if (vids && vids.length > 0) {
-        const first = vids[0];
-        const fname = first.filename || `${first.video_id}.mp4`;
-        const dur = first.duration && first.duration > 0 ? first.duration : 60;
-        const initial = generateTelemetryForVideo(
-          fname,
-          first.file_size || 18.4 * 1024 * 1024,
-          first.camera_id ? `Loading Bay (${first.camera_id})` : 'Loading Bay 01',
-          `/videos/${encodeURIComponent(fname)}`,
-          dur
-        );
-        setVideoPayload(initial);
-        setVideoDuration(dur);
-      }
-    }).catch(() => {});
   }, []);
 
   const handleRefresh = () => {

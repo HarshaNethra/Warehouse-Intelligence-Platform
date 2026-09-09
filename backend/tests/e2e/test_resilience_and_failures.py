@@ -1,8 +1,6 @@
 import pytest
 import re
 import time
-
-playwright = pytest.importorskip("playwright", reason="playwright is not installed")
 from playwright.sync_api import Page, expect
 
 FRONTEND_URL = "http://localhost:5173"

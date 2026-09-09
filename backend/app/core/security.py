@@ -4,7 +4,7 @@ import time
 import hmac
 import hashlib
 import base64
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 
 # JWT Security Configurations
@@ -62,11 +62,10 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     Generates HS256 signed JWT Access Token according to RFC 7519 standard.
     """
     to_encode = data.copy()
-    now_utc = datetime.now(timezone.utc)
     if expires_delta:
-        expire = now_utc + expires_delta
+        expire = datetime.utcnow() + expires_delta
     else:
-        expire = now_utc + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": int(expire.timestamp())})
 

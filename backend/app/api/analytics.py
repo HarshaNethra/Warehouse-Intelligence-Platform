@@ -25,14 +25,7 @@ def apply_facility_filter(
         actual_facility = current_user.facility_id
 
     if actual_facility:
-        from sqlalchemy import or_
-        query = query.filter(or_(models.Event.facility_id == actual_facility, models.Event.facility_id.is_(None)))
-
-    if not include_fixtures:
-        query = query.filter(
-            (models.Event.is_test_data.is_(False) | models.Event.is_test_data.is_(None)),
-            (models.Event.is_demo_data.is_(False) | models.Event.is_demo_data.is_(None))
-        )
+        query = query.filter(models.Event.facility_id == actual_facility)
 
     # Data Governance & Environment Contamination Shield
     if settings.ENVIRONMENT == AppEnvironment.PRODUCTION:

@@ -3,7 +3,6 @@ import { Upload, FileVideo, RefreshCw, ShieldAlert, Film, Sparkles, CheckCircle2
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateTelemetryForVideo, type VideoTelemetryPayload } from '../types/telemetry';
 import { createEvent } from '../api/events';
-import { getVideos } from '../api/videos';
 
 export interface VideoIngestionSectionProps {
   onVideoSelect?: (video: VideoTelemetryPayload) => void;
@@ -16,22 +15,9 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
   const [progress, setProgress] = useState<number>(0);
   const [customFile, setCustomFile] = useState<{ name: string; size: string } | null>(null);
   const [activeAlert, setActiveAlert] = useState<string | null>(null);
-  const [dbVideos, setDbVideos] = useState<{ name: string; bay: string; size: string }[]>([]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previousObjectUrlRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    getVideos().then(vids => {
-      if (vids && vids.length > 0) {
-        setDbVideos(vids.map(v => ({
-          name: v.filename || `${v.video_id}.mp4`,
-          bay: v.camera_id ? `Bay ${v.camera_id.replace('CAM-', '')}` : 'Bay 1',
-          size: v.duration ? `${(v.duration * 0.4).toFixed(1)} MB` : '15 MB'
-        })));
-      }
-    }).catch(() => {});
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -198,7 +184,7 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
               Max 200MB (.mp4, .avi, .mov)
             </span>
             <div className="flex items-center gap-1.5">
-              {(dbVideos.length > 0 ? dbVideos.slice(0, 4) : SAMPLE_SCENARIOS).map((s) => (
+              {SAMPLE_SCENARIOS.map((s) => (
                 <button
                   key={s.name}
                   type="button"

@@ -48,15 +48,14 @@ class AppConfig:
         explicit_url = os.getenv("DATABASE_URL")
         if explicit_url:
             return explicit_url
-        # Anchor relative SQLite database files directly to backend_dir for CWD-independence
         env_db_map = {
-            AppEnvironment.PRODUCTION: f"sqlite:///{backend_dir / 'warehouse_prod.db'}",
-            AppEnvironment.STAGING: f"sqlite:///{backend_dir / 'warehouse_staging.db'}",
-            AppEnvironment.DEMO: f"sqlite:///{backend_dir / 'warehouse_demo.db'}",
-            AppEnvironment.TEST: f"sqlite:///{backend_dir / 'warehouse_test.db'}",
-            AppEnvironment.DEVELOPMENT: f"sqlite:///{backend_dir / 'warehouse.db'}"
+            AppEnvironment.PRODUCTION: "sqlite:///./warehouse_prod.db",
+            AppEnvironment.STAGING: "sqlite:///./warehouse_staging.db",
+            AppEnvironment.DEMO: "sqlite:///./warehouse_demo.db",
+            AppEnvironment.TEST: "sqlite:///./warehouse_test.db",
+            AppEnvironment.DEVELOPMENT: "sqlite:///./warehouse.db"
         }
-        return env_db_map.get(self.ENVIRONMENT, f"sqlite:///{backend_dir / 'warehouse.db'}")
+        return env_db_map.get(self.ENVIRONMENT, "sqlite:///./warehouse.db")
 
     # Gemini AI Settings
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
@@ -66,8 +65,8 @@ class AppConfig:
         "https://generativelanguage.googleapis.com/v1beta/models"
     )
     GEMINI_TEMPERATURE: float = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
-    GEMINI_MAX_OUTPUT_TOKENS: int = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "1024"))
-    ASSISTANT_CONTEXT_LIMIT: int = int(os.getenv("ASSISTANT_CONTEXT_LIMIT", "10"))
+    GEMINI_MAX_OUTPUT_TOKENS: int = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "512"))
+    ASSISTANT_CONTEXT_LIMIT: int = int(os.getenv("ASSISTANT_CONTEXT_LIMIT", "6"))
 
     # Roboflow API Settings
     ROBOFLOW_API_KEY: str = os.getenv("ROBOFLOW_API_KEY", "")

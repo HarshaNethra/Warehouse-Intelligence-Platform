@@ -26,12 +26,10 @@ except ImportError:
     YOLO = None
     ULTRALYTICS_AVAILABLE = False
 
-from app.services.inference import CANONICAL_CLASS_MAP, CLASS_NAMES
-
-try:
-    from behaviour_engine.motion import TrackPoint
-except ImportError:
-    from app.engine.behaviour.motion import TrackPoint
+CLASS_NAMES = [
+    "person", "carton", "pallet", "pallet_jack", "forklift", 
+    "trolley", "truck", "mattress", "dock_gap", "strap"
+]
 
 class ProductionVideoProcessor:
     """
@@ -45,12 +43,9 @@ class ProductionVideoProcessor:
     def __init__(self, device: str = "cpu"):
         self.device = device
         self.base_dir = Path(__file__).resolve().parent.parent.parent
-        # Robustly locate Godrej root containing models/best.pt or videos/
-        self.godrej_dir = self.base_dir.parent if (self.base_dir.parent / "videos").exists() else self.base_dir
-        for p in [self.base_dir.parent, Path.cwd(), *Path(__file__).resolve().parents]:
-            if (p / "models" / "best.pt").exists() or (p / "videos").exists():
-                self.godrej_dir = p
-                break
+        self.godrej_dir = self.base_dir.parent.parent / "Godrej"
+        if not self.godrej_dir.exists():
+            self.godrej_dir = self.base_dir.parent / "Godrej"
         self.model = None
         self.model_path = None
         self.model_sha256 = None
@@ -62,8 +57,6 @@ class ProductionVideoProcessor:
 
     def _load_yolo_model(self):
         possible_weights = [
-            self.godrej_dir / "models" / "best.pt",
-            self.godrej_dir / "best.pt",
             self.godrej_dir / "warehouse_training" / "runs" / "yolo11s_baseline" / "weights" / "best.pt",
             self.godrej_dir / "yolo11s.pt",
             self.godrej_dir / "weights" / "yolo26n.pt",
@@ -279,7 +272,6 @@ class ProductionVideoProcessor:
         dropped_frames = 0
         total_detections_count = 0
         active_tracks: Dict[int, Dict[str, Any]] = {}
-        accumulated_tracks: Dict[int, List[TrackPoint]] = {}
         behaviours_detected: List[str] = []
         generated_events: List[Dict[str, Any]] = []
         inference_errors = 0
@@ -401,29 +393,13 @@ class ProductionVideoProcessor:
 
                 total_detections_count += len(frame_detections)
 
-                # Accumulate multi-object tracks for canonical Member 2 Behaviour Engine
-                for d in frame_detections:
-                    t_id = d["track_id"]
-                    bx = d["bbox"]
-                    bw = max(1.0, bx[2] - bx[0])
-                    bh = max(1.0, bx[3] - bx[1])
-                    pt = TrackPoint(
-                        frame=frame_idx,
-                        x=bx[0],
-                        y=bx[1],
-                        width=bw,
-                        height=bh,
-                        class_name=d.get("class", "carton")
-                    )
-                    accumulated_tracks.setdefault(t_id, []).append(pt)
-
                 # 6. Pose Estimation (Extract 17 keypoints for posture/inventory stepping)
                 poses = [{
                     "person_id": 1,
                     "keypoints": [[400.0, 350.0, 0.95] for _ in range(17)] # Sample ankle containment
                 }] if (10.0 <= timestamp_sec <= 16.0) else []
 
-                # 7. Evaluate Kinematics/Telemetry (Telemetry only; canonical events produced by Member 2 engine)
+                # 7. Evaluate Layer C Rule Engine & Temporal Kinematic Anomaly Analysis
                 frame_latency = round((time.time() - frame_start) * 1000.0, 2)
                 
                 alerts = rule_engine.evaluate_frame(
@@ -432,7 +408,7 @@ class ProductionVideoProcessor:
                     detections=frame_detections,
                     poses=poses,
                     video_id=video_id,
-                    db_session=None,  # Do not emit competing events; telemetry only
+                    db_session=db_session,
                     inference_run_id=run_id,
                     model_name=self.model_name,
                     model_version=self.model_version,
@@ -479,44 +455,10 @@ class ProductionVideoProcessor:
         finally:
             cap.release()
 
-        # 8. Run Canonical Member 2 Behaviour & Risk Intelligence Pipeline
-        if accumulated_tracks:
-            try:
-                try:
-                    from behaviour_engine.rule_engine import RuleEngine as Member2RuleEngine
-                    from risk_engine.pipeline import score_and_build_events
-                except ImportError:
-                    from app.engine.behaviour.rule_engine import RuleEngine as Member2RuleEngine
-                    from app.engine.risk.pipeline import score_and_build_events
-                from app.services.event_adapter import event_adapter
-
-                m2_engine = Member2RuleEngine()
-                clean_stem = video_path.name[:-4] if video_path.name.lower().endswith(".mp4") else video_path.name
-                candidates = m2_engine.process_tracks(accumulated_tracks, fps=fps, video_name=clean_stem)
-                canonical_events = score_and_build_events(candidates, video_id=clean_stem, fps=fps)
-
-                for c_evt in canonical_events:
-                    b_name = c_evt.get("behaviour")
-                    if b_name and b_name not in behaviours_detected:
-                        behaviours_detected.append(b_name)
-
-                if db_session:
-                    inf_run = db_session.query(models.InferenceRun).filter(models.InferenceRun.id == run_id).first()
-                    event_adapter.adapt_and_persist_events(
-                        db=db_session,
-                        root_events=canonical_events,
-                        video_name_or_id=clean_stem,
-                        fps=fps,
-                        inference_run=inf_run,
-                        provenance_type="REAL_INFERENCE"
-                    )
-            except Exception as exc:
-                print(f"[VideoProcessor] Member 2 analysis error: {exc}")
-
         total_time = round(time.time() - start_time, 2)
         actual_fps = round(frames_processed / max(total_time, 0.001), 1)
 
-        # 9. Query Generated Events from Database
+        # 8. Query Generated Events from Database
         if db_session:
             db_events = db_session.query(models.Event).filter(
                 models.Event.inference_run_id == run_id

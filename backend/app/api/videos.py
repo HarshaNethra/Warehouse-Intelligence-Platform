@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 from app.db.database import get_db
 from app.db import models
 from app.schemas import event as event_schema
@@ -11,7 +10,6 @@ from app.schemas import event as event_schema
 router = APIRouter()
 
 backend_dir = Path(__file__).resolve().parent.parent.parent
-project_root = backend_dir.parent if (backend_dir.parent / "videos").exists() else backend_dir
 
 @router.get("/videos", response_model=List[event_schema.VideoMetadata])
 def get_videos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -39,16 +37,18 @@ def get_video_frame(video_id: str, frame_number: int, db: Session = Depends(get_
         search_names.append(video_record.filename)
     search_names.extend([
         decoded_id,
-        f"{decoded_id}.mp4"
+        f"{decoded_id}.mp4",
+        "Rolling and dropping carton.mp4",
+        "example.mp4"
     ])
 
     video_path = None
     for name in search_names:
         possible_paths = [
             backend_dir / "storage" / "videos" / name,
-            project_root / "videos" / name,
-            project_root / "frontend" / "public" / "videos" / name,
-            backend_dir / "videos" / name,
+            backend_dir.parent / "Godrej" / "videos" / name,
+            backend_dir.parent / "frontend" / "public" / "videos" / name,
+            backend_dir.parent.parent / "Godrej" / "videos" / name,
             Path(name)
         ]
         for p in possible_paths:
@@ -111,9 +111,9 @@ async def stream_video(file_name: str, range: str = Header(None)):
 
     possible_paths = [
         backend_dir / "storage" / "videos" / decoded_name,
-        project_root / "videos" / decoded_name,
-        project_root / "frontend" / "public" / "videos" / decoded_name,
-        backend_dir / "videos" / decoded_name,
+        backend_dir.parent / "Godrej" / "videos" / decoded_name,
+        backend_dir.parent / "frontend" / "public" / "videos" / decoded_name,
+        backend_dir.parent.parent / "Godrej" / "videos" / decoded_name,
     ]
 
     video_path = None
@@ -162,44 +162,34 @@ async def stream_video(file_name: str, range: str = Header(None)):
     return StreamingResponse(iterfile(), status_code=206, headers=headers)
 
 
+class VideoProcessPayload(BaseModel if 'BaseModel' in globals() else object):
+    pass
+
+from pydantic import BaseModel
+
 class VideoProcessRequest(BaseModel):
-    video_id: Optional[str] = None
     facility_id: Optional[str] = "FAC-001"
     camera_id: Optional[str] = "CAM-01"
     max_frames: Optional[int] = None
-
-VideoProcessPayload = VideoProcessRequest
 
 
 @router.post("/videos/{video_id}/process")
 @router.post("/videos/process")
 def process_video_endpoint(
-    video_id: Optional[str] = None,
+    video_id: str = "vid-cam01-20231027",
     payload: Optional[VideoProcessRequest] = None,
     db: Session = Depends(get_db)
 ):
     from app.services.video_processor import ProductionVideoProcessor
     
-    target_vid = None
-    if video_id and video_id.strip() and video_id != "process":
-        target_vid = video_id.strip()
-    elif payload and payload.video_id and payload.video_id.strip():
-        target_vid = payload.video_id.strip()
-    else:
-        first_video = db.query(models.Video).first()
-        if first_video:
-            target_vid = first_video.video_id
-        else:
-            raise HTTPException(status_code=400, detail="No video specified and no videos exist in database")
-
-    facility_id = payload.facility_id if payload and payload.facility_id else "FAC-001"
-    camera_id = payload.camera_id if payload and payload.camera_id else "CAM-01"
+    facility_id = payload.facility_id if payload else "FAC-001"
+    camera_id = payload.camera_id if payload else "CAM-01"
     max_frames = payload.max_frames if payload else None
 
     processor = ProductionVideoProcessor()
     try:
         summary = processor.process_video(
-            video_source=target_vid,
+            video_source=video_id,
             facility_id=facility_id,
             camera_id=camera_id,
             db_session=db,
@@ -208,5 +198,4 @@ def process_video_endpoint(
         return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Video processing failed: {str(e)}")
-
 

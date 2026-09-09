@@ -411,14 +411,15 @@ async def chat_rag(
         ) for e in recent_events
     ]
 
-    # 3. Construct RAG Context Prompt
-    rag_context_str = "\n".join([f"• RAG Match: {t}" for t in rag_texts])
-    db_context_str = "\n".join([
-        f"- Event ID: {e.event_id} | Risk: [{e.risk_level}] (Score: {e.risk_score:.1f}) | Behaviour: {e.behaviour} | Bay: {e.bay_id or 'Dock'} | Reason: {e.reason}"
-        for e in recent_events
-    ])
+    # 3. Construct Token-Efficient Compact RAG Context Prompt
+    rag_context_str = "\n".join([f"• Match: {t}" for t in rag_texts[:2]]) if rag_texts else "None"
+    db_context_lines = [
+        f"[{e.event_id} | Bay {e.bay_id or 'Dock'} | Risk: {e.risk_level} ({e.risk_score:.1f}) | {e.behaviour} | {e.reason or e.description}]"
+        for e in recent_events[:6]
+    ]
+    db_context_str = "\n".join(db_context_lines) if db_context_lines else "No incidents recorded"
     
-    full_prompt = f"ChromaDB Vector Search Context:\n{rag_context_str}\n\nObserved Database Incidents:\n{db_context_str}\n\nSupervisor Question: {query_text}"
+    full_prompt = f"Vector Context:\n{rag_context_str}\n\nObserved Incidents:\n{db_context_str}\n\nQuestion: {query_text}"
 
     if not gemini_client.is_configured():
         lines = [

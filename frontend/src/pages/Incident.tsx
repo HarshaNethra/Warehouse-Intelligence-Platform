@@ -140,7 +140,7 @@ export const Incident: React.FC = () => {
     );
   }
 
-  let rawVideoUrl = event.video_reference || (event.video_id ? `/videos/${encodeURIComponent(event.video_id)}` : '');
+  let rawVideoUrl = event.video_reference || (event.video_id ? `/videos/${encodeURIComponent(event.video_id)}` : '/videos/Rolling%20and%20dropping%20carton.mp4');
   const targetTs = event.timestamp_seconds ?? event.timestamp;
   if (targetTs && targetTs > 0 && !rawVideoUrl.includes('#t=')) {
     rawVideoUrl = `${rawVideoUrl}#t=${targetTs.toFixed(2)}`;

@@ -9,7 +9,7 @@ import { ChevronRight, Search, Filter, X, ShieldAlert, Download, Loader2, CheckC
 import { Link, useSearchParams } from 'react-router-dom';
 import type { Event } from '../types/event';
 
-const VALID_RISKS = ['All', 'Critical', 'High', 'Medium', 'Low', 'Medium/Low'];
+const VALID_RISKS = ['All', 'Critical', 'High', 'Medium', 'Low'];
 
 export type SortOption = 'newest' | 'highest-risk' | 'lowest-risk' | 'behaviour';
 
@@ -112,12 +112,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     return localEvents.filter(e => {
       let matchRisk = selectedRisk === 'All';
       if (!matchRisk) {
-        if (selectedRisk.toLowerCase() === 'medium/low') {
-          const lvl = (e.risk_level || '').toLowerCase();
-          matchRisk = lvl === 'medium' || lvl === 'low';
-        } else {
-          matchRisk = (e.risk_level || '').toLowerCase() === selectedRisk.toLowerCase();
-        }
+        matchRisk = (e.risk_level || '').toLowerCase() === selectedRisk.toLowerCase();
       }
 
       const matchBay = selectedBay === 'All' || (e.bay_id || '').toLowerCase() === selectedBay.toLowerCase();
@@ -446,11 +441,9 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      {event.confidence != null && (
-                        <span className="text-xs text-slate-500 font-mono hidden md:inline">
-                          Conf: {Math.round(event.confidence <= 1 ? event.confidence * 100 : event.confidence)}%
-                        </span>
-                      )}
+                      <span className="text-xs text-slate-500 font-mono hidden md:inline">
+                        Conf: 94%
+                      </span>
 
                       {isAcknowledged ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">

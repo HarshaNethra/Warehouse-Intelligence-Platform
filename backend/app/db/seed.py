@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 from pathlib import Path
 
@@ -29,6 +29,8 @@ def ensure_columns_exist(db: Session) -> None:
         Base.metadata.create_all(bind=engine)
         
         bind = db.get_bind()
+        if bind.dialect.name != 'sqlite':
+            return
         with bind.connect() as conn:
             # Safely check events columns
             result = conn.execute(text("PRAGMA table_info(events)"))
@@ -397,27 +399,37 @@ def init_db(db: Session) -> None:
     db.commit()
 
     # 8. Seed Default Videos & Video Processing Jobs
-    canonical_warehouse_videos = [
-        ("VID-C5FF90E4", "Dock level, dragging cupboard.mp4", "CAM-01"),
-        ("VID-971E1691", "KD packets dragged, heavy box kept on other packets.mp4", "CAM-02"),
-        ("VID-38A329BB", "Rolling and dragging on wet floor.mp4", "CAM-03"),
-        ("VID-7E336847", "Rolling and dropping carton.mp4", "CAM-01"),
-        ("VID-9FACCC73", "Stepping on cartons, vertical product kept horizontally, heavy product kept on top.mp4", "CAM-04"),
-        ("VID-FAD3608B", "Throwing Mattresses.mp4", "CAM-02"),
-        ("VID-00949929", "Throwing seating cartons, using strap to hold.mp4", "CAM-01"),
-    ]
     videos_data = [
         {
-            "video_id": vid,
-            "camera_id": cam,
-            "filename": fname,
+            "video_id": "vid-cam01-20231027",
+            "camera_id": "CAM-01",
+            "filename": "Rolling and dropping carton.mp4",
             "duration": 60.0,
             "fps": 30.0,
             "width": 1920,
             "height": 1080,
             "status": "COMPLETED"
+        },
+        {
+            "video_id": "vid-cam02-20231027",
+            "camera_id": "CAM-02",
+            "filename": "loading_bay2_shift1.mp4",
+            "duration": 120.0,
+            "fps": 30.0,
+            "width": 1920,
+            "height": 1080,
+            "status": "COMPLETED"
+        },
+        {
+            "video_id": "vid-cam03-20231028",
+            "camera_id": "CAM-03",
+            "filename": "aisle_staging_bay1.mp4",
+            "duration": 90.0,
+            "fps": 30.0,
+            "width": 1920,
+            "height": 1080,
+            "status": "COMPLETED"
         }
-        for vid, fname, cam in canonical_warehouse_videos
     ]
     for v in videos_data:
         vid = db.query(models.Video).filter(models.Video.video_id == v["video_id"]).first()
@@ -436,8 +448,143 @@ def init_db(db: Session) -> None:
     db.commit()
 
     # 9. Seed Realistic Events & Risk Assessments
-    # Automatic synthetic event seeding disabled in favor of canonical Member 2 pipeline
-    events_seed = []
+    events_seed = [
+        {
+            "event_id": "EVT-014",
+            "org_id": DEFAULT_ORG_ID,
+            "facility_id": DEFAULT_FACILITY_ID,
+            "video_id": "vid-cam01-20231027",
+            "timestamp": 12.5,
+            "camera_id": "CAM-01",
+            "bay_id": "Loading Bay 01",
+            "object_id": 104,
+            "behaviour": "Product Dropped",
+            "risk_score": 92.5,
+            "risk_level": "Critical",
+            "description": "Heavy electronic carton dropped from 1.5m height during manual transfer.",
+            "reason": "Rapid downward displacement (>1.4m/s) followed by high deceleration ground impact.",
+            "evidence_frame": "/videos/Rolling%20and%20dropping%20carton.mp4#t=12.5",
+            "video_reference": "/videos/Rolling%20and%20dropping%20carton.mp4#t=12.5",
+            "recommended_action": "Quarantine carton #104, inspect internal fragile components, and re-train operator.",
+            "status": "UNRESOLVED"
+        },
+        {
+            "event_id": "EVT-015",
+            "org_id": DEFAULT_ORG_ID,
+            "facility_id": DEFAULT_FACILITY_ID,
+            "video_id": "vid-cam01-20231027",
+            "timestamp": 24.8,
+            "camera_id": "CAM-01",
+            "bay_id": "Loading Bay 01",
+            "object_id": 208,
+            "behaviour": "Product Dragged",
+            "risk_score": 68.0,
+            "risk_level": "High",
+            "description": "Heavy corrugated carton dragged across concrete floor without hand truck.",
+            "reason": "Sustained low-height friction translation over 4.2 seconds violating ergonomic safety rules.",
+            "evidence_frame": "/videos/Rolling%20and%20dropping%20carton.mp4#t=24.8",
+            "video_reference": "/videos/Rolling%20and%20dropping%20carton.mp4#t=24.8",
+            "recommended_action": "Provide hydraulic dolly and enforce two-person lift for packages > 20kg.",
+            "status": "ACKNOWLEDGED",
+            "acknowledged_by": "user-sup-01"
+        },
+        {
+            "event_id": "EVT-016",
+            "org_id": DEFAULT_ORG_ID,
+            "facility_id": DEFAULT_FACILITY_ID,
+            "video_id": "vid-cam02-20231027",
+            "timestamp": 41.2,
+            "camera_id": "CAM-02",
+            "bay_id": "Loading Bay 02",
+            "object_id": 311,
+            "behaviour": "Improper Stacking",
+            "risk_score": 76.4,
+            "risk_level": "High",
+            "description": "Heavy wooden crate placed on top of lightweight fragile consumer goods tier.",
+            "reason": "Stack weight ratio inverted (heavy item over overhang threshold > 30%).",
+            "evidence_frame": "/videos/loading_bay2_shift1.mp4#t=41.2",
+            "video_reference": "/videos/loading_bay2_shift1.mp4#t=41.2",
+            "recommended_action": "Restack pallet to maintain heavy items at base level.",
+            "status": "UNRESOLVED"
+        },
+        {
+            "event_id": "EVT-017",
+            "org_id": DEFAULT_ORG_ID,
+            "facility_id": DEFAULT_FACILITY_ID,
+            "video_id": "vid-cam02-20231027",
+            "timestamp": 55.0,
+            "camera_id": "CAM-02",
+            "bay_id": "Loading Bay 02",
+            "object_id": 402,
+            "behaviour": "Rough Handling",
+            "risk_score": 45.0,
+            "risk_level": "Medium",
+            "description": "Carton tossed onto roller conveyor belt with elevated horizontal velocity.",
+            "reason": "Horizontal acceleration spike exceeded 3.8 m/s².",
+            "evidence_frame": "/videos/loading_bay2_shift1.mp4#t=55.0",
+            "video_reference": "/videos/loading_bay2_shift1.mp4#t=55.0",
+            "recommended_action": "Remind team of gentle placement on conveyor lines.",
+            "status": "DISPATCHED",
+            "acknowledged_by": "user-sup-01"
+        },
+        {
+            "event_id": "EVT-018",
+            "org_id": DEFAULT_ORG_ID,
+            "facility_id": DEFAULT_FACILITY_ID,
+            "video_id": "vid-cam03-20231028",
+            "timestamp": 18.2,
+            "camera_id": "CAM-03",
+            "bay_id": "Loading Bay 03",
+            "object_id": 512,
+            "behaviour": "Unstable Stacking",
+            "risk_score": 32.0,
+            "risk_level": "Low",
+            "description": "Minor stack overhang detected on staging pallet.",
+            "reason": "Overhang angle 12 degrees within tolerance limits.",
+            "evidence_frame": "/videos/aisle_staging_bay1.mp4#t=18.2",
+            "video_reference": "/videos/aisle_staging_bay1.mp4#t=18.2",
+            "recommended_action": "Monitor pallet wrap before forklift transport.",
+            "status": "RESOLVED"
+        },
+        {
+            "event_id": "EVT-020",
+            "org_id": DEFAULT_ORG_ID,
+            "facility_id": SECONDARY_FACILITY_ID,
+            "video_id": "vid-cam05-20231029",
+            "timestamp": 14.2,
+            "camera_id": "CAM-05",
+            "bay_id": "Loading Bay 05",
+            "object_id": 601,
+            "behaviour": "Product Dropped",
+            "risk_score": 88.5,
+            "risk_level": "Critical",
+            "description": "Fragile solar panel crate dropped during forklift loading at Mumbai Hub.",
+            "reason": "Vertical acceleration spike ay = 10.2 m/s².",
+            "evidence_frame": "/videos/Rolling%20and%20dropping%20carton.mp4#t=14.2",
+            "video_reference": "/videos/Rolling%20and%20dropping%20carton.mp4#t=14.2",
+            "recommended_action": "Halt bay 5 loading, inspect solar panel integrity.",
+            "status": "UNRESOLVED"
+        },
+        {
+            "event_id": "EVT-021",
+            "org_id": DEFAULT_ORG_ID,
+            "facility_id": SECONDARY_FACILITY_ID,
+            "video_id": "vid-cam06-20231029",
+            "timestamp": 33.1,
+            "camera_id": "CAM-06",
+            "bay_id": "Loading Bay 06",
+            "object_id": 608,
+            "behaviour": "Improper Stacking",
+            "risk_score": 64.0,
+            "risk_level": "High",
+            "description": "Heavy machinery part stacked on top of cardboard carton box.",
+            "reason": "Inverted mass distribution profile detected by vision model.",
+            "evidence_frame": "/videos/loading_bay2_shift1.mp4#t=33.1",
+            "video_reference": "/videos/loading_bay2_shift1.mp4#t=33.1",
+            "recommended_action": "Restack pallet immediately.",
+            "status": "UNRESOLVED"
+        }
+    ]
 
     for ev in events_seed:
         existing_ev = db.query(models.Event).filter(models.Event.event_id == ev["event_id"]).first()
@@ -563,7 +710,7 @@ def init_db(db: Session) -> None:
             db.add(models.EvaluationSample(
                 id=s_id,
                 dataset_id="DS-ALPHA-V3",
-                video_id="VID-7E336847",
+                video_id="vid-cam01-20231027",
                 frame_number=100 + int(s_id.split("-")[1]) * 10,
                 timestamp=10.0 + int(s_id.split("-")[1]),
                 ground_truth_label=gt,
@@ -584,3 +731,4 @@ if __name__ == "__main__":
     db = SessionLocal()
     init_db(db)
     db.close()
+
