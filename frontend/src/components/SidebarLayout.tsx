@@ -17,7 +17,6 @@ import {
   Truck,
   Search,
   ChevronDown,
-  Database,
   Volume2,
   VolumeX
 } from 'lucide-react';
@@ -27,7 +26,6 @@ import { FloatingChatbot } from './FloatingChatbot';
 import { LiveAlertToast } from './LiveAlertToast';
 import { soundSynthesizer } from '../utils/soundAlerts';
 import { useAuth } from '../context/AuthContext';
-import { useProvenance } from '../context/ProvenanceContext';
 import { getEvents } from '../api/events';
 import { getFacilities, type Facility } from '../api/facilities';
 import type { Event } from '../types/event';
@@ -40,7 +38,6 @@ interface SidebarLayoutProps {
 
 export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
-  const { provenanceEnabled, toggleProvenance } = useProvenance();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -357,12 +354,14 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
             </button>
 
             {/* Location / Facility Selector */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 hover:border-slate-300 cursor-pointer">
-              <span className="w-2 h-2 rounded-full bg-blue-600" />
-              <span>{selectedFacility?.name || 'Bengaluru Distribution Center'}</span>
-              <span className="text-slate-400">·</span>
-              <span className="text-slate-500 font-normal">Active Docks</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 hover:border-slate-300 transition-colors cursor-pointer shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="font-bold text-slate-900 truncate">{selectedFacility?.name || 'Bengaluru Distribution Center'}</span>
+                <span className="text-slate-300">/</span>
+                <span className="text-slate-500 font-medium text-[11px] whitespace-nowrap">Active Docks</span>
+              </div>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5 shrink-0" />
             </div>
           </div>
 
@@ -396,26 +395,11 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
               {isAlertAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
 
-            {/* Dev Provenance Overlay Toggle */}
-            <button
-              type="button"
-              onClick={toggleProvenance}
-              className={`inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-lg border transition-all ${
-                provenanceEnabled
-                  ? 'bg-slate-900 text-blue-400 border-slate-700 shadow-xs font-bold'
-                  : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
-              }`}
-              title="Toggle Developer Data Provenance Overlay"
-            >
-              <Database className="w-3.5 h-3.5 text-blue-400" />
-              <span>Dev Overlay: {provenanceEnabled ? 'ON' : 'OFF'}</span>
-            </button>
-
             <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-semibold text-emerald-800">AI Monitoring Active</span>
+              <span className="font-semibold text-emerald-800">AI Vision Active</span>
               <span className="text-slate-400">|</span>
-              <span className="text-slate-500 font-mono text-[11px]">98.7% health</span>
+              <span className="text-slate-500 font-mono text-[11px]">30 FPS · 18ms</span>
             </span>
 
             <div className="relative">

@@ -2,7 +2,6 @@ import React from 'react';
 import { EventList } from '../components/EventList';
 import { AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
 
 export const IncidentLog: React.FC = () => {
   return (
@@ -20,17 +19,11 @@ export const IncidentLog: React.FC = () => {
         </p>
       </div>
 
-      <DataProvenanceOverlay
-        endpoint="/api/events"
-        facilityScope="FAC-001"
-        entity="Event"
-        filter="Status / Risk / Facility Filtered"
-      >
-        <div className="h-[720px]">
-          <EventList />
-        </div>
-      </DataProvenanceOverlay>
+      <div className="h-[760px]">
+        <EventList />
+      </div>
     </motion.div>
   );
 };
+
 

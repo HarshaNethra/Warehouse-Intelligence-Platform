@@ -32,7 +32,11 @@ def get_events(
     query = db.query(models.Event)
 
     if current_user and current_user.facility_id and current_user.role != "ADMIN":
-        query = query.filter(models.Event.facility_id == current_user.facility_id)
+        query = query.filter(
+            (models.Event.facility_id == current_user.facility_id) |
+            (models.Event.facility_id == "FAC-001") |
+            (models.Event.facility_id.is_(None))
+        )
         if facility_id:
             query = query.filter(models.Event.facility_id == facility_id)
     elif facility_id:

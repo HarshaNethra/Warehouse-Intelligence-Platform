@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 from pathlib import Path
 
@@ -638,6 +638,44 @@ def init_db(db: Session) -> None:
                     created_at=datetime.datetime.utcnow()
                 ))
                 db.commit()
+
+    # Auto-ingest canonical trajectory files from data/Trajectories
+    try:
+        from app.engine.behaviour.rule_engine import RuleEngine
+        from app.engine.risk.pipeline import score_and_build_events
+        from app.services.event_adapter import event_adapter
+
+        traj_dirs = [
+            Path.cwd() / "data" / "Trajectories",
+            backend_dir / "data" / "Trajectories",
+            backend_dir.parent / "data" / "Trajectories"
+        ]
+        active_traj_dir = None
+        for td in traj_dirs:
+            if td.exists() and td.is_dir():
+                active_traj_dir = td
+                break
+
+        if active_traj_dir:
+            csv_files = sorted([f for f in active_traj_dir.glob("*.csv") if f.is_file()])
+            engine = RuleEngine()
+            for c_path in csv_files:
+                clean_stem = c_path.stem.replace("_trajectories", "")
+                existing_cnt = db.query(models.Event).filter(models.Event.video_id == clean_stem).count()
+                if existing_cnt == 0:
+                    tracks = engine.parse_trajectory_csv(c_path)
+                    candidates = engine.process_tracks(tracks, fps=30.0, video_name=clean_stem)
+                    canonical_events = score_and_build_events(candidates, video_id=clean_stem, fps=30.0)
+                    event_adapter.adapt_and_persist_events(
+                        db=db,
+                        root_events=canonical_events,
+                        video_name_or_id=clean_stem,
+                        fps=30.0,
+                        provenance_type="REAL_INFERENCE"
+                    )
+                    print(f"[Seed] Auto-ingested {len(canonical_events)} trajectory events for: {clean_stem}")
+    except Exception as e:
+        print(f"[Seed] Trajectory auto-ingest notice: {e}")
 
     # 10. Seed Model Runs Telemetry
     if not db.query(models.ModelRun).first():

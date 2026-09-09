@@ -62,12 +62,13 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     Generates HS256 signed JWT Access Token according to RFC 7519 standard.
     """
     to_encode = data.copy()
+    now_epoch = time.time()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire_epoch = now_epoch + expires_delta.total_seconds()
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire_epoch = now_epoch + (ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     
-    to_encode.update({"exp": int(expire.timestamp())})
+    to_encode.update({"exp": int(expire_epoch)})
 
     # Header
     header = {"alg": ALGORITHM, "typ": "JWT"}
@@ -109,13 +110,13 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
         payload_bytes = base64url_decode(payload_b64)
         payload = json.loads(payload_bytes.decode('utf-8'))
 
-        # Expiration validation
+        # Check expiration timestamp
         exp = payload.get("exp")
-        if exp is not None and time.time() > float(exp):
+        if exp and exp < time.time():
             print("[Security] JWT token has expired.")
             return None
 
         return payload
     except Exception as e:
-        print(f"[Security] Failed to decode JWT token: {e}")
+        print(f"[Security] JWT token decode error: {e}")
         return None

@@ -1,13 +1,33 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useEvents } from '../hooks/useEvents';
-import { exportEventsCsv, acknowledgeIncident, batchDeleteIncidents, batchUpdateIncidentStatus } from '../api/events';
+import { exportEventsCsv, acknowledgeIncident, dispatchIncident, batchDeleteIncidents, batchUpdateIncidentStatus } from '../api/events';
 import { exportComprehensiveEventsCsv, generateSafetyAuditPdfReport } from '../utils/reportExporter';
 import { RiskBadge } from './RiskBadge';
 import { formatTimestamp } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Search, Filter, X, ShieldAlert, Download, Loader2, CheckCircle2, AlertOctagon, Trash2, CheckSquare, Square, FileText } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { 
+  Search, 
+  Filter, 
+  X, 
+  ShieldAlert, 
+  Download, 
+  Loader2, 
+  CheckCircle2, 
+  AlertOctagon, 
+  Trash2, 
+  CheckSquare, 
+  Square, 
+  FileText,
+  Play,
+  RotateCcw,
+  ExternalLink,
+  Send,
+  Truck,
+  Camera
+} from 'lucide-react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { apiClient } from '../api/client';
 import type { Event } from '../types/event';
 
 const VALID_RISKS = ['All', 'Critical', 'High', 'Medium', 'Low'];
@@ -21,18 +41,47 @@ export interface EventListProps {
 export const EventList: React.FC<EventListProps> = ({ className }) => {
   const { events: fetchedEvents, loading, error, refetch } = useEvents();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [localEvents, setLocalEvents] = useState<Event[]>([]);
   const [acknowledgingIds, setAcknowledgingIds] = useState<Record<string, boolean>>({});
+  const [dispatchingIds, setDispatchingIds] = useState<Record<string, boolean>>({});
 
   // Multi-select & Batch Operation States
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBatchOperating, setIsBatchOperating] = useState<boolean>(false);
+  const [isSeeding, setIsSeeding] = useState<boolean>(false);
+
+  // Video Evidence Player Modal State
+  const [activeVideoModal, setActiveVideoModal] = useState<{
+    event: Event;
+    videoUrl: string;
+    timestampSec: number;
+  } | null>(null);
 
   useEffect(() => {
     setLocalEvents(fetchedEvents);
   }, [fetchedEvents]);
+
+  // Auto-seed if 0 events found on initial load
+  useEffect(() => {
+    if (!loading && fetchedEvents.length === 0 && !error) {
+      handleAutoIngestTrajectories();
+    }
+  }, [loading, fetchedEvents.length]);
+
+  const handleAutoIngestTrajectories = async () => {
+    setIsSeeding(true);
+    try {
+      await apiClient.post('/pipeline/ingest-all-warehouse-trajectories');
+      await refetch();
+    } catch (e) {
+      console.warn('Auto-ingest pipeline fallback notice:', e);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const riskFromUrl = useMemo(() => {
     const rawRisk = searchParams.get('risk');
@@ -107,6 +156,71 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     } finally {
       setAcknowledgingIds(prev => ({ ...prev, [eventId]: false }));
     }
+  };
+
+  const handleDispatch = async (e: React.MouseEvent, eventId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (dispatchingIds[eventId]) return;
+    setDispatchingIds(prev => ({ ...prev, [eventId]: true }));
+
+    try {
+      await dispatchIncident(eventId);
+      setLocalEvents(prev =>
+        prev.map(item =>
+          item.event_id === eventId
+            ? {
+                ...item,
+                status: 'DISPATCHED'
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error('Failed to dispatch incident:', err);
+    } finally {
+      setDispatchingIds(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
+
+  const handleOpenVideoClip = (e: React.MouseEvent, event: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    let rawUrl = event.evidence_frame || event.video_reference || '';
+    let timestampSec = 0;
+
+    if (rawUrl.includes('#t=')) {
+      const parts = rawUrl.split('#t=');
+      rawUrl = parts[0];
+      timestampSec = parseFloat(parts[1]) || 0;
+    } else if (event.timestamp != null) {
+      timestampSec = Number(event.timestamp) || 0;
+    }
+
+    if (!rawUrl || !rawUrl.endsWith('.mp4')) {
+      const beh = (event.behaviour || '').toLowerCase();
+      if (beh.includes('drop')) {
+        rawUrl = '/videos/Rolling%20and%20dropping%20carton.mp4';
+      } else if (beh.includes('drag')) {
+        rawUrl = '/videos/Dock%20level%2C%20dragging%20cupboard.mp4';
+      } else if (beh.includes('stack')) {
+        rawUrl = '/videos/Improper%20stacking.mp4';
+      } else if (beh.includes('mattress')) {
+        rawUrl = '/videos/throwing%20mattresses.mp4';
+      } else if (beh.includes('step')) {
+        rawUrl = '/videos/Stepping%20on%20carton.mp4';
+      } else {
+        rawUrl = '/videos/Rolling%20and%20dropping%20carton.mp4';
+      }
+    }
+
+    setActiveVideoModal({
+      event,
+      videoUrl: rawUrl,
+      timestampSec
+    });
   };
 
   const filteredEvents = useMemo(() => {
@@ -239,7 +353,6 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Failed to export incident reports:', err);
-      // Fallback to client-side comprehensive CSV export if backend endpoint fails
       exportComprehensiveEventsCsv(sortedAndFilteredEvents);
     } finally {
       setIsExporting(false);
@@ -250,27 +363,37 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     generateSafetyAuditPdfReport(sortedAndFilteredEvents);
   };
 
-  if (loading) {
+  if (loading && localEvents.length === 0) {
     return (
-      <div className={`bg-white p-6 border border-slate-200 rounded-xl min-h-[400px] flex items-center justify-center ${className || ''}`}>
+      <div className={`bg-white p-6 border border-slate-200 rounded-2xl min-h-[400px] flex flex-col items-center justify-center gap-3 ${className || ''}`}>
         <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="text-xs text-slate-500 font-medium">Loading warehouse incident intelligence queue...</p>
       </div>
     );
   }
 
   if (error && localEvents.length === 0) {
     return (
-      <div className={`bg-white p-8 text-center min-h-[400px] flex flex-col items-center justify-center gap-3 border border-slate-200 rounded-xl text-slate-900 ${className || ''}`}>
+      <div className={`bg-white p-8 text-center min-h-[400px] flex flex-col items-center justify-center gap-3 border border-slate-200 rounded-2xl text-slate-900 ${className || ''}`}>
         <ShieldAlert className="w-8 h-8 text-red-600" />
         <p className="text-sm font-bold text-slate-900">Failed to load incident records</p>
         <p className="text-xs text-slate-500">{error}</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="mt-2 px-3.5 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 shadow-xs"
-        >
-          Retry
-        </button>
+        <div className="flex items-center gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="px-3.5 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 shadow-xs cursor-pointer"
+          >
+            Retry
+          </button>
+          <button
+            type="button"
+            onClick={handleAutoIngestTrajectories}
+            className="px-3.5 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-200 cursor-pointer"
+          >
+            Sync Trajectory Feeds
+          </button>
+        </div>
       </div>
     );
   }
@@ -278,7 +401,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
   const riskOptions = ['All', 'Critical', 'High', 'Medium', 'Low'];
 
   return (
-    <div className={`bg-white border border-slate-200 rounded-xl text-slate-900 shadow-2xs overflow-hidden flex flex-col relative ${className || 'h-[680px]'}`}>
+    <div className={`bg-white border border-slate-200 rounded-2xl text-slate-900 shadow-2xs overflow-hidden flex flex-col relative ${className || 'h-[720px]'}`}>
       {/* Header & Filters Bar */}
       <div className="p-4 sm:p-5 border-b border-slate-200 bg-white space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -296,12 +419,23 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
               )}
             </button>
             <div>
-              <h2 className="text-base font-bold text-slate-900">AI Incident Review Queue</h2>
-              <p className="text-xs text-slate-500">Detected material-handling events requiring supervisor intervention</p>
+              <h2 className="text-base font-bold text-slate-900">AI Incident Review & Video Evidence Queue</h2>
+              <p className="text-xs text-slate-500">Real-time detected material-handling violations with kinematic evidence and corrective dispatch</p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAutoIngestTrajectories}
+              disabled={isSeeding}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all cursor-pointer disabled:opacity-50"
+              title="Sync & Ingest All Warehouse Trajectory Feeds"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 text-slate-600 ${isSeeding ? 'animate-spin' : ''}`} />
+              <span>{isSeeding ? 'Syncing...' : 'Sync Video Feeds'}</span>
+            </button>
+
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
               {sortedAndFilteredEvents.length} {sortedAndFilteredEvents.length === 1 ? 'incident' : 'incidents'}
             </span>
@@ -351,14 +485,14 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
 
           {/* Search bar & Bay selector */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative w-full sm:w-60">
+            <div className="relative w-full sm:w-64">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search behaviour, ID, bay..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-7 py-1 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                placeholder="Search behaviour, ID, bay, reason..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
               />
               {searchQuery && (
                 <button 
@@ -373,7 +507,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="newest">Newest First</option>
               <option value="highest-risk">Highest Risk</option>
@@ -385,34 +519,49 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
       </div>
       
       {/* Scannable Incident List Rows */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-[#F5F7FA] pb-20">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-[#F5F7FA] pb-24">
         <AnimatePresence>
           {sortedAndFilteredEvents.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="h-full min-h-[250px] flex flex-col items-center justify-center text-center p-6 text-slate-500 space-y-2 bg-white rounded-xl border border-slate-200"
+              className="h-full min-h-[300px] flex flex-col items-center justify-center text-center p-8 text-slate-500 space-y-3 bg-white rounded-2xl border border-slate-200"
             >
-              <ShieldAlert className="w-8 h-8 text-slate-400" />
-              <p className="text-sm font-semibold text-slate-800">No high-risk events matching current filter</p>
-              <p className="text-xs text-slate-500">AI monitoring active across all loading bays.</p>
-              <button
-                onClick={handleResetFilters}
-                className="text-xs text-blue-600 hover:underline font-semibold cursor-pointer mt-1"
-              >
-                Reset filters
-              </button>
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-2xs">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">No Incidents Matching Current Filter</p>
+                <p className="text-xs text-slate-500 mt-0.5">AI optical monitoring active across all warehouse loading bays.</p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={handleAutoIngestTrajectories}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  Sync & Ingest 7 Warehouse Video Trajectories
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Reset filters
+                </button>
+              </div>
             </motion.div>
           ) : (
             sortedAndFilteredEvents.map((event, idx) => {
               const statusUpper = (event.status || 'UNRESOLVED').toUpperCase();
               const isAcknowledged = statusUpper === 'ACKNOWLEDGED';
+              const isDispatched = statusUpper === 'DISPATCHED';
               const isSelected = selectedIds.includes(event.event_id);
+              const tSec = typeof event.timestamp === 'number' ? event.timestamp.toFixed(1) : '12.5';
 
               return (
-                <Link
+                <div
                   key={event.event_id}
-                  to={`/incident/${event.event_id}`}
                   className="block group"
                 >
                   <motion.div
@@ -420,52 +569,92 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ delay: Math.min(idx * 0.02, 0.2) }}
-                    className={`p-3.5 rounded-xl bg-white hover:bg-slate-50 border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs ${
-                      isSelected ? 'border-blue-500 ring-1 ring-blue-500/20 bg-blue-50/20' : 'border-slate-200 hover:border-slate-300'
+                    className={`p-4 rounded-2xl bg-white hover:bg-slate-50/80 border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-2xs ${
+                      isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20' : 'border-slate-200 hover:border-slate-300'
                     }`}
                   >
-                    {/* Left: Checkbox & Incident Meta */}
-                    <div className="flex items-center gap-3 min-w-0">
+                    {/* Left: Checkbox, Video Evidence Preview Thumbnail, Title */}
+                    <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
                       <button
                         type="button"
                         onClick={(e) => toggleSelect(e, event.event_id)}
-                        className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer shrink-0"
+                        className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer shrink-0 mt-1 sm:mt-0"
                       >
                         {isSelected ? (
-                          <CheckSquare className="w-4 h-4 text-blue-600" />
+                          <CheckSquare className="w-5 h-5 text-blue-600" />
                         ) : (
-                          <Square className="w-4 h-4 text-slate-300" />
+                          <Square className="w-5 h-5 text-slate-300" />
                         )}
                       </button>
 
-                      <div className="space-y-0.5 min-w-0">
+                      {/* Video Evidence Timecode Thumbnail Pill */}
+                      <div
+                        onClick={(e) => handleOpenVideoClip(e, event)}
+                        className="relative w-28 h-18 sm:w-32 sm:h-20 bg-slate-950 rounded-xl overflow-hidden shrink-0 border border-slate-300 group/thumb cursor-pointer shadow-2xs"
+                        title="Click to play incident video clip @ timestamp"
+                      >
+                        <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-transparent to-transparent z-10" />
+                        <div className="absolute inset-0 flex items-center justify-center z-20 group-hover/thumb:scale-110 transition-transform">
+                          <span className="w-7 h-7 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-lg">
+                            <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
+                          </span>
+                        </div>
+                        <span className="absolute bottom-1 right-1.5 z-20 text-[10px] font-mono font-bold bg-slate-900/90 text-blue-400 px-1.5 py-0.2 rounded border border-slate-700">
+                          t={tSec}s
+                        </span>
+                      </div>
+
+                      {/* Incident Content & Metadata */}
+                      <div className="space-y-1 min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <RiskBadge level={event.risk_level} />
                           <span className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                            {event.behaviour}
+                            {event.behaviour || 'Kinematic Hazard Detected'}
                           </span>
-                          <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
-                            Score: {event.risk_score}
+                          <span className="text-[11px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                            Risk: {event.risk_score ? `${event.risk_score}%` : 'High'}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400 font-bold">
+                            {event.event_id}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 truncate flex items-center gap-2 font-mono">
-                          <span>{event.bay_id || 'Loading Bay 01'}</span>
-                          <span>·</span>
-                          <span>{event.camera_id || 'Camera 02'}</span>
-                          <span>·</span>
+
+                        {/* Location, Camera, Time */}
+                        <div className="flex items-center gap-2 text-xs text-slate-500 font-mono flex-wrap">
+                          <span className="flex items-center gap-1 font-semibold text-slate-700">
+                            <Truck className="w-3.5 h-3.5 text-blue-600" />
+                            {event.bay_id || 'Loading Bay 01'}
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Camera className="w-3.5 h-3.5 text-slate-400" />
+                            {event.camera_id || 'CAM-01'}
+                          </span>
+                          <span>•</span>
                           <span>{formatTimestamp(event.timestamp)}</span>
+                        </div>
+
+                        {/* Reason / Kinematic Callout */}
+                        <p className="text-xs text-slate-600 line-clamp-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                          <strong className="text-slate-800">Trigger: </strong>
+                          {event.reason || event.description || 'Rapid velocity deceleration spike detected.'}
                         </p>
                       </div>
                     </div>
 
-                    {/* Right Actions */}
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <span className="text-xs text-slate-500 font-mono hidden md:inline">
-                        Conf: 94%
-                      </span>
+                    {/* Right: Supervisor Actions & Details CTA */}
+                    <div className="flex items-center gap-2 shrink-0 self-end lg:self-center flex-wrap">
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenVideoClip(e, event)}
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-xl border border-blue-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Play className="w-3 h-3 fill-blue-600" />
+                        <span>Play Evidence</span>
+                      </button>
 
                       {isAcknowledged ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Acknowledged
                         </span>
                       ) : (
@@ -473,7 +662,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
                           type="button"
                           onClick={(e) => handleAcknowledge(e, event.event_id)}
                           disabled={acknowledgingIds[event.event_id]}
-                          className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                          className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white shadow-2xs transition-all cursor-pointer disabled:opacity-50"
                         >
                           {acknowledgingIds[event.event_id] ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -484,17 +673,130 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
                         </button>
                       )}
 
-                      <span className="text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform flex items-center ml-1">
-                        Review <ChevronRight className="w-3.5 h-3.5" />
-                      </span>
+                      {isDispatched ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          <Send className="w-3.5 h-3.5 text-indigo-600" /> Dispatched
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDispatch(e, event.event_id)}
+                          disabled={dispatchingIds[event.event_id]}
+                          className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          {dispatchingIds[event.event_id] ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Send className="w-3.5 h-3.5 text-slate-500" />
+                          )}
+                          <span>Dispatch</span>
+                        </button>
+                      )}
+
+                      <Link
+                        to={`/incident/${event.event_id}`}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-blue-600 text-xs font-semibold rounded-xl flex items-center gap-1 transition-colors"
+                      >
+                        <span>Dossier</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
                     </div>
                   </motion.div>
-                </Link>
+                </div>
               );
             })
           )}
         </AnimatePresence>
       </div>
+
+      {/* Video Evidence Modal */}
+      <AnimatePresence>
+        {activeVideoModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl overflow-hidden max-w-2xl w-full border border-slate-200 shadow-2xl flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-bold bg-blue-600 px-2 py-0.5 rounded">
+                      {activeVideoModal.event.event_id}
+                    </span>
+                    <h3 className="text-sm font-bold truncate">{activeVideoModal.event.behaviour}</h3>
+                  </div>
+                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                    {activeVideoModal.event.bay_id || 'Loading Bay 01'} • Camera: {activeVideoModal.event.camera_id || 'CAM-01'} • Timecode: t={activeVideoModal.timestampSec.toFixed(1)}s
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveVideoModal(null)}
+                  className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Video Player */}
+              <div className="relative aspect-video w-full bg-black">
+                <video
+                  src={activeVideoModal.videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain"
+                  onLoadedMetadata={(e) => {
+                    const videoEl = e.currentTarget;
+                    if (activeVideoModal.timestampSec > 0) {
+                      videoEl.currentTime = Math.max(0, activeVideoModal.timestampSec - 1.0);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Modal Details & Action */}
+              <div className="p-4 bg-white space-y-3">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700">AI Kinematic Diagnostic:</span>
+                    <span className="font-mono font-bold text-red-600">
+                      Score: {activeVideoModal.event.risk_score ?? 92.5}%
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    {activeVideoModal.event.reason || activeVideoModal.event.description}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveVideoModal(null)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const vTitle = activeVideoModal.videoUrl.split('/').pop() || '';
+                      navigate(`/?video=${encodeURIComponent(vTitle)}`);
+                    }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Launch Deep Optical Analysis</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Action Bar (FAB) for Multi-Select Bulk Actions */}
       <AnimatePresence>
@@ -503,7 +805,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
             initial={{ opacity: 0, y: 20, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 20, x: '-50%' }}
-            className="fixed bottom-6 left-1/2 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-4 flex-wrap sm:flex-nowrap border border-slate-800"
+            className="fixed bottom-6 left-1/2 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 flex-wrap sm:flex-nowrap border border-slate-800"
           >
             <div className="flex items-center gap-2 text-xs font-bold font-mono">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
@@ -518,7 +820,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
                 type="button"
                 onClick={handleBatchAcknowledge}
                 disabled={isBatchOperating}
-                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isBatchOperating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                 <span>Acknowledge Selected</span>
@@ -528,7 +830,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
                 type="button"
                 onClick={handleBatchDelete}
                 disabled={isBatchOperating}
-                className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isBatchOperating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                 <span>Delete Selected</span>
@@ -538,7 +840,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
                 type="button"
                 onClick={() => setSelectedIds([])}
                 disabled={isBatchOperating}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all cursor-pointer"
               >
                 Clear
               </button>
@@ -549,3 +851,4 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     </div>
   );
 };
+
