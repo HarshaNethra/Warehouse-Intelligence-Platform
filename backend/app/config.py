@@ -65,8 +65,8 @@ class AppConfig:
         "https://generativelanguage.googleapis.com/v1beta/models"
     )
     GEMINI_TEMPERATURE: float = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
-    GEMINI_MAX_OUTPUT_TOKENS: int = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "1024"))
-    ASSISTANT_CONTEXT_LIMIT: int = int(os.getenv("ASSISTANT_CONTEXT_LIMIT", "10"))
+    GEMINI_MAX_OUTPUT_TOKENS: int = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "512"))
+    ASSISTANT_CONTEXT_LIMIT: int = int(os.getenv("ASSISTANT_CONTEXT_LIMIT", "6"))
 
     # Roboflow API Settings
     ROBOFLOW_API_KEY: str = os.getenv("ROBOFLOW_API_KEY", "")

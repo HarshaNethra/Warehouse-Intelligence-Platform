@@ -91,14 +91,15 @@ async def chat(
     if specific_event_requested:
         events_query = events_query.filter(models.Event.event_id.in_(evt_ids))
 
-    sql_events = events_query.order_by(models.Event.timestamp.desc()).limit(15).all()
+    context_limit = settings.ASSISTANT_CONTEXT_LIMIT or 6
+    sql_events = events_query.order_by(models.Event.timestamp.desc()).limit(context_limit).all()
 
     # 3. Vector Retrieval (ChromaDB)
     rag_matches = []
     try:
         rag_matches = rag_vector_store.query_incidents(
             query_text=request.question,
-            n_results=4,
+            n_results=2,
             facility_id=target_facility_id
         )
     except Exception as e:
@@ -151,33 +152,47 @@ async def chat(
         requested_facility_id=requested_fac
     )
 
-    # Check for simple greeting / capability intent
+    # Check for simple greeting / capability intent (instant zero-token local return)
     is_greeting = bool(re.match(r"^(hi|hello|hey|greetings|howdy|good\s*(morning|afternoon|evening)|who are you|what can you do)\b", request.question.strip().lower()))
+    if is_greeting:
+        return assistant_schema.ChatResponse(
+            answer=(
+                f"Hello! I am your AI Operations Assistant for facility {target_facility_id}. "
+                f"I continuously monitor loading bays and CCTV telemetry, detect unsafe handling practices "
+                f"(such as dropped boxes, unstable stacking, or dragged cartons), and provide risk recommendations. "
+                f"How can I assist you with today's operations?"
+            ),
+            citations=citations,
+            data_scope=data_scope_obj,
+            generated_at=now_iso,
+            model="Local-Rule-Assistant",
+            retrieval_count=retrieval_count,
+            question=request.question,
+            source_events=citations,
+            model_used="Local-Rule-Assistant"
+        )
 
-    # 5. Context Construction for LLM Prompt
+    # 5. Token-Efficient Compact Context Construction for LLM Prompt
     context_lines = [
-        f"• Event ID: {c.event_id} | Facility: {c.facility_id} | Timestamp: {c.timestamp:.2f}s | "
-        f"Bay: {c.bay_id or 'Loading Dock'} | Camera: {c.camera_id or 'CAM-01'} | "
-        f"Behaviour: {c.behaviour} | Details: {c.description}"
-        for c in citations
+        f"[{c.event_id} | Bay {c.bay_id or 'Dock'} | t={c.timestamp:.1f}s | {c.behaviour} | {c.description}]"
+        for c in citations[:6]
     ]
     context_str = "\n".join(context_lines) if context_lines else "No specific filtered events recorded."
 
     prompt = (
         f"You are the Godrej Warehouse AI Intelligence Operations Assistant.\n"
-        f"You are speaking to a warehouse supervisor authorized for Facility: {target_facility_id}.\n\n"
-        f"CURRENT FACILITY TELEMETRY & INCIDENTS ({retrieval_count} events available):\n"
+        f"Supervisor Facility Scope: {target_facility_id}.\n\n"
+        f"VERIFIED INCIDENT TELEMETRY ({retrieval_count} events):\n"
         f"{context_str}\n\n"
-        f"SUPERVISOR'S INQUIRY: {request.question}\n\n"
+        f"SUPERVISOR INQUIRY: {request.question}\n\n"
         f"INSTRUCTIONS:\n"
-        f"1. If the supervisor is greeting you or asking what you can do, greet them warmly, state your role as the Warehouse Operations AI Assistant, and highlight key stats/recent incidents for {target_facility_id}.\n"
-        f"2. Answer the supervisor's questions clearly, accurately, and concisely based on the available telemetry above.\n"
-        f"3. Provide actionable safety recommendations and supervisor corrective interventions whenever high-risk behaviours (e.g. dropped cartons, dragging, improper stacking) are discussed.\n"
-        f"4. Reference specific Event IDs (e.g., EVT-014, EVT-015) and Bay locations where relevant."
+        f"1. Answer clearly, accurately, and concisely based strictly on the telemetry provided above.\n"
+        f"2. Provide actionable safety recommendations for any high-risk behaviours discussed.\n"
+        f"3. Cite specific Event IDs (e.g. EVT-014) and Bay locations where relevant."
     )
 
-    # 6. LLM Response Generation with Fallback
-    model_name = "gemini-1.5-flash"
+    # 6. LLM Response Generation with Graceful Fallback
+    model_name = settings.GEMINI_MODEL
     answer_text = None
 
     if gemini_client.is_configured():
@@ -185,20 +200,12 @@ async def chat(
             raw_answer = await gemini_client.generate_response(prompt, system_prompt=settings.SYSTEM_ASSISTANT_PROMPT)
             if raw_answer and not raw_answer.startswith("Gemini API"):
                 answer_text = raw_answer
-                model_name = gemini_client.model or "gemini-1.5-flash"
+                model_name = gemini_client.model or settings.GEMINI_MODEL
         except Exception as e:
             print(f"[Assistant] Gemini API error: {e}. Falling back to grounded SQL summary.")
 
     if not answer_text:
-        if is_greeting:
-            answer_text = (
-                f"Hello! I am your AI Operations Assistant for facility {target_facility_id}. "
-                f"I continuously monitor loading bays and CCTV telemetry, detect unsafe handling practices "
-                f"(such as dropped boxes, unstable stacking, or dragged cartons), and provide risk recommendations. "
-                f"How can I assist you with today's operations?"
-            )
-            model_name = "Rule-Engine-Assistant"
-        elif retrieval_count > 0:
+        if retrieval_count > 0:
             model_name = "SQL+RAG-Local-Grounded"
             summary_lines = [
                 f"Based on {retrieval_count} verified records in facility '{target_facility_id}':\n"
