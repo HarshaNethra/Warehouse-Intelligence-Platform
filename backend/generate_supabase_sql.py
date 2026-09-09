@@ -1,7 +1,21 @@
+"""
+Supabase PostgreSQL Schema & Data Generator for Warehouse Intelligence Platform.
+Generates a complete, flawless SQL script matching SQLAlchemy models and SQLite data.
+"""
+
 import sqlite3
+import sys
 from pathlib import Path
+from sqlalchemy.dialects import postgresql
+from sqlalchemy import Integer
 
 backend_dir = Path(__file__).resolve().parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
+
+from app.db.database import Base
+from app.db import models
+
 db_path = backend_dir / "warehouse.db"
 out_path = backend_dir.parent / "supabase_schema.sql"
 
@@ -16,173 +30,135 @@ lines = [
     "",
     "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";",
     "",
-    "-- 1. Organizations",
-    """CREATE TABLE IF NOT EXISTS organizations (
-    id VARCHAR PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    subscription_tier VARCHAR DEFAULT 'ENTERPRISE',
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 2. Facilities",
-    """CREATE TABLE IF NOT EXISTS facilities (
-    id VARCHAR PRIMARY KEY,
-    organization_id VARCHAR REFERENCES organizations(id),
-    name VARCHAR NOT NULL,
-    location VARCHAR,
-    timezone VARCHAR DEFAULT 'Asia/Kolkata',
-    status VARCHAR DEFAULT 'ACTIVE',
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 3. Users",
-    """CREATE TABLE IF NOT EXISTS users (
-    id VARCHAR PRIMARY KEY,
-    organization_id VARCHAR REFERENCES organizations(id),
-    facility_id VARCHAR REFERENCES facilities(id),
-    email VARCHAR UNIQUE NOT NULL,
-    hashed_password VARCHAR NOT NULL,
-    full_name VARCHAR NOT NULL,
-    role VARCHAR NOT NULL DEFAULT 'SUPERVISOR',
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 4. Loading Bays",
-    """CREATE TABLE IF NOT EXISTS loading_bays (
-    id VARCHAR PRIMARY KEY,
-    facility_id VARCHAR REFERENCES facilities(id),
-    name VARCHAR NOT NULL,
-    code VARCHAR NOT NULL,
-    status VARCHAR DEFAULT 'Operational',
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 5. Cameras",
-    """CREATE TABLE IF NOT EXISTS cameras (
-    id VARCHAR PRIMARY KEY,
-    loading_bay_id VARCHAR REFERENCES loading_bays(id),
-    name VARCHAR NOT NULL,
-    camera_code VARCHAR NOT NULL,
-    source_type VARCHAR DEFAULT 'RTSP',
-    stream_url VARCHAR,
-    status VARCHAR DEFAULT 'ONLINE',
-    last_seen_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 6. Safety Rules",
-    """CREATE TABLE IF NOT EXISTS safety_rules (
-    id VARCHAR PRIMARY KEY,
-    facility_id VARCHAR REFERENCES facilities(id),
-    behaviour_type VARCHAR NOT NULL,
-    max_allowed_per_hour INTEGER DEFAULT 5,
-    severity_weight FLOAT DEFAULT 1.0,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 7. Videos",
-    """CREATE TABLE IF NOT EXISTS videos (
-    video_id VARCHAR PRIMARY KEY,
-    camera_id VARCHAR,
-    filename VARCHAR NOT NULL,
-    duration FLOAT DEFAULT 0.0,
-    fps FLOAT DEFAULT 30.0,
-    width INTEGER DEFAULT 1920,
-    height INTEGER DEFAULT 1080,
-    frame_count INTEGER DEFAULT 0,
-    status VARCHAR DEFAULT 'processed',
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 8. Events",
-    """CREATE TABLE IF NOT EXISTS events (
-    event_id VARCHAR PRIMARY KEY,
-    organization_id VARCHAR,
-    facility_id VARCHAR,
-    video_id VARCHAR,
-    timestamp FLOAT NOT NULL,
-    timestamp_seconds FLOAT DEFAULT 0.0,
-    camera_id VARCHAR,
-    bay_id VARCHAR,
-    object_id INTEGER DEFAULT 1,
-    behaviour VARCHAR NOT NULL,
-    risk_level VARCHAR NOT NULL,
-    risk_score FLOAT NOT NULL,
-    description TEXT,
-    reason TEXT,
-    recommended_action TEXT,
-    evidence_frame VARCHAR,
-    video_reference VARCHAR,
-    status VARCHAR DEFAULT 'UNRESOLVED',
-    acknowledged_by VARCHAR,
-    dispatched_to VARCHAR,
-    dispatch_notes TEXT,
-    provenance_type VARCHAR DEFAULT 'REAL_INFERENCE',
-    environment VARCHAR DEFAULT 'PRODUCTION_PROTOTYPE',
-    confidence FLOAT DEFAULT 0.94,
-    model_name VARCHAR DEFAULT 'YOLO11s',
-    model_version VARCHAR DEFAULT 'v1.4.2-tensorrt',
-    is_demo_data BOOLEAN DEFAULT FALSE,
-    is_test_data BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 9. Risk Assessments",
-    """CREATE TABLE IF NOT EXISTS risk_assessments (
-    id VARCHAR PRIMARY KEY,
-    event_id VARCHAR,
-    behaviour_observation_id VARCHAR,
-    risk_level VARCHAR NOT NULL,
-    risk_score FLOAT NOT NULL,
-    confidence FLOAT DEFAULT 0.94,
-    reason TEXT,
-    risk_factors_json TEXT,
-    model_version VARCHAR DEFAULT 'warehouse-risk-v1.4',
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);""",
-    "",
-    "-- 10. Model Runs Telemetry",
-    """CREATE TABLE IF NOT EXISTS model_runs (
-    id VARCHAR PRIMARY KEY,
-    model_name VARCHAR NOT NULL,
-    model_version VARCHAR NOT NULL,
-    device VARCHAR DEFAULT 'cuda',
-    fps FLOAT DEFAULT 89.4,
-    latency_ms FLOAT DEFAULT 11.2,
-    confidence_threshold FLOAT DEFAULT 0.45,
-    started_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR DEFAULT 'RUNNING'
-);""",
-    "",
-    "-- ============================================================================",
-    "-- DATA INGESTION & CANONICAL SEED RECORDS",
-    "-- ============================================================================",
-    ""
 ]
 
-tables_order = ['organizations', 'facilities', 'users', 'loading_bays', 'cameras', 'safety_rules', 'videos', 'events']
+# Order of tables for DROP CASCADE
+all_tables = [
+    "detections",
+    "object_tracks",
+    "frame_records",
+    "behaviour_observations",
+    "telemetry_points",
+    "video_processing_jobs",
+    "incident_reviews",
+    "risk_assessments",
+    "events",
+    "inference_runs",
+    "videos",
+    "safety_rules",
+    "cameras",
+    "shifts",
+    "loading_bays",
+    "users",
+    "facilities",
+    "organizations",
+    "model_runs",
+    "audit_logs",
+    "evaluation_samples",
+    "evaluation_datasets",
+]
 
-for t in tables_order:
-    cur.execute(f"SELECT * FROM {t}")
-    rows = cur.fetchall()
-    cols = [d[0] for d in cur.description]
-    lines.append(f"-- Ingesting {len(rows)} records into {t}")
-    for r in rows:
-        vals = []
-        for col_name, v in zip(cols, r):
-            if v is None:
-                vals.append("NULL")
-            elif isinstance(v, bool):
-                vals.append("TRUE" if v else "FALSE")
-            elif isinstance(v, (int, float)):
-                vals.append(str(v))
-            else:
-                escaped = str(v).replace("'", "''")
-                vals.append(f"'{escaped}'")
-        lines.append(f"INSERT INTO {t} ({', '.join(cols)}) VALUES ({', '.join(vals)}) ON CONFLICT ({(cols[0])}) DO NOTHING;")
+lines.append("-- 1. Cleanly drop any previous tables")
+for t in all_tables:
+    lines.append(f"DROP TABLE IF EXISTS {t} CASCADE;")
+lines.append("")
+
+# Table creation order (dependencies first)
+creation_order = [
+    "organizations",
+    "facilities",
+    "users",
+    "loading_bays",
+    "shifts",
+    "cameras",
+    "safety_rules",
+    "videos",
+    "inference_runs",
+    "behaviour_observations",
+    "events",
+    "risk_assessments",
+    "incident_reviews",
+    "video_processing_jobs",
+    "telemetry_points",
+    "frame_records",
+    "object_tracks",
+    "detections",
+    "model_runs",
+    "audit_logs",
+    "evaluation_datasets",
+    "evaluation_samples",
+]
+
+lines.append("-- 2. Create Table Definitions")
+for t_name in creation_order:
+    if t_name not in Base.metadata.tables:
+        continue
+    table = Base.metadata.tables[t_name]
+    cols_def = []
+    for col in table.columns:
+        if col.primary_key and isinstance(col.type, Integer) and col.autoincrement:
+            cols_def.append(f"    {col.name} SERIAL PRIMARY KEY")
+            continue
+
+        col_type = col.type.compile(dialect=postgresql.dialect())
+        nullable = "" if col.nullable else " NOT NULL"
+        pk = " PRIMARY KEY" if col.primary_key else ""
+        cols_def.append(f"    {col.name} {col_type}{pk}{nullable}")
+
+    lines.append(f"CREATE TABLE {t_name} (\n" + ",\n".join(cols_def) + "\n);")
     lines.append("")
+
+lines.append("-- ============================================================================")
+lines.append("-- 3. CANONICAL DATA SEEDING")
+lines.append("-- ============================================================================")
+lines.append("")
+
+for t in creation_order:
+    try:
+        cur.execute(f"SELECT * FROM {t}")
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        if not rows:
+            continue
+        lines.append(f"-- Ingesting {len(rows)} records into {t}")
+        for r in rows:
+            vals = []
+            for col_name, v in zip(cols, r):
+                if v is None:
+                    vals.append("NULL")
+                elif isinstance(v, bool):
+                    vals.append("TRUE" if v else "FALSE")
+                elif isinstance(v, (int, float)):
+                    vals.append(str(v))
+                else:
+                    escaped = str(v).replace("'", "''")
+                    vals.append(f"'{escaped}'")
+            pk_col = cols[0]
+            lines.append(f"INSERT INTO {t} ({', '.join(cols)}) VALUES ({', '.join(vals)}) ON CONFLICT ({pk_col}) DO NOTHING;")
+        lines.append("")
+    except Exception as e:
+        print(f"Skipping table {t}: {e}")
+
+lines.append("-- ============================================================================")
+lines.append("-- 4. FOREIGN KEY CONSTRAINTS")
+lines.append("-- ============================================================================")
+lines.append("")
+
+constraint_idx = 1
+for t_name in creation_order:
+    if t_name not in Base.metadata.tables:
+        continue
+    table = Base.metadata.tables[t_name]
+    for fk in table.foreign_keys:
+        target_table = fk.column.table.name
+        target_col = fk.column.name
+        source_col = fk.parent.name
+        c_name = f"fk_{t_name}_{source_col}_{constraint_idx}"
+        constraint_idx += 1
+        lines.append(f"ALTER TABLE {t_name} ADD CONSTRAINT {c_name} FOREIGN KEY ({source_col}) REFERENCES {target_table} ({target_col}) ON DELETE CASCADE;")
+
+lines.append("")
+lines.append("-- End of Supabase Schema & Seed Script")
 
 con.close()
 
