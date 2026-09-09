@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 import logging
 from sqlalchemy import create_engine, text, event
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -7,16 +8,37 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
+def sanitize_database_url(url: str) -> str:
+    """
+    Normalizes database URLs, automatically URL-encoding special characters (like @) in passwords.
+    """
+    url = str(url).strip().strip("'\"")
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+
+    if "://" in url and not url.lower().startswith("sqlite"):
+        try:
+            prefix, rest = url.split("://", 1)
+            if "@" in rest:
+                auth_part, host_part = rest.rsplit("@", 1)
+                if ":" in auth_part:
+                    user, pwd = auth_part.split(":", 1)
+                    # Decode first to avoid double encoding, then encode properly
+                    unquoted_pwd = urllib.parse.unquote(pwd)
+                    encoded_pwd = urllib.parse.quote_plus(unquoted_pwd)
+                    url = f"{prefix}://{user}:{encoded_pwd}@{host_part}"
+        except Exception as err:
+            logger.warning(f"Could not sanitize DATABASE_URL: {err}")
+
+    return url
+
+
 def create_resilient_engine():
     """
     Creates a SQLAlchemy engine with resilient connection handling.
     Supports Supabase PostgreSQL (with PgBouncer) and falls back to SQLite.
     """
-    raw_url = str(settings.DATABASE_URL or "sqlite:///./warehouse.db").strip()
-
-    # Normalize Supabase/Heroku-style postgres:// to postgresql://
-    if raw_url.startswith("postgres://"):
-        raw_url = raw_url.replace("postgres://", "postgresql://", 1)
+    raw_url = sanitize_database_url(settings.DATABASE_URL or "sqlite:///./warehouse.db")
 
     is_sqlite = "sqlite" in raw_url.lower()
 
