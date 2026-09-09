@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Film, Activity, Clock } from 'lucide-react';
 import { formatTimecode } from '../utils/formatters';
+import { VideoTrajectoryOverlay } from './VideoTrajectoryOverlay';
 
 export interface VideoPlayerProps {
   videoUrl?: string;
@@ -104,18 +105,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Active risk state evaluation
   const activeRisk = riskScore !== undefined ? riskScore : ((displayTime >= 15 && displayTime <= 24) || (displayTime >= 40 && displayTime <= 46) ? 94.6 : 15.0);
   const isCritical = activeRisk >= 75.0;
-  const roundedTime = Math.floor(displayTime);
 
-  // Normalized Bounding Box percentages
-  const normX = Math.min(65, Math.max(15, 30 + (roundedTime % 7) * 4));
-  const normY = Math.min(60, Math.max(20, 35 + Math.sin(displayTime * 0.7) * 8));
-  const normW = 22;
-  const normH = 26;
-
-  const boxLeftPx = offsetX + (normX / 100) * renderedWidth;
-  const boxTopPx = offsetY + (normY / 100) * renderedHeight;
-  const boxWidthPx = (normW / 100) * renderedWidth;
-  const boxHeightPx = (normH / 100) * renderedHeight;
+  // Interactive AI Annotations Toggle Controls
+  const [showBoxes, setShowBoxes] = useState<boolean>(true);
+  const [showTrails, setShowTrails] = useState<boolean>(true);
 
   return (
     <div
@@ -125,7 +118,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Loading & Buffering Skeleton Overlay */}
       {videoUrl && isLoading && !hasError && (
         <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center gap-3 text-slate-100">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-xs font-mono text-slate-300 uppercase tracking-wider font-semibold">
             Loading YOLO11 Stream [{videoId}]...
           </span>
@@ -170,42 +163,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       )}
 
-      {/* Dynamic Bounding Box Overlay Layer */}
+      {/* Dynamic Letterbox-Aware Trajectory & Bounding Box Overlay */}
       {videoUrl && !hasError && (
-        <div className="absolute inset-0 pointer-events-none z-10">
-          {isCritical ? (
-            <div
-              className="absolute border-2 border-red-500 bg-red-500/20 rounded-lg transition-all duration-150 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.5)]"
-              style={{
-                left: `${boxLeftPx}px`,
-                top: `${boxTopPx}px`,
-                width: `${boxWidthPx}px`,
-                height: `${boxHeightPx}px`,
-              }}
-            >
-              <div className="bg-red-600 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-t -mt-6 inline-block truncate max-w-[220px] shadow">
-                ⚠️ CRITICAL: {behaviour || 'Product Dropped'}
-              </div>
-              <div className="absolute bottom-1 right-1 text-[9px] font-mono text-red-200 bg-black/85 px-1.5 py-0.5 rounded border border-red-500/40">
-                Risk Peak • Object #42
-              </div>
-            </div>
-          ) : (
-            <div
-              className="absolute border border-emerald-400/70 bg-emerald-500/10 rounded-lg transition-all duration-300 shadow-sm"
-              style={{
-                left: `${boxLeftPx}px`,
-                top: `${boxTopPx}px`,
-                width: `${boxWidthPx}px`,
-                height: `${boxHeightPx}px`,
-              }}
-            >
-              <div className="bg-emerald-600 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-t -mt-5 inline-block shadow">
-                OBJ_CARTON #42 • Nominal Handling
-              </div>
-            </div>
-          )}
-        </div>
+        <VideoTrajectoryOverlay
+          currentTime={displayTime}
+          duration={videoNaturalSize.width ? displayTime : 60}
+          renderedWidth={renderedWidth}
+          renderedHeight={renderedHeight}
+          offsetX={offsetX}
+          offsetY={offsetY}
+          showBoxes={showBoxes}
+          showTrails={showTrails}
+          activeRiskScore={activeRisk}
+          activeBehavior={behaviour}
+        />
       )}
 
       {/* Top-Left Glassmorphic Overlay HUD */}
@@ -216,7 +187,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </span>
         <span className="font-bold text-white tracking-wide">{videoId}</span>
         <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
-          <Clock className="w-3 h-3 text-primary" />
+          <Clock className="w-3 h-3 text-blue-400" />
           {formatTimecode(displayTime)}
         </span>
         <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded ${
@@ -226,10 +197,35 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </span>
       </div>
 
-      {/* Top-Right Active Badge */}
-      <div className="absolute top-3 right-3 pointer-events-none z-20 hidden sm:flex items-center gap-2 text-xs font-mono bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-emerald-400 shadow-lg">
-        <Activity className={`w-3.5 h-3.5 text-emerald-400 ${isPlaying ? 'animate-pulse' : ''}`} />
-        <span className="text-slate-300">{isPlaying ? (isCustomUpload ? 'OPTICAL FILE STREAM' : 'LIVE SENSOR BUS') : 'STREAM PAUSED'}</span>
+      {/* Top-Right Active Badge & Annotation Controls */}
+      <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-1 bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-lg border border-slate-800 shadow-lg">
+          <button
+            type="button"
+            onClick={() => setShowBoxes(!showBoxes)}
+            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
+              showBoxes ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title="Toggle YOLO Bounding Boxes"
+          >
+            Boxes: {showBoxes ? 'ON' : 'OFF'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowTrails(!showTrails)}
+            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
+              showTrails ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title="Toggle Trajectory Motion Trails"
+          >
+            Trails: {showTrails ? 'ON' : 'OFF'}
+          </button>
+        </div>
+
+        <div className="hidden md:flex items-center gap-2 text-xs font-mono bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-emerald-400 shadow-lg">
+          <Activity className={`w-3.5 h-3.5 text-emerald-400 ${isPlaying ? 'animate-pulse' : ''}`} />
+          <span className="text-slate-300">{isPlaying ? (isCustomUpload ? 'OPTICAL FILE STREAM' : 'LIVE SENSOR BUS') : 'STREAM PAUSED'}</span>
+        </div>
       </div>
     </div>
   );

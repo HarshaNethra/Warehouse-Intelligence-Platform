@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useEvents } from '../hooks/useEvents';
 import { exportEventsCsv, acknowledgeIncident, batchDeleteIncidents, batchUpdateIncidentStatus } from '../api/events';
+import { exportComprehensiveEventsCsv, generateSafetyAuditPdfReport } from '../utils/reportExporter';
 import { RiskBadge } from './RiskBadge';
 import { formatTimestamp } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Search, Filter, X, ShieldAlert, Download, Loader2, CheckCircle2, AlertOctagon, Trash2, CheckSquare, Square } from 'lucide-react';
+import { ChevronRight, Search, Filter, X, ShieldAlert, Download, Loader2, CheckCircle2, AlertOctagon, Trash2, CheckSquare, Square, FileText } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { Event } from '../types/event';
 
@@ -238,9 +239,15 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Failed to export incident reports:', err);
+      // Fallback to client-side comprehensive CSV export if backend endpoint fails
+      exportComprehensiveEventsCsv(sortedAndFilteredEvents);
     } finally {
       setIsExporting(false);
     }
+  };
+
+  const handleGeneratePdfReport = () => {
+    generateSafetyAuditPdfReport(sortedAndFilteredEvents);
   };
 
   if (loading) {
@@ -294,10 +301,22 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
               {sortedAndFilteredEvents.length} {sortedAndFilteredEvents.length === 1 ? 'incident' : 'incidents'}
             </span>
+
+            <button
+              type="button"
+              onClick={handleGeneratePdfReport}
+              disabled={sortedAndFilteredEvents.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200 transition-all cursor-pointer disabled:opacity-50"
+              title="Generate Printable Safety Audit Compliance Report"
+            >
+              <FileText className="w-3.5 h-3.5 text-blue-600" />
+              <span>Audit Report PDF</span>
+            </button>
+
             <button
               type="button"
               onClick={handleExportCSV}

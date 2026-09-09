@@ -3,6 +3,8 @@ import { VideoPlayer } from '../components/VideoPlayer';
 import { VideoIngestionSection } from '../components/VideoIngestionSection';
 import { RiskTimeline } from '../components/RiskTimeline';
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
+import { MultiCameraGrid, type CameraFeedItem } from '../components/MultiCameraGrid';
+import { WarehouseFloorMap, type WarehouseZone } from '../components/WarehouseFloorMap';
 import { 
   Camera, 
   RefreshCw, 
@@ -13,7 +15,10 @@ import {
   Truck,
   ShieldCheck,
   Send,
-  XCircle
+  XCircle,
+  LayoutGrid,
+  Maximize2,
+  MapPin
 } from 'lucide-react';
 import { getLoadingBays, type LoadingBay } from '../api/facilities';
 import { useEvents } from '../hooks/useEvents';
@@ -45,6 +50,30 @@ export const LiveMonitoring: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [videoDuration, setVideoDuration] = useState<number>(60);
   const [videoPayload, setVideoPayload] = useState<VideoTelemetryPayload>(INITIAL_VIDEO_PAYLOAD);
+  const [viewMode, setViewMode] = useState<'SINGLE' | 'GRID' | 'FLOOR_MAP'>('SINGLE');
+
+  const handleGridFeedSelect = (feed: CameraFeedItem) => {
+    const payload = generateTelemetryForVideo(
+      feed.filename,
+      18 * 1024 * 1024,
+      feed.bay,
+      feed.videoUrl,
+      60
+    );
+    handleVideoSelect(payload);
+    setViewMode('SINGLE');
+  };
+
+  const handleFloorZoneSelect = (zone: WarehouseZone) => {
+    const payload = generateTelemetryForVideo(
+      zone.videoTitle,
+      18 * 1024 * 1024,
+      zone.name,
+      zone.primaryVideoUrl,
+      60
+    );
+    handleVideoSelect(payload);
+  };
 
   const fetchCameraFeeds = async () => {
     try {
@@ -192,7 +221,49 @@ export const LiveMonitoring: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* View Mode Switcher */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('SINGLE')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  viewMode === 'SINGLE'
+                    ? 'bg-white text-blue-600 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span>Optical Deep-Dive</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewMode('GRID')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  viewMode === 'GRID'
+                    ? 'bg-white text-blue-600 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>7-Camera Grid</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewMode('FLOOR_MAP')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  viewMode === 'FLOOR_MAP'
+                    ? 'bg-white text-blue-600 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Floor Map</span>
+              </button>
+            </div>
+
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono shadow-2xs">
               <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-ping' : 'bg-blue-500'}`} />
               <span className="text-slate-700 font-semibold">{isConnected ? 'WebSocket Live' : 'REST Active'}</span>
@@ -254,127 +325,146 @@ export const LiveMonitoring: React.FC = () => {
           </div>
         )}
 
-        {/* Live Video + Actionable Intelligence Viewport */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Video Stream Replay / Live Player */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="bg-slate-950 rounded-xl overflow-hidden shadow-xl border border-slate-800">
-              <VideoPlayer
-                videoRef={videoRef}
-                videoUrl={videoPayload.videoUrl}
-                videoId={videoPayload.id}
-                timestamp={currentTime}
-                duration={videoDuration}
-                onDurationChange={handleDurationChange}
-                onTimeUpdate={(t) => setCurrentTime(t)}
-                behaviour={activeBehavior}
-                riskScore={peakRiskValue}
-                riskLevel={computedRiskLevel}
-              />
-            </div>
+        {/* View Mode Switching: Multi-Camera Grid */}
+        {viewMode === 'GRID' && (
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <MultiCameraGrid
+              onSelectFeed={handleGridFeedSelect}
+              activeFeedFilename={videoPayload.filename}
+            />
           </div>
+        )}
 
-          {/* Actionable AI Intelligence Panel */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-blue-600" /> REAL-TIME AI TELEMETRY
-                </span>
-                <span className={`px-2.5 py-0.5 rounded text-xs font-bold font-mono uppercase ${
-                  computedRiskLevel === 'CRITICAL' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                  computedRiskLevel === 'HIGH' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                  computedRiskLevel === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-                  'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                }`}>
-                  {computedRiskLevel} RISK ({peakRiskValue.toFixed(1)}%)
-                </span>
+        {/* View Mode Switching: Warehouse Digital Twin Floor Map */}
+        {viewMode === 'FLOOR_MAP' && (
+          <WarehouseFloorMap onSelectZone={handleFloorZoneSelect} />
+        )}
+
+        {/* View Mode Switching: Single Optical Stream Deep-Dive */}
+        {viewMode === 'SINGLE' && (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Video Stream Replay / Live Player */}
+              <div className="lg:col-span-2 space-y-4">
+                <div className="bg-slate-950 rounded-xl overflow-hidden shadow-xl border border-slate-800">
+                  <VideoPlayer
+                    videoRef={videoRef}
+                    videoUrl={videoPayload.videoUrl}
+                    videoId={videoPayload.id}
+                    timestamp={currentTime}
+                    duration={videoDuration}
+                    onDurationChange={handleDurationChange}
+                    onTimeUpdate={(t) => setCurrentTime(t)}
+                    behaviour={activeBehavior}
+                    riskScore={peakRiskValue}
+                    riskLevel={computedRiskLevel}
+                  />
+                </div>
               </div>
 
-              {/* Dynamic Telemetry What Happened */}
-              <div className="space-y-1 text-xs">
-                <p className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">WHAT HAPPENED</p>
-                <p className="text-slate-800 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  {whatHappenedText}
-                </p>
-              </div>
+              {/* Actionable AI Intelligence Panel */}
+              <div className="space-y-4">
+                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-blue-600" /> REAL-TIME AI TELEMETRY
+                    </span>
+                    <span className={`px-2.5 py-0.5 rounded text-xs font-bold font-mono uppercase ${
+                      computedRiskLevel === 'CRITICAL' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                      computedRiskLevel === 'HIGH' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                      computedRiskLevel === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                      'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                    }`}>
+                      {computedRiskLevel} RISK ({peakRiskValue.toFixed(1)}%)
+                    </span>
+                  </div>
 
-              {/* Dynamic Why It Matters */}
-              <div className="space-y-1 text-xs">
-                <p className="font-bold text-amber-900 uppercase tracking-wider text-[10px]">WHY IT MATTERS</p>
-                <p className="text-slate-800 leading-relaxed bg-amber-50/60 p-3 rounded-lg border border-amber-100">
-                  {whyItMattersText}
-                </p>
-              </div>
+                  {/* Dynamic Telemetry What Happened */}
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">WHAT HAPPENED</p>
+                    <p className="text-slate-800 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
+                      {whatHappenedText}
+                    </p>
+                  </div>
 
-              {/* Dynamic Recommended Action */}
-              <div className="space-y-1 text-xs">
-                <p className="font-bold text-blue-900 uppercase tracking-wider text-[10px]">RECOMMENDED INTERVENTION</p>
-                <p className="text-slate-800 font-semibold bg-blue-50/60 p-3 rounded-lg border border-blue-100">
-                  {recommendedActionText}
-                </p>
-              </div>
+                  {/* Dynamic Why It Matters */}
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-amber-900 uppercase tracking-wider text-[10px]">WHY IT MATTERS</p>
+                    <p className="text-slate-800 leading-relaxed bg-amber-50/60 p-3 rounded-lg border border-amber-100">
+                      {whyItMattersText}
+                    </p>
+                  </div>
 
-              {/* Supervisor Actions */}
-              <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2">
-                {falsePositive ? (
-                  <span className="w-full text-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold font-mono">
-                    Marked False Positive
-                  </span>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setAcknowledged(true)}
-                      disabled={acknowledged}
-                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                        acknowledged
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                          : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                      }`}
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {acknowledged ? 'Acknowledged' : 'Acknowledge'}
-                    </button>
+                  {/* Dynamic Recommended Action */}
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-blue-900 uppercase tracking-wider text-[10px]">RECOMMENDED INTERVENTION</p>
+                    <p className="text-slate-800 font-semibold bg-blue-50/60 p-3 rounded-lg border border-blue-100">
+                      {recommendedActionText}
+                    </p>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setDispatched(true)}
-                      disabled={dispatched}
-                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                        dispatched
-                          ? 'bg-cyan-100 text-cyan-800 border border-cyan-300'
-                          : 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs'
-                      }`}
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      {dispatched ? 'Dispatched' : 'Dispatch'}
-                    </button>
+                  {/* Supervisor Actions */}
+                  <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2">
+                    {falsePositive ? (
+                      <span className="w-full text-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold font-mono">
+                        Marked False Positive
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setAcknowledged(true)}
+                          disabled={acknowledged}
+                          className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                            acknowledged
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                          }`}
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          {acknowledged ? 'Acknowledged' : 'Acknowledge'}
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setFalsePositive(true)}
-                      className="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200"
-                      title="Mark as false positive"
-                    >
-                      <XCircle className="w-3.5 h-3.5 text-slate-500" />
-                    </button>
-                  </>
-                )}
+                        <button
+                          type="button"
+                          onClick={() => setDispatched(true)}
+                          disabled={dispatched}
+                          className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                            dispatched
+                              ? 'bg-cyan-100 text-cyan-800 border border-cyan-300'
+                              : 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs'
+                          }`}
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          {dispatched ? 'Dispatched' : 'Dispatch'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setFalsePositive(true)}
+                          className="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200"
+                          title="Mark as false positive"
+                        >
+                          <XCircle className="w-3.5 h-3.5 text-slate-500" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Kinematic Risk Timeline & Scrubber */}
-        <RiskTimeline
-          timelineData={videoPayload.timelineData}
-          currentTime={currentTime}
-          videoDuration={videoDuration}
-          compositeRiskScore={videoPayload.riskScore}
-          peakRisk={peakRiskValue}
-          onSeek={handleChartClick}
-        />
+            {/* Kinematic Risk Timeline & Scrubber */}
+            <RiskTimeline
+              timelineData={videoPayload.timelineData}
+              currentTime={currentTime}
+              videoDuration={videoDuration}
+              compositeRiskScore={videoPayload.riskScore}
+              peakRisk={peakRiskValue}
+              onSeek={handleChartClick}
+            />
+          </>
+        )}
 
         {/* Video Ingestion Section (Positioned Below Stream) */}
         <VideoIngestionSection onVideoSelect={handleVideoSelect} />

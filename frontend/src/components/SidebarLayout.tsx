@@ -17,11 +17,15 @@ import {
   Truck,
   Search,
   ChevronDown,
-  Database
+  Database,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UrgentAlertsDropdown } from './UrgentAlertsDropdown';
 import { FloatingChatbot } from './FloatingChatbot';
+import { LiveAlertToast } from './LiveAlertToast';
+import { soundSynthesizer } from '../utils/soundAlerts';
 import { useAuth } from '../context/AuthContext';
 import { useProvenance } from '../context/ProvenanceContext';
 import { getEvents } from '../api/events';
@@ -44,6 +48,14 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
   const [, setFacilities] = useState<Facility[]>([]);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [globalQuery, setGlobalQuery] = useState('');
+  const [isAlertAudioMuted, setIsAlertAudioMuted] = useState<boolean>(() => soundSynthesizer.getMuted());
+
+  const handleToggleAudio = () => {
+    const next = !isAlertAudioMuted;
+    setIsAlertAudioMuted(next);
+    soundSynthesizer.setMuted(next);
+  };
+
   const [readIds, setReadIds] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(READ_NOTIFICATIONS_KEY);
@@ -370,6 +382,20 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
 
           {/* Right Header Actions */}
           <div className="flex items-center gap-3">
+            {/* Real-time Hazard Audio Synth Alarm Toggle */}
+            <button
+              type="button"
+              onClick={handleToggleAudio}
+              className={`p-2 rounded-full border transition-all ${
+                isAlertAudioMuted
+                  ? 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
+                  : 'bg-blue-50 text-blue-600 border-blue-200 shadow-2xs hover:bg-blue-100'
+              }`}
+              title={isAlertAudioMuted ? "Unmute Hazard Audio Alarms" : "Mute Hazard Audio Alarms"}
+            >
+              {isAlertAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+
             {/* Dev Provenance Overlay Toggle */}
             <button
               type="button"
@@ -434,6 +460,9 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
           {children}
         </main>
       </div>
+
+      {/* Real-Time Floating Incident Alert Toaster */}
+      <LiveAlertToast />
 
       {/* Floating Global AI Chatbot Widget (suppressed on routes with dedicated chat views) */}
       {location.pathname !== '/assistant' && !location.pathname.startsWith('/incident') && <FloatingChatbot />}

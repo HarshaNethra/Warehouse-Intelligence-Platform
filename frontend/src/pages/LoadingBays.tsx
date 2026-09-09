@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Video, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Truck, Video, ArrowUpRight, Loader2, MapPin, LayoutGrid } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { getLoadingBays, type LoadingBay as ApiLoadingBay } from '../api/facilities';
-
+import { WarehouseFloorMap } from '../components/WarehouseFloorMap';
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
 
 export const LoadingBays: React.FC = () => {
   const navigate = useNavigate();
   const [bays, setBays] = useState<ApiLoadingBay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bayView, setBayView] = useState<'MAP' | 'CARDS'>('MAP');
 
   useEffect(() => {
     let isMounted = true;
@@ -33,20 +34,43 @@ export const LoadingBays: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-[1280px] mx-auto space-y-6 p-4"
+      className="max-w-[1440px] mx-auto space-y-6 p-4"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-1 flex items-center gap-2">
-            <Truck className="w-6 h-6 text-blue-600" /> Facility Loading Bays & Dock Control
+            <Truck className="w-6 h-6 text-blue-600" /> Facility Loading Bays & Digital Twin Control
           </h1>
           <p className="text-sm text-slate-500">
-            Real-time status, risk scoring, and active camera feeds across warehouse dock bays.
+            Real-time status, multi-zone risk heat mapping, and active camera telemetry across warehouse dock bays.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setBayView('MAP')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                bayView === 'MAP' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Digital Twin Map</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setBayView('CARDS')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                bayView === 'CARDS' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Bay Cards</span>
+            </button>
+          </div>
+
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             {bays.length} Active Loading Bays Monitored
@@ -54,8 +78,14 @@ export const LoadingBays: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid of Loading Bays */}
-      {loading ? (
+      {/* View Switcher: Interactive Floor Plan vs Grid */}
+      {bayView === 'MAP' ? (
+        <WarehouseFloorMap
+          onSelectZone={(zone) => {
+            navigate(`/?video=${encodeURIComponent(zone.videoTitle)}`);
+          }}
+        />
+      ) : loading ? (
         <div className="p-12 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
           <Loader2 className="w-5 h-5 animate-spin text-blue-600" /> Loading facility loading bays...
         </div>
