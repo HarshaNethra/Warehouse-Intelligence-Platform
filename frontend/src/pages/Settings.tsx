@@ -310,22 +310,22 @@ export const Settings: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="bg-slate-900 text-slate-100 rounded-xl p-5 border border-slate-800 space-y-4 shadow-inner"
+              className="bg-slate-50 text-slate-900 rounded-xl p-5 border border-slate-200 space-y-4 shadow-2xs"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono uppercase tracking-wider text-indigo-400 font-semibold flex items-center gap-1.5">
+                <span className="text-xs font-mono uppercase tracking-wider text-indigo-700 font-semibold flex items-center gap-1.5">
                   <Key className="w-4 h-4" /> Roboflow REST Endpoint Credentials
                 </span>
                 {modelStatus?.api_key_masked && (
-                  <span className="text-xs font-mono text-slate-400">
-                    Active Key: <code className="bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">{modelStatus.api_key_masked}</code>
+                  <span className="text-xs font-mono text-slate-500">
+                    Active Key: <code className="bg-slate-200 px-1.5 py-0.5 rounded text-indigo-700 font-semibold">{modelStatus.api_key_masked}</code>
                   </span>
                 )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-1">
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
                     Roboflow API Key
                   </label>
                   <input
@@ -333,7 +333,7 @@ export const Settings: React.FC = () => {
                     placeholder="e.g. rf_xyz123abc..."
                     value={roboflowApiKey}
                     onChange={(e) => setRoboflowApiKey(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-mono"
                   />
                 </div>
 

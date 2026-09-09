@@ -185,19 +185,32 @@ class EventAdapter:
         self.ensure_tenancy_prerequisites(db)
 
         raw_event_id = root_event.get("event_id")
-        event_id = str(raw_event_id) if raw_event_id else f"EVT-{uuid.uuid4().hex[:8].upper()}"
+        start_ts = float(root_event.get("start_timestamp", root_event.get("timestamp", 0.0)))
+        behaviour = str(root_event.get("behaviour", "unknown_violation"))
+        object_id = root_event.get("object_id")
+
+        if raw_event_id:
+            event_id = str(raw_event_id)
+        else:
+            clean_beh = behaviour.replace(" ", "_").upper()[:8]
+            clean_vid = video_record.video_id.replace("VID-", "")[:6]
+            event_id = f"EVT-{clean_vid}-{clean_beh}-{int(start_ts * 10)}"
 
         # Prevent duplicate insertion of identical event
-        existing_event = db.query(models.Event).filter(models.Event.event_id == event_id).first()
+        existing_event = db.query(models.Event).filter(
+            (models.Event.event_id == event_id) |
+            (
+                (models.Event.video_id == video_record.video_id) &
+                (models.Event.behaviour == behaviour) &
+                (models.Event.timestamp == start_ts)
+            )
+        ).first()
         if existing_event:
             return existing_event
 
         fps = float(video_record.fps or 30.0)
-        start_ts = float(root_event.get("start_timestamp", root_event.get("timestamp", 0.0)))
         end_ts = float(root_event.get("end_timestamp", start_ts + root_event.get("duration", 1.0)))
         duration = float(root_event.get("duration", max(0.1, end_ts - start_ts)))
-        object_id = root_event.get("object_id")
-        behaviour = str(root_event.get("behaviour", "unknown_violation"))
         confidence = float(root_event.get("confidence", 0.92))
         risk_score = float(root_event.get("risk_score", 50.0))
 

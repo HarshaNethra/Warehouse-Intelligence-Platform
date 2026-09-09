@@ -34,22 +34,22 @@ export const DataProvenanceOverlay: React.FC<DataProvenanceOverlayProps> = ({
       onMouseLeave={() => setShowDetails(false)}
     >
       {/* Dev Provenance Badge Header */}
-      <div className="flex items-center justify-between px-3 py-1 bg-slate-900/90 text-slate-200 rounded-t-xl text-[10px] font-mono border-b border-slate-800 shadow-xs">
+      <div className="flex items-center justify-between px-3 py-1 bg-slate-100 text-slate-700 rounded-t-xl text-[10px] font-mono border-b border-slate-200 shadow-2xs">
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1 font-bold text-blue-400">
-            <Database className="w-3 h-3 text-blue-400" /> {entity}
+          <span className="flex items-center gap-1 font-bold text-blue-600">
+            <Database className="w-3 h-3 text-blue-600" /> {entity}
           </span>
-          <span className="text-slate-600">|</span>
-          <span className="flex items-center gap-1 text-emerald-400">
-            <Server className="w-3 h-3 text-emerald-400" /> {endpoint}
+          <span className="text-slate-300">|</span>
+          <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+            <Server className="w-3 h-3 text-emerald-600" /> {endpoint}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1 text-amber-300">
-            <Building2 className="w-3 h-3 text-amber-300" /> {facilityScope}
+          <span className="flex items-center gap-1 text-amber-800 font-semibold">
+            <Building2 className="w-3 h-3 text-amber-600" /> {facilityScope}
           </span>
-          <span className="text-slate-600">|</span>
-          <span className="flex items-center gap-1 text-slate-400">
+          <span className="text-slate-300">|</span>
+          <span className="flex items-center gap-1 text-slate-500">
             <Clock className="w-3 h-3 text-slate-400" /> {nowStr}
           </span>
         </div>

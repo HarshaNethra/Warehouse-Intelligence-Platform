@@ -58,29 +58,29 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans relative overflow-hidden select-none">
+    <div className="min-h-screen w-full bg-[#F5F7FA] text-slate-900 flex items-center justify-center p-4 font-sans relative overflow-hidden select-none">
       
       {/* Subtle Background Radial Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 relative z-10"
+        className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-6 sm:p-8 space-y-6 relative z-10"
       >
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex p-3 rounded-xl bg-primary/10 border border-primary/20 text-primary mb-1">
+          <div className="inline-flex p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 mb-1">
             <Package className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Warehouse Intelligence</h1>
-          <p className="text-xs text-slate-400">Enterprise Operator & Command Center Portal</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Warehouse Intelligence</h1>
+          <p className="text-xs text-slate-500">Enterprise Operator & Command Center Portal</p>
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 rounded-xl bg-red-950/80 border border-red-800 text-red-300 text-xs flex items-center gap-2 font-medium animate-pulse">
-            <ShieldCheck className="w-4 h-4 text-red-400 shrink-0" />
+          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 font-medium animate-pulse">
+            <ShieldCheck className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -88,31 +88,31 @@ export const Login: React.FC = () => {
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 block">Operator Email</label>
+            <label className="text-xs font-semibold text-slate-700 block">Operator Email</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="operator@wms-intel.io"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-xs sm:text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 block">Password</label>
+            <label className="text-xs font-semibold text-slate-700 block">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-xs sm:text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -120,7 +120,7 @@ export const Login: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting || !email.trim() || !password}
-            className="w-full py-3 bg-primary hover:bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 transition-all cursor-pointer mt-2"
+            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? (
               <>
@@ -137,7 +137,7 @@ export const Login: React.FC = () => {
         </form>
 
         {/* Demo Preset Buttons */}
-        <div className="pt-3 border-t border-slate-800/80 space-y-2">
+        <div className="pt-3 border-t border-slate-100 space-y-2">
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center">
             Demo Operator Accounts (1-Click Sign-In)
           </p>
@@ -146,9 +146,9 @@ export const Login: React.FC = () => {
               type="button"
               onClick={() => fillAndSubmit('supervisor@wms-intel.io', 'password123')}
               disabled={isSubmitting}
-              className="px-2.5 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-200 text-[11px] font-medium rounded-lg transition-all flex flex-col items-center gap-0.5 cursor-pointer disabled:opacity-50"
+              className="px-2.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-600 text-[11px] font-medium rounded-lg transition-all flex flex-col items-center gap-0.5 cursor-pointer disabled:opacity-50"
             >
-              <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+              <UserCheck className="w-3.5 h-3.5 text-amber-500" />
               <span>Supervisor</span>
             </button>
             <button

@@ -26,31 +26,31 @@ export const TestingAndFindings: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner & Model Specs */}
-      <div className="glass-panel p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-primary/90 text-white rounded-2xl shadow-md">
+      <div className="glass-panel p-6 bg-white border border-slate-200 text-slate-900 rounded-2xl shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold mb-3 border border-emerald-500/30">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold mb-3 border border-emerald-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               Pilot Validation & Model Benchmark Report
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              <Cpu className="w-6 h-6 text-emerald-400" />
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <Cpu className="w-6 h-6 text-blue-600" />
               Ultralytics YOLO11 + Temporal Action Recognition
             </h2>
-            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
               Empirical pilot results evaluating object perception, ByteTrack multi-object trajectory tracking, and temporal rule classification across 10 warehouse handling risk behaviors.
             </p>
           </div>
           
-          <div className="flex items-center gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60 shrink-0">
+          <div className="flex items-center gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 shrink-0">
             <div className="text-right">
-              <span className="text-[11px] text-slate-400 block font-medium">Core Model Engine</span>
-              <span className="text-sm font-bold text-emerald-400 font-mono">YOLO11s + Temporal Net</span>
+              <span className="text-[11px] text-slate-500 block font-medium">Core Model Engine</span>
+              <span className="text-sm font-bold text-emerald-700 font-mono">YOLO11s + Temporal Net</span>
             </div>
-            <div className="h-8 w-px bg-slate-700" />
+            <div className="h-8 w-px bg-slate-200" />
             <div className="text-right">
-              <span className="text-[11px] text-slate-400 block font-medium">Edge Inference</span>
-              <span className="text-sm font-bold text-white font-mono">~32 FPS (Real-Time)</span>
+              <span className="text-[11px] text-slate-500 block font-medium">Edge Inference</span>
+              <span className="text-sm font-bold text-slate-900 font-mono">~32 FPS (Real-Time)</span>
             </div>
           </div>
         </div>

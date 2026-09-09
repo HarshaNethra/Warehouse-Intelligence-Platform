@@ -162,25 +162,25 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
         )}
       </AnimatePresence>
 
-      {/* Main Stream Upload Zone (Unified Dark Mode bg-slate-900) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl text-slate-100 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+      {/* Main Stream Upload Zone (Clean White Theme) */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs text-slate-900 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20">
+            <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
               <Upload className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 Optical Video Stream Ingestion
               </h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Upload CCTV or warehouse surveillance video footage to evaluate frame-by-frame YOLO11 detection and temporal risk metrics.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-mono bg-slate-950 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">
+            <span className="text-[10px] font-mono bg-slate-50 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200">
               Max 200MB (.mp4, .avi, .mov)
             </span>
             <div className="flex items-center gap-1.5">
@@ -189,9 +189,9 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
                   key={s.name}
                   type="button"
                   onClick={() => handleSampleVideoSelect(s.name, s.bay, s.size)}
-                  className="text-[10px] font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-md border border-slate-700 transition-colors flex items-center gap-1"
+                  className="text-[10px] font-semibold text-slate-700 hover:text-blue-700 bg-slate-100 hover:bg-blue-50 px-2.5 py-1 rounded-md border border-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
                 >
-                  <Sparkles className="w-3 h-3 text-emerald-400" />
+                  <Sparkles className="w-3 h-3 text-emerald-600" />
                   {s.bay}
                 </button>
               ))}
@@ -207,8 +207,8 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer flex flex-col items-center justify-center space-y-3 ${
             isDragging
-              ? 'border-primary bg-primary/10 shadow-inner scale-[1.005]'
-              : 'border-slate-800 bg-slate-950 hover:border-slate-600 hover:bg-slate-850'
+              ? 'border-blue-500 bg-blue-50/50 shadow-inner scale-[1.005]'
+              : 'border-slate-300 bg-slate-50/60 hover:border-blue-400 hover:bg-blue-50/20'
           }`}
         >
           <input
@@ -219,39 +219,39 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
             onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
           />
 
-          <div className="w-14 h-14 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-md">
+          <div className="w-14 h-14 rounded-full bg-white border border-slate-200 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shadow-sm">
             <FileVideo className="w-7 h-7" />
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm font-bold text-slate-200">
-              Drag & Drop Video File or <span className="text-primary underline">Browse File</span>
+            <p className="text-sm font-bold text-slate-900">
+              Drag & Drop Video File or <span className="text-blue-600 underline">Browse File</span>
             </p>
-            <p className="text-xs text-slate-400">
-              Supports <span className="font-mono text-slate-300">.MP4, .AVI, .MOV</span> formats up to 200MB
+            <p className="text-xs text-slate-500">
+              Supports <span className="font-mono text-slate-700">.MP4, .AVI, .MOV</span> formats up to 200MB
             </p>
           </div>
         </div>
 
         {/* Metadata & Stream Status Bar */}
         {customFile && (
-          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs flex items-center justify-between">
+          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Film className="w-4 h-4 text-emerald-400 shrink-0" />
+              <Film className="w-4 h-4 text-emerald-600 shrink-0" />
               <div>
-                <p className="font-semibold text-slate-200">{customFile.name}</p>
-                <p className="text-[10px] text-slate-400">{customFile.size} • Active Browser Memory Stream</p>
+                <p className="font-semibold text-slate-900">{customFile.name}</p>
+                <p className="text-[10px] text-slate-500">{customFile.size} • Active Browser Memory Stream</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold font-mono text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-800 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <span className="text-[10px] font-bold font-mono text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                 STREAM LOADED
               </span>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-[10px] text-slate-400 hover:text-white underline px-1"
+                className="text-[10px] text-blue-600 hover:text-blue-800 underline px-1 cursor-pointer font-medium"
               >
                 Change File
               </button>
@@ -261,17 +261,17 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
 
         {/* Processing Progress Indicator */}
         {isProcessing && (
-          <div className="space-y-2 bg-slate-950 p-4 rounded-xl border border-primary/40">
+          <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-blue-200">
             <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-primary flex items-center gap-2">
+              <span className="font-semibold text-blue-700 flex items-center gap-2">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 Running YOLO11 Detection & Tracking Pipeline...
               </span>
-              <span className="font-mono font-bold text-slate-200">{progress}%</span>
+              <span className="font-mono font-bold text-slate-900">{progress}%</span>
             </div>
-            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
               <div
-                className="bg-gradient-to-r from-primary via-blue-500 to-emerald-400 h-full transition-all duration-300 rounded-full"
+                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 h-full transition-all duration-300 rounded-full"
                 style={{ width: `${progress}%` }}
               />
             </div>

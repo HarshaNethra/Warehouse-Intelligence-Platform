@@ -140,14 +140,14 @@ export const MultiCameraGrid: React.FC<MultiCameraGridProps> = ({
             <div
               key={feed.id}
               onClick={() => onSelectFeed(feed)}
-              className={`group bg-slate-950 rounded-xl overflow-hidden border cursor-pointer transition-all duration-200 hover:shadow-xl relative flex flex-col justify-between ${
+              className={`group bg-white rounded-xl overflow-hidden border cursor-pointer transition-all duration-200 hover:shadow-xl relative flex flex-col justify-between ${
                 isActive
                   ? 'border-blue-500 ring-2 ring-blue-500/30'
                   : isCrit
-                  ? 'border-red-500/80 hover:border-red-400'
+                  ? 'border-red-300 hover:border-red-400'
                   : isHigh
-                  ? 'border-orange-500/60 hover:border-orange-400'
-                  : 'border-slate-800 hover:border-slate-600'
+                  ? 'border-orange-300 hover:border-orange-400'
+                  : 'border-slate-200 hover:border-slate-300'
               }`}
             >
               {/* Video Player Box */}
@@ -189,15 +189,15 @@ export const MultiCameraGrid: React.FC<MultiCameraGridProps> = ({
               </div>
 
               {/* Feed Card Footer Details */}
-              <div className="p-3 bg-slate-900/90 border-t border-slate-800/80 space-y-1.5">
+              <div className="p-3 bg-white border-t border-slate-100 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-slate-100 truncate">{feed.name}</h4>
-                  <span className="text-[10px] font-mono text-slate-400">{feed.fps} FPS</span>
+                  <h4 className="text-xs font-bold text-slate-900 truncate">{feed.name}</h4>
+                  <span className="text-[10px] font-mono text-slate-500">{feed.fps} FPS</span>
                 </div>
 
-                <div className="text-[11px] text-slate-400 flex items-center justify-between">
-                  <span className="text-slate-300 truncate max-w-[180px]">⚠️ {feed.primaryHazard}</span>
-                  <span className="font-mono text-[10px] text-blue-400 font-semibold">{feed.bay}</span>
+                <div className="text-[11px] text-slate-600 flex items-center justify-between">
+                  <span className="text-slate-700 truncate max-w-[180px]">⚠️ {feed.primaryHazard}</span>
+                  <span className="font-mono text-[10px] text-blue-600 font-semibold">{feed.bay}</span>
                 </div>
               </div>
             </div>

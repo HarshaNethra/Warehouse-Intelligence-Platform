@@ -36,46 +36,64 @@ export function formatTimecode(seconds: number | undefined | null): string {
 }
 
 /**
- * Converts raw epoch UNIX timestamps (e.g., 1788888479) into readable string representations.
+ * Converts raw epoch UNIX timestamps (e.g., 1788888479) or ISO date strings into readable string representations.
  * Example output: "Sep 09, 2026 • 12:22:03 AM".
- * Automatically handles both seconds and millisecond epoch inputs as well as timecodes.
+ * Automatically handles ISO strings, Unix timestamps, and relative video timecodes cleanly.
  */
 export function formatEpochDate(epochInput: number | string | undefined | null): string {
   if (epochInput === undefined || epochInput === null || epochInput === '') {
     return 'N/A';
   }
 
-  const num = typeof epochInput === 'string' ? parseFloat(epochInput) : epochInput;
-  if (isNaN(num) || num < 0) {
-    return String(epochInput);
+  // 1. If it's an ISO or formatted date string (e.g. "2026-09-09T..." or "2026-09-09 22:30:00")
+  if (typeof epochInput === 'string' && (epochInput.includes('-') || epochInput.includes('T') || epochInput.includes(':') || epochInput.includes('/'))) {
+    const parsedDate = new Date(epochInput);
+    if (!isNaN(parsedDate.getTime())) {
+      const dateStr = parsedDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric'
+      });
+      const timeStr = parsedDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      return `${dateStr} • ${timeStr}`;
+    }
   }
 
-  // Small video timecodes (e.g. 19.2s)
-  if (num >= 0 && num < 100000) {
-    return `Timecode ${formatTimecode(num)} (${num.toFixed(1)}s)`;
+  // 2. If it's a numeric Unix epoch timestamp or seconds
+  if (typeof epochInput === 'number' || (typeof epochInput === 'string' && /^\d+(\.\d+)?$/.test(epochInput.trim()))) {
+    const num = typeof epochInput === 'number' ? epochInput : parseFloat(epochInput.trim());
+    if (!isNaN(num) && num > 0) {
+      // If it's a Unix epoch timestamp in seconds (> 100 million, e.g. 1788966474) or milliseconds (> 1e11)
+      if (num > 1e8) {
+        const epochMs = num > 1e11 ? num : num * 1000;
+        const date = new Date(epochMs);
+        if (!isNaN(date.getTime())) {
+          const dateStr = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+          });
+          const timeStr = date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          });
+          return `${dateStr} • ${timeStr}`;
+        }
+      }
+
+      // If it's a video playback offset in seconds (< 100,000s)
+      return `Timecode ${formatTimecode(num)} (${num.toFixed(1)}s)`;
+    }
   }
 
-  // POSIX epoch timestamp (seconds vs milliseconds check)
-  const epochMs = num > 1e11 ? num : num * 1000;
-  const date = new Date(epochMs);
-  if (isNaN(date.getTime())) {
-    return `${num}s`;
-  }
-
-  const dateStr = date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric'
-  });
-
-  const timeStr = date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-  });
-
-  return `${dateStr} • ${timeStr}`;
+  return String(epochInput);
 }
 
 /**

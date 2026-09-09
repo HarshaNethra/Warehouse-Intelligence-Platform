@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useEvents } from '../hooks/useEvents';
 import { exportEventsCsv, acknowledgeIncident, dispatchIncident, batchDeleteIncidents, batchUpdateIncidentStatus } from '../api/events';
 import { exportComprehensiveEventsCsv, generateSafetyAuditPdfReport } from '../utils/reportExporter';
@@ -52,6 +52,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBatchOperating, setIsBatchOperating] = useState<boolean>(false);
   const [isSeeding, setIsSeeding] = useState<boolean>(false);
+  const hasAttemptedAutoIngestRef = useRef<boolean>(false);
 
   // Video Evidence Player Modal State
   const [activeVideoModal, setActiveVideoModal] = useState<{
@@ -64,14 +65,16 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     setLocalEvents(fetchedEvents);
   }, [fetchedEvents]);
 
-  // Auto-seed if 0 events found on initial load
+  // One-time auto-seed attempt if 0 events found on initial mount
   useEffect(() => {
-    if (!loading && fetchedEvents.length === 0 && !error) {
+    if (!loading && fetchedEvents.length === 0 && !error && !hasAttemptedAutoIngestRef.current) {
+      hasAttemptedAutoIngestRef.current = true;
       handleAutoIngestTrajectories();
     }
-  }, [loading, fetchedEvents.length]);
+  }, [loading, fetchedEvents.length, error]);
 
   const handleAutoIngestTrajectories = async () => {
+    hasAttemptedAutoIngestRef.current = true;
     setIsSeeding(true);
     try {
       await apiClient.post('/pipeline/ingest-all-warehouse-trajectories');
@@ -805,15 +808,15 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
             initial={{ opacity: 0, y: 20, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 20, x: '-50%' }}
-            className="fixed bottom-6 left-1/2 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 flex-wrap sm:flex-nowrap border border-slate-800"
+            className="fixed bottom-6 left-1/2 z-50 bg-white text-slate-900 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 flex-wrap sm:flex-nowrap border border-slate-200"
           >
             <div className="flex items-center gap-2 text-xs font-bold font-mono">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
-              <span className="text-white font-black text-sm">{selectedIds.length}</span>
-              <span className="text-slate-300">{selectedIds.length === 1 ? 'incident selected' : 'incidents selected'}</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping" />
+              <span className="text-slate-900 font-black text-sm">{selectedIds.length}</span>
+              <span className="text-slate-600">{selectedIds.length === 1 ? 'incident selected' : 'incidents selected'}</span>
             </div>
 
-            <div className="h-4 w-[1px] bg-slate-800 hidden sm:block" />
+            <div className="h-4 w-[1px] bg-slate-200 hidden sm:block" />
 
             <div className="flex items-center gap-2">
               <button
@@ -839,10 +842,9 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
               <button
                 type="button"
                 onClick={() => setSelectedIds([])}
-                disabled={isBatchOperating}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all cursor-pointer"
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200"
               >
-                Clear
+                Cancel
               </button>
             </div>
           </motion.div>
@@ -851,4 +853,3 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     </div>
   );
 };
-
