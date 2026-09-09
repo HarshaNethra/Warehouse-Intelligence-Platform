@@ -1,0 +1,61 @@
+MODEL CONFIGURATION
+-------------------
+Model Name: YOLO11s-Baseline
+Model Version: v1.4.2
+Model Weights Checkpoint: /Users/gankai/Desktop/training-data/Godrej/warehouse_training/runs/yolo11s_baseline/weights/best.pt
+Model Architecture: Ultralytics YOLO11
+Inference Engine: LOCAL_YOLO11
+
+DETECTION PARAMETERS
+--------------------
+Confidence Logged Value: 0.92 (Hardcoded in evaluate_frame parameter)
+IoU Threshold: Default Ultralytics internal parameter (unspecified in processor)
+NMS Configuration: Default Ultralytics NMS (unspecified in processor)
+Input Resolution: Derived from video frame capture (e.g. 1920x1080)
+Preprocessing: OpenCV frame array -> PyTorch Tensor
+
+TRACKING CONFIGURATION
+----------------------
+Tracker Name: Ultralytics ByteTrack (implicit default for model.track)
+Tracker Persistence Engine: model.track(persist=True)
+Track Age/Buffer: Handled internally by ultralytics track
+
+BEHAVIOUR RULE CONFIGURATION (app/services/rule_engine.py)
+----------------------------------------------------------
+1. Product Freefall / Drop
+   - Classes: carton, mattress, package, box, large_carton
+   - Kinematic Metric: vertical acceleration (ay_metric) > 8.0 m/s^2
+   - Severity Escalation: CRITICAL if > 12.0 m/s^2 else HIGH
+   - Trigger Persistence: 3 consecutive frames
+
+2. Person Stepping on Inventory
+   - Person Keypoints: COCO Ankle joints (#15 or #16)
+   - Keypoint Confidence: > 0.3
+   - Inventory Classes: carton, pallet, box, large_carton, small_carton, mattress
+   - Spatial Logic: Keypoint completely contained inside inventory bounding box
+   - Trigger Persistence: 15 consecutive frames
+   - Risk Score: 96.1 (CRITICAL)
+
+3. Vehicle-Pedestrian Proximity
+   - Pedestrian Keypoint: COCO Nose (#0)
+   - Keypoint Confidence: > 0.3
+   - Vehicle Classes: forklift, pallet_jack, truck, trolley
+   - Spatial Logic: Distance from Pedestrian Nose to Vehicle Bounding-Box Center < 120.0 pixels
+   - Trigger Persistence: 15 consecutive frames
+   - Risk Score: 82.0 (HIGH)
+
+4. Unstable Stacking
+   - Classes: carton, box, large_carton, small_carton, mattress
+   - Spatial Logic: Top carton Bounding-Box X-centroid falls within Bottom carton X-bounds.
+   - Alignment Constraint: Top carton bottom Y (y2) is within 15 pixels of Bottom carton top Y (y1).
+   - Area Constraint: Top Box Area > 1.3x Bottom Box Area
+   - Trigger Persistence: 15 consecutive frames
+   - Risk Score: 88.5 (HIGH)
+
+RUNTIME CONFIGURATION
+---------------------
+Application: Warehouse Intelligence API
+Python Frameworks: FastAPI, Ultralytics YOLO, OpenCV, SQLAlchemy
+Frame Sampling Rate: 5-frame persistence intervals (frame_idx % 5) for storage
+Execution Environment: Windows (C:/Users/puvva/OneDrive/Desktop/v2/Warehouse-Intelligence-Platform)
+Device: User-specified (defaults to CPU unless CUDA selected in instantiation)
