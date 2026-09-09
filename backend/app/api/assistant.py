@@ -76,9 +76,17 @@ async def chat(
             )
 
     # 2. SQL Retrieval - Filtered strictly by authorized facility_id
-    events_query = db.query(models.Event).filter(
-        models.Event.facility_id == target_facility_id
-    )
+    if target_facility_id == "FAC-001":
+        events_query = db.query(models.Event).filter(
+            or_(
+                models.Event.facility_id == "FAC-001",
+                models.Event.facility_id.is_(None)
+            )
+        )
+    else:
+        events_query = db.query(models.Event).filter(
+            models.Event.facility_id == target_facility_id
+        )
     if request.camera_id:
         events_query = events_query.filter(models.Event.camera_id == request.camera_id)
     if request.bay_id:
