@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 from pathlib import Path
 
@@ -29,6 +29,8 @@ def ensure_columns_exist(db: Session) -> None:
         Base.metadata.create_all(bind=engine)
         
         bind = db.get_bind()
+        if bind.dialect.name != 'sqlite':
+            return
         with bind.connect() as conn:
             # Safely check events columns
             result = conn.execute(text("PRAGMA table_info(events)"))
@@ -729,3 +731,4 @@ if __name__ == "__main__":
     db = SessionLocal()
     init_db(db)
     db.close()
+
