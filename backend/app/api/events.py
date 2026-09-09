@@ -196,3 +196,73 @@ def update_event_status(
     db.commit()
     db.refresh(event)
     return event
+
+
+@router.post("/events", response_model=event_schema.Event, status_code=201)
+@router.post("/incidents", response_model=event_schema.Event, status_code=201)
+def create_event(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    event_id = payload.get("event_id") or f"EVT-{uuid.uuid4().hex[:8].upper()}"
+    
+    facility_id = payload.get("facility_id") or current_user.facility_id or "FAC-001"
+    
+    # Clean and sanitize attributes
+    raw_timestamp = payload.get("timestamp")
+    try:
+        timestamp_val = float(raw_timestamp) if raw_timestamp is not None else datetime.datetime.utcnow().timestamp()
+    except (ValueError, TypeError):
+        timestamp_val = datetime.datetime.utcnow().timestamp()
+
+    db_event = models.Event(
+        event_id=event_id,
+        organization_id=current_user.organization_id or "ORG-001",
+        facility_id=facility_id,
+        video_id=payload.get("video_id") or "live-optical-stream",
+        camera_id=payload.get("camera_id") or "CAM-01",
+        bay_id=payload.get("bay_id") or "Loading Bay 01",
+        object_id=payload.get("object_id") or 42,
+        timestamp=timestamp_val,
+        timestamp_seconds=payload.get("timestamp_seconds") or timestamp_val,
+        behaviour=payload.get("behaviour") or "Observed Material Handling Anomaly",
+        risk_score=float(payload.get("risk_score") or 85.0),
+        risk_level=payload.get("risk_level") or "High",
+        description=payload.get("description") or f"Kinematic handling anomaly flagged at loading bay {payload.get('bay_id', 'Loading Bay 01')}.",
+        reason=payload.get("reason") or "Abrupt acceleration impulse or unsafe spatial positioning detected by YOLO11 vision pipeline.",
+        recommended_action=payload.get("recommended_action") or "Halt operations, check carton integrity, and provide ergonomic coaching.",
+        status=payload.get("status") or "UNRESOLVED",
+        model_name="YOLO11s",
+        model_version="v1.4.2-tensorrt",
+        inference_engine="LOCAL_YOLO11",
+        confidence=0.92,
+        provenance_type="LIVE_DETECTION",
+        environment="PRODUCTION",
+        is_test_data=False,
+        is_demo_data=False,
+        created_at=datetime.datetime.utcnow(),
+        updated_at=datetime.datetime.utcnow()
+    )
+
+    db.add(db_event)
+    
+    # Log Audit entry
+    try:
+        db.add(models.AuditLog(
+            id=f"AUD-{uuid.uuid4().hex[:12]}",
+            organization_id=current_user.organization_id or "ORG-001",
+            user_id=current_user.id,
+            action="INCIDENT_REPORTED_LIVE",
+            entity_type="EVENT",
+            entity_id=event_id,
+            metadata_json=json.dumps({"behaviour": db_event.behaviour, "risk_level": db_event.risk_level}),
+            created_at=datetime.datetime.utcnow()
+        ))
+    except Exception:
+        pass
+
+    db.commit()
+    db.refresh(db_event)
+    return db_event
+

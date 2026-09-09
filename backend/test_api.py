@@ -1,6 +1,13 @@
 import sys
+import os
 from pathlib import Path
 import asyncio
+
+# Ensure UTF-8 output on Windows terminals
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # Add backend directory to sys.path
 backend_dir = Path(__file__).resolve().parent
@@ -34,7 +41,7 @@ async def test_all():
     try:
         # Health Check
         health_res = health_check()
-        print(f"✅ Health Check Status: {health_res}")
+        print(f"[OK] Health Check Status: {health_res}")
         
         admin_user = db.query(models.User).filter(models.User.role == "ADMIN").first()
         if not admin_user:
@@ -44,36 +51,36 @@ async def test_all():
 
         # Videos Endpoint
         videos_res = get_videos(db=db)
-        print(f"✅ Videos Count Retrieved: {len(videos_res)}")
+        print(f"[OK] Videos Count Retrieved: {len(videos_res)}")
         
         # Events Endpoint
         events_res = get_events(risk_level=None, behaviour=None, db=db, current_user=admin_user)
-        print(f"✅ Total Events Retrieved: {len(events_res)}")
+        print(f"[OK] Total Events Retrieved: {len(events_res)}")
         
         # Filtered Events
         critical_events = get_events(risk_level="Critical", behaviour=None, db=db, current_user=admin_user)
-        print(f"✅ Filtered Critical Events: {len(critical_events)}")
+        print(f"[OK] Filtered Critical Events: {len(critical_events)}")
         
         # Analytics Summary
         analytics_res = get_analytics_summary(db=db, current_user=admin_user)
-        print(f"✅ Analytics Summary: {analytics_res.summary.totalEvents} Total Events | Critical: {analytics_res.summary.criticalEvents} | High: {analytics_res.summary.highRiskEvents}")
+        print(f"[OK] Analytics Summary: {analytics_res.summary.totalEvents} Total Events | Critical: {analytics_res.summary.criticalEvents} | High: {analytics_res.summary.highRiskEvents}")
         
         # Behaviour Metrics
         behaviours_res = get_analytics_behaviours(db=db, current_user=admin_user)
-        print(f"✅ Behaviour Metrics Breakdown: {[(b.name, b.value) for b in behaviours_res]}")
+        print(f"[OK] Behaviour Metrics Breakdown: {[(b.name, b.value) for b in behaviours_res]}")
         
         # Gemini AI Assistant Chat Test
         print("\n2. Testing Gemini AI Assistant Chat Endpoint...")
         chat_req = ChatRequest(question="Show me all critical handling incidents from today's unloading.")
         chat_res = await chat(request=chat_req, db=db, current_user=admin_user)
-        print(f"✅ Chat Question: '{chat_res.question}'")
-        print(f"✅ Model Used: {chat_res.model_used}")
-        print(f"✅ Source Events Citation Count: {len(chat_res.source_events)}")
+        print(f"[OK] Chat Question: '{chat_res.question}'")
+        print(f"[OK] Model Used: {chat_res.model_used}")
+        print(f"[OK] Source Events Citation Count: {len(chat_res.source_events)}")
         print("\n--- Gemini Assistant Response Output ---")
         print(chat_res.answer)
         print("---------------------------------------")
         
-        print("\n🎉 ALL BACKEND API & GEMINI ASSISTANT TESTS PASSED 100% SUCCESSFUL!")
+        print("\n[SUCCESS] ALL BACKEND API & GEMINI ASSISTANT TESTS PASSED 100% SUCCESSFUL!")
         
     finally:
         db.close()

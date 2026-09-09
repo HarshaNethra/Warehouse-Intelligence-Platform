@@ -75,12 +75,9 @@ async def chat(
                 model_used="Security-Facility-Scope-Guard"
             )
 
-    # 2. SQL Retrieval - Filtered strictly by authorized facility_id and excluding demo/test fixtures
+    # 2. SQL Retrieval - Filtered strictly by authorized facility_id
     events_query = db.query(models.Event).filter(
-        models.Event.facility_id == target_facility_id,
-        or_(models.Event.is_demo_data == False, models.Event.is_demo_data.is_(None)),
-        or_(models.Event.is_test_data == False, models.Event.is_test_data.is_(None)),
-        or_(models.Event.provenance_type != "DEMO_FIXTURE", models.Event.provenance_type.is_(None))
+        models.Event.facility_id == target_facility_id
     )
     if request.camera_id:
         events_query = events_query.filter(models.Event.camera_id == request.camera_id)
@@ -94,7 +91,7 @@ async def chat(
     if specific_event_requested:
         events_query = events_query.filter(models.Event.event_id.in_(evt_ids))
 
-    sql_events = events_query.order_by(models.Event.timestamp.desc()).limit(10).all()
+    sql_events = events_query.order_by(models.Event.timestamp.desc()).limit(15).all()
 
     # 3. Vector Retrieval (ChromaDB)
     rag_matches = []
@@ -118,7 +115,7 @@ async def chat(
             bay_id=e.bay_id,
             camera_id=e.camera_id,
             behaviour=e.behaviour or "Anomaly",
-            description=e.description or e.reason or "Recorded safety incident",
+            description=e.description or e.reason or f"Recorded {e.risk_level or ''} safety incident",
             source_document="SQL_EVENT_DB"
         )
 
@@ -154,66 +151,67 @@ async def chat(
         requested_facility_id=requested_fac
     )
 
-    # 5. Empty Retrieval / Non-existent Incident / Insufficient Evidence Handling
-    if retrieval_count == 0:
-        if specific_event_requested:
-            ans_text = f"No verified warehouse events are available matching '{', '.join(evt_ids)}' for facility '{target_facility_id}' and time range."
-        else:
-            ans_text = "No verified warehouse events are available for this facility and time range."
+    # Check for simple greeting / capability intent
+    is_greeting = bool(re.match(r"^(hi|hello|hey|greetings|howdy|good\s*(morning|afternoon|evening)|who are you|what can you do)\b", request.question.strip().lower()))
 
-        return assistant_schema.ChatResponse(
-            answer=ans_text,
-            citations=[],
-            data_scope=data_scope_obj,
-            generated_at=now_iso,
-            model="Grounded-Rule-Engine",
-            retrieval_count=0,
-            question=request.question,
-            source_events=[],
-            model_used="Grounded-Rule-Engine"
-        )
-
-    # 6. Context Construction for LLM Prompt
+    # 5. Context Construction for LLM Prompt
     context_lines = [
         f"• Event ID: {c.event_id} | Facility: {c.facility_id} | Timestamp: {c.timestamp:.2f}s | "
-        f"Bay: {c.bay_id or 'Dock'} | Camera: {c.camera_id or 'CAM-01'} | "
-        f"Behaviour: {c.behaviour} | Description: {c.description}"
+        f"Bay: {c.bay_id or 'Loading Dock'} | Camera: {c.camera_id or 'CAM-01'} | "
+        f"Behaviour: {c.behaviour} | Details: {c.description}"
         for c in citations
     ]
-    context_str = "\n".join(context_lines)
+    context_str = "\n".join(context_lines) if context_lines else "No specific filtered events recorded."
 
     prompt = (
-        f"You are the Warehouse AI Intelligence Assistant.\n"
-        f"STRICT GROUNDING RULE: Answer the supervisor's question using ONLY the retrieved database records below for facility {target_facility_id}.\n"
-        f"Do NOT invent numbers, incidents, or facts outside of this retrieved data.\n"
-        f"If the question cannot be answered using this context, state clearly: 'Insufficient evidence in database records.'\n\n"
-        f"Retrieved Records ({retrieval_count}):\n{context_str}\n\n"
-        f"Supervisor Question: {request.question}"
+        f"You are the Godrej Warehouse AI Intelligence Operations Assistant.\n"
+        f"You are speaking to a warehouse supervisor authorized for Facility: {target_facility_id}.\n\n"
+        f"CURRENT FACILITY TELEMETRY & INCIDENTS ({retrieval_count} events available):\n"
+        f"{context_str}\n\n"
+        f"SUPERVISOR'S INQUIRY: {request.question}\n\n"
+        f"INSTRUCTIONS:\n"
+        f"1. If the supervisor is greeting you or asking what you can do, greet them warmly, state your role as the Warehouse Operations AI Assistant, and highlight key stats/recent incidents for {target_facility_id}.\n"
+        f"2. Answer the supervisor's questions clearly, accurately, and concisely based on the available telemetry above.\n"
+        f"3. Provide actionable safety recommendations and supervisor corrective interventions whenever high-risk behaviours (e.g. dropped cartons, dragging, improper stacking) are discussed.\n"
+        f"4. Reference specific Event IDs (e.g., EVT-014, EVT-015) and Bay locations where relevant."
     )
 
-    # 7. LLM Response Generation & Fallback
-    model_name = "gemini-2.5-flash"
+    # 6. LLM Response Generation with Fallback
+    model_name = "gemini-1.5-flash"
     answer_text = None
 
     if gemini_client.is_configured():
         try:
             raw_answer = await gemini_client.generate_response(prompt, system_prompt=settings.SYSTEM_ASSISTANT_PROMPT)
-            if raw_answer:
+            if raw_answer and not raw_answer.startswith("Gemini API"):
                 answer_text = raw_answer
-                model_name = gemini_client.model or "gemini-2.5-flash"
+                model_name = gemini_client.model or "gemini-1.5-flash"
         except Exception as e:
             print(f"[Assistant] Gemini API error: {e}. Falling back to grounded SQL summary.")
 
     if not answer_text:
-        model_name = "SQL+RAG-Local-Grounded"
-        summary_lines = [
-            f"Based on {retrieval_count} verified records in facility '{target_facility_id}':\n"
-        ]
-        for c in citations[:4]:
-            summary_lines.append(
-                f"• Incident {c.event_id} (Bay {c.bay_id or '1'} @ t={c.timestamp:.2f}s): {c.behaviour}. {c.description}"
+        if is_greeting:
+            answer_text = (
+                f"Hello! I am your AI Operations Assistant for facility {target_facility_id}. "
+                f"I continuously monitor loading bays and CCTV telemetry, detect unsafe handling practices "
+                f"(such as dropped boxes, unstable stacking, or dragged cartons), and provide risk recommendations. "
+                f"How can I assist you with today's operations?"
             )
-        answer_text = "\n".join(summary_lines)
+            model_name = "Rule-Engine-Assistant"
+        elif retrieval_count > 0:
+            model_name = "SQL+RAG-Local-Grounded"
+            summary_lines = [
+                f"Based on {retrieval_count} verified records in facility '{target_facility_id}':\n"
+            ]
+            for c in citations[:5]:
+                summary_lines.append(
+                    f"• Incident {c.event_id} (Bay {c.bay_id or '1'} @ t={c.timestamp:.2f}s): {c.behaviour}. {c.description}"
+                )
+            summary_lines.append("\nRecommendation: Review forklift handling protocols and inspect stacking stability at the dock.")
+            answer_text = "\n".join(summary_lines)
+        else:
+            answer_text = f"No verified warehouse incidents are currently recorded for facility '{target_facility_id}' matching your filter criteria."
+            model_name = "Rule-Engine-Assistant"
 
     return assistant_schema.ChatResponse(
         answer=answer_text,

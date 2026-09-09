@@ -14,21 +14,24 @@ const DEFAULT_SUMMARY = {
   repeatBehaviourPct: 0.0
 };
 
-export function useAnalytics() {
+export function useAnalytics(pollingIntervalMs: number = 4000) {
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     summary: DEFAULT_SUMMARY,
     behaviours: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const isMountedRef = useRef<boolean>(true);
   const requestIdRef = useRef<number>(0);
 
-  const loadAnalytics = useCallback(async () => {
+  const loadAnalytics = useCallback(async (isSilent: boolean = false) => {
     const currentReqId = ++requestIdRef.current;
 
     try {
+      if (!isSilent) setLoading(true);
+
       const [summaryRes, behavioursRes] = await Promise.all([
         getAnalyticsSummary(),
         getBehaviourAnalytics()
@@ -37,8 +40,6 @@ export function useAnalytics() {
       if (!isMountedRef.current || currentReqId !== requestIdRef.current) {
         return;
       }
-
-      setError(null);
 
       const safeSummary = {
         totalEvents: Number(summaryRes?.summary?.totalEvents ?? 0),
@@ -56,12 +57,15 @@ export function useAnalytics() {
         summary: safeSummary,
         behaviours: Array.isArray(behavioursRes) ? behavioursRes : []
       });
+      setLastUpdated(new Date());
       setError(null);
-      setLoading(false);
     } catch (err: any) {
       console.warn('Error fetching analytics API:', err);
-      if (isMountedRef.current && currentReqId === requestIdRef.current) {
+      if (isMountedRef.current && currentReqId === requestIdRef.current && !isSilent) {
         setError(err?.message || 'Failed to fetch operational analytics');
+      }
+    } finally {
+      if (isMountedRef.current && currentReqId === requestIdRef.current) {
         setLoading(false);
       }
     }
@@ -69,18 +73,24 @@ export function useAnalytics() {
 
   useEffect(() => {
     isMountedRef.current = true;
-    void loadAnalytics();
+    void loadAnalytics(false);
+
+    let timer: any = null;
+    if (pollingIntervalMs > 0) {
+      timer = setInterval(() => {
+        void loadAnalytics(true);
+      }, pollingIntervalMs);
+    }
 
     return () => {
       isMountedRef.current = false;
+      if (timer) clearInterval(timer);
     };
-  }, [loadAnalytics]);
+  }, [loadAnalytics, pollingIntervalMs]);
 
   const refetch = useCallback(() => {
-    setLoading(true);
-    return loadAnalytics();
+    return loadAnalytics(false);
   }, [loadAnalytics]);
 
-  return { analytics, loading, error, refetch };
+  return { analytics, loading, error, refetch, lastUpdated };
 }
-

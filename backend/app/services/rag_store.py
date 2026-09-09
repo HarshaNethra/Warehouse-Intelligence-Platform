@@ -1,7 +1,7 @@
 import os
 import json
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 try:
     import chromadb

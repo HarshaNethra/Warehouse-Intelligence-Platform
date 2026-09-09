@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, FileVideo, RefreshCw, ShieldAlert, Film, Sparkles, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateTelemetryForVideo, type VideoTelemetryPayload } from '../types/telemetry';
+import { createEvent } from '../api/events';
 
 export interface VideoIngestionSectionProps {
   onVideoSelect?: (video: VideoTelemetryPayload) => void;
@@ -45,6 +46,22 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
 
           if (payload.riskLevel === 'High' || payload.riskLevel === 'Critical') {
             setActiveAlert(`Critical Handling Risk Detected: ${payload.behaviors.join(', ')} in ${payload.title}`);
+            
+            // Persist detected incident directly to database
+            void createEvent({
+              facility_id: 'FAC-001',
+              video_id: payload.filename || payload.id,
+              bay_id: payload.bay || 'Loading Bay 01',
+              camera_id: 'CAM-01',
+              behaviour: payload.behaviors[0] || 'Material Handling Risk',
+              risk_score: payload.riskScore,
+              risk_level: payload.riskLevel,
+              timestamp: Date.now() / 1000,
+              timestamp_seconds: payload.duration * 0.3,
+              description: `Real-time optical anomaly: ${payload.behaviors.join(', ')} detected in ${payload.bay}.`,
+              reason: `Automated YOLO11 kinematic impulse threshold exceeded (${payload.riskScore.toFixed(1)}%).`,
+              recommended_action: `Inspect package structural integrity and enforce controlled handling at ${payload.bay}.`
+            }).catch((err) => console.warn('Incident persistence log:', err));
           } else {
             setActiveAlert(null);
           }
@@ -92,11 +109,18 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
     processVideoPayload(telemetryPayload);
   };
 
-  const handleSampleVideoSelect = (filename: string, bay: string) => {
+  const SAMPLE_SCENARIOS = [
+    { name: 'Rolling and dropping carton.mp4', bay: 'Loading Bay 01', size: '18.4 MB' },
+    { name: 'Throwing mattresses.mp4', bay: 'Loading Bay 02', size: '24.1 MB' },
+    { name: 'Dragging cartons on floor.mp4', bay: 'Loading Bay 03', size: '15.8 MB' },
+    { name: 'Stepping and heavy stacking.mp4', bay: 'Loading Bay 04', size: '21.0 MB' }
+  ];
+
+  const handleSampleVideoSelect = (filename: string, bay: string, sizeStr?: string) => {
     safeRevokePreviousObjectUrl();
     setCustomFile({
       name: filename,
-      size: '18.4 MB'
+      size: sizeStr || '18.4 MB'
     });
 
     const videoUrl = `/videos/${encodeURIComponent(filename)}`;
@@ -155,18 +179,23 @@ export const VideoIngestionSection: React.FC<VideoIngestionSectionProps> = ({ on
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-mono bg-slate-950 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">
               Max 200MB (.mp4, .avi, .mov)
             </span>
-            <button
-              type="button"
-              onClick={() => handleSampleVideoSelect('Rolling and dropping carton.mp4', 'Loading Bay 1')}
-              className="text-[10px] font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-md border border-slate-700 transition-colors flex items-center gap-1"
-            >
-              <Sparkles className="w-3 h-3 text-emerald-400" />
-              Load Sample Video
-            </button>
+            <div className="flex items-center gap-1.5">
+              {SAMPLE_SCENARIOS.map((s) => (
+                <button
+                  key={s.name}
+                  type="button"
+                  onClick={() => handleSampleVideoSelect(s.name, s.bay, s.size)}
+                  className="text-[10px] font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-md border border-slate-700 transition-colors flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3 text-emerald-400" />
+                  {s.bay}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

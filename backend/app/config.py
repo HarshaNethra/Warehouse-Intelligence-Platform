@@ -1,6 +1,13 @@
 import os
 from enum import Enum
 from typing import List
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from backend directory or project root
+backend_dir = Path(__file__).resolve().parent.parent
+load_dotenv(backend_dir / ".env")
+load_dotenv()
 
 class RiskLevel(str, Enum):
     LOW = "Low"
@@ -52,7 +59,7 @@ class AppConfig:
 
     # Gemini AI Settings
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL", 
         "https://generativelanguage.googleapis.com/v1beta/models"
@@ -60,6 +67,12 @@ class AppConfig:
     GEMINI_TEMPERATURE: float = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
     GEMINI_MAX_OUTPUT_TOKENS: int = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "1024"))
     ASSISTANT_CONTEXT_LIMIT: int = int(os.getenv("ASSISTANT_CONTEXT_LIMIT", "10"))
+
+    # Roboflow API Settings
+    ROBOFLOW_API_KEY: str = os.getenv("ROBOFLOW_API_KEY", "")
+    ROBOFLOW_PROJECT_ID: str = os.getenv("ROBOFLOW_PROJECT_ID", "warehouse-carton-det")
+    ROBOFLOW_MODEL_VERSION: str = os.getenv("ROBOFLOW_MODEL_VERSION", "1")
+    MODEL_ENGINE: str = os.getenv("MODEL_ENGINE", "LOCAL_YOLO11")
 
     # System Prompt Configurations
     SYSTEM_ASSISTANT_PROMPT: str = os.getenv(

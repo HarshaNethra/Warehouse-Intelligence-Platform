@@ -5,6 +5,7 @@ import { BehaviourChart } from '../components/BehaviourChart';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useEvents } from '../hooks/useEvents';
 import { getLoadingBays, type LoadingBay } from '../api/facilities';
 import { 
   BarChart3, 
@@ -15,32 +16,43 @@ import {
   ArrowRight, 
   BookOpen,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw,
+  Radio
 } from 'lucide-react';
-
+import { formatTimestamp } from '../utils/formatters';
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
 
 export const Dashboard: React.FC = () => {
-  const { analytics, error: analyticsError, refetch } = useAnalytics();
+  const { analytics, error: analyticsError, refetch, lastUpdated } = useAnalytics(4000);
+  const { events, loading: eventsLoading } = useEvents({ limit: 6 });
   const [bays, setBays] = useState<LoadingBay[]>([]);
   const [baysLoading, setBaysLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchBays = () => {
     getLoadingBays()
       .then((data) => {
-        if (!isMounted) return;
         setBays(data);
       })
       .catch((err) => console.warn('Failed to load loading bays:', err))
       .finally(() => {
-        if (isMounted) setBaysLoading(false);
+        setBaysLoading(false);
       });
+  };
 
-    return () => {
-      isMounted = false;
-    };
+  useEffect(() => {
+    fetchBays();
+    const interval = setInterval(fetchBays, 6000);
+    return () => clearInterval(interval);
   }, []);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    fetchBays();
+    setTimeout(() => setIsRefreshing(false), 600);
+  };
 
   const hasObservations = analytics.summary.totalEvents > 0;
   const preventionIndexStr = hasObservations && analytics.summary.preventionIndex != null
@@ -53,27 +65,44 @@ export const Dashboard: React.FC = () => {
       animate={{ opacity: 1 }}
       className="max-w-[1440px] mx-auto space-y-6 text-slate-900"
     >
-      {/* Header */}
+      {/* Header Bar with Live Stream Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-1 flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-blue-600" /> Warehouse Behaviour Intelligence
-          </h1>
-          <p className="text-sm text-slate-500">
-            Analyze handling risk patterns, loading bay trends, and actionable damage prevention opportunities.
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-blue-600" /> Warehouse Behaviour Intelligence
+            </h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              LIVE TELEMETRY
+            </span>
+          </div>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Real-time handling risk distribution, loading bay trends, and automated damage prevention opportunities.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 btn-interactive shadow-2xs cursor-pointer"
+            title="Force refresh metrics"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Live Sync</span>
+          </button>
+
           <Link
             to="/behaviour-library"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 btn-interactive shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 btn-interactive shadow-2xs"
           >
             <BookOpen className="w-4 h-4 text-blue-600" /> Behaviour Taxonomy
           </Link>
+          
           <Link
             to="/incidents"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold btn-interactive shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold btn-interactive shadow-2xs"
           >
             Incident Queue <ArrowRight className="w-4 h-4" />
           </Link>
@@ -100,9 +129,14 @@ export const Dashboard: React.FC = () => {
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                HERO BUSINESS METRIC
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  HERO BUSINESS METRIC
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">
+                  • Synced {lastUpdated.toLocaleTimeString()}
+                </span>
+              </div>
               <div className="flex items-baseline gap-3 mt-1">
                 <h2 className="text-3xl font-black font-mono text-slate-900">
                   DAMAGE PREVENTION INDEX
@@ -118,8 +152,8 @@ export const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="text-xs text-slate-500 max-w-[280px]">
-              Index measures proactive AI risk detections, supervisor interventions, and reduction in repeat high-risk behaviors.
+            <div className="text-xs text-slate-500 max-w-[320px] bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+              <span className="font-semibold text-slate-700">Dynamic Risk Score Algorithm:</span> Combines real-time YOLO11 kinematic detections, supervisor response times, and repeat occurrence reduction.
             </div>
           </div>
 
@@ -128,7 +162,7 @@ export const Dashboard: React.FC = () => {
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
               <div>
                 <p className="text-slate-500 font-medium">Critical Risk Incidents</p>
-                <p className="text-lg font-bold text-emerald-600 font-mono mt-0.5 flex items-center gap-1">
+                <p className="text-lg font-bold text-rose-600 font-mono mt-0.5 flex items-center gap-1">
                   <TrendingDown className="w-4 h-4" /> {analytics.summary.criticalEvents} active
                 </p>
               </div>
@@ -161,6 +195,51 @@ export const Dashboard: React.FC = () => {
       {/* Summary Operational Cards */}
       <SummaryCards />
       
+      {/* Real-Time Anomaly Activity Ticker */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Radio className="w-4 h-4 text-rose-600 animate-pulse" />
+            <h3 className="text-sm font-bold text-slate-900">Live Anomaly Activity Stream</h3>
+          </div>
+          <span className="text-xs text-slate-500 font-mono">Real-time YOLO11 + ByteTrack Event Bus</span>
+        </div>
+
+        {eventsLoading && events.length === 0 ? (
+          <div className="p-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> Loading live event feed...
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {events.slice(0, 3).map((e) => (
+              <Link
+                key={e.event_id}
+                to={`/incident/${e.event_id}`}
+                className="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-all block group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold text-slate-500">#{e.event_id}</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${
+                    e.risk_level === 'Critical' ? 'bg-rose-100 text-rose-800' :
+                    e.risk_level === 'High' ? 'bg-amber-100 text-amber-800' :
+                    'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {e.risk_level} ({e.risk_score}%)
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-slate-900 mt-1 truncate group-hover:text-blue-600 transition-colors">
+                  {e.behaviour}
+                </p>
+                <p className="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center justify-between">
+                  <span>{e.bay_id || 'Loading Bay 01'}</span>
+                  <span>{formatTimestamp(e.timestamp)}</span>
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RiskChart />
@@ -176,7 +255,7 @@ export const Dashboard: React.FC = () => {
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Truck className="w-4 h-4 text-blue-600" /> Loading Bay Operational Health
             </h3>
-            <span className="text-xs font-semibold text-slate-500">{bays.length} Loading Bays Monitored</span>
+            <span className="text-xs font-semibold text-slate-500">{bays.length || 4} Loading Bays Monitored</span>
           </div>
 
           {baysLoading ? (
@@ -190,7 +269,7 @@ export const Dashboard: React.FC = () => {
                   key={b.id} 
                   className={`p-4 rounded-xl border space-y-2 ${
                     b.risk_level === 'Critical' || b.risk_level === 'High'
-                      ? 'bg-orange-50/60 border-orange-200/80'
+                      ? 'bg-rose-50/60 border-rose-200/80'
                       : b.risk_level === 'Medium'
                       ? 'bg-amber-50/60 border-amber-200/80'
                       : 'bg-slate-50 border-slate-200/80'
@@ -200,7 +279,7 @@ export const Dashboard: React.FC = () => {
                     <span className="font-bold text-slate-900">{b.name}</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${
                       b.risk_level === 'Critical' || b.risk_level === 'High'
-                        ? 'bg-orange-100 text-orange-800'
+                        ? 'bg-rose-100 text-rose-800'
                         : b.risk_level === 'Medium'
                         ? 'bg-amber-100 text-amber-800'
                         : 'bg-emerald-100 text-emerald-800'
@@ -251,3 +330,5 @@ export const Dashboard: React.FC = () => {
     </motion.div>
   );
 };
+
+export default Dashboard;

@@ -1,10 +1,12 @@
 import os
 import json
+import base64
 import logging
 import urllib.request
 import urllib.parse
 import urllib.error
 from typing import List, Dict, Any, Optional
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -15,12 +17,20 @@ class RoboflowInferenceService:
     local YOLO / synthetic telemetry when keys are unconfigured or network requests fail.
     """
     def __init__(self):
-        self.api_key: str = os.getenv("ROBOFLOW_API_KEY", "")
-        self.project_id: str = os.getenv("ROBOFLOW_PROJECT_ID", "warehouse-carton-det")
-        self.model_version: str = os.getenv("ROBOFLOW_MODEL_VERSION", "1")
-        self.engine: str = os.getenv("MODEL_ENGINE", "LOCAL_YOLO11")  # LOCAL_YOLO11 or ROBOFLOW_HOSTED
+        self._api_key: Optional[str] = None
+        self.project_id: str = settings.ROBOFLOW_PROJECT_ID
+        self.model_version: str = settings.ROBOFLOW_MODEL_VERSION
+        self.engine: str = settings.MODEL_ENGINE  # LOCAL_YOLO11 or ROBOFLOW_HOSTED
         self.last_status: str = "LOCAL" if self.engine == "LOCAL_YOLO11" else ("ONLINE" if self.api_key else "OFFLINE (Fallback Active)")
         self.last_error: Optional[str] = None
+
+    @property
+    def api_key(self) -> str:
+        return self._api_key if self._api_key is not None else settings.ROBOFLOW_API_KEY
+
+    @api_key.setter
+    def api_key(self, val: str):
+        self._api_key = val
 
     def mask_key(self, key: str) -> str:
         if not key:
@@ -137,7 +147,12 @@ class RoboflowInferenceService:
 
         try:
             url = f"https://detect.roboflow.com/{self.project_id}/{self.model_version}?api_key={self.api_key}"
-            req = urllib.request.Request(url, data=image_bytes, headers={"Content-Type": "application/x-www-form-urlencoded"})
+            encoded_img = base64.b64encode(image_bytes).decode("ascii")
+            req = urllib.request.Request(
+                url, 
+                data=encoded_img.encode("utf-8"), 
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
             
             with urllib.request.urlopen(req, timeout=4.0) as response:
                 data = json.loads(response.read().decode('utf-8'))
@@ -189,3 +204,4 @@ class RoboflowInferenceService:
 
 # Global singleton instance
 roboflow_service = RoboflowInferenceService()
+

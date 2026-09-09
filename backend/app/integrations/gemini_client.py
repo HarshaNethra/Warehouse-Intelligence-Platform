@@ -1,19 +1,23 @@
-import os
+import logging
 from typing import Optional
 import httpx
-from dotenv import load_dotenv
 from app.config import settings
 
-load_dotenv()
+logger = logging.getLogger(__name__)
 
 class GeminiClient:
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or settings.GEMINI_API_KEY
+        self._api_key = api_key
         self.model = settings.GEMINI_MODEL
         self.base_url = settings.GEMINI_BASE_URL
         
+    @property
+    def api_key(self) -> str:
+        return self._api_key or settings.GEMINI_API_KEY
+
     def is_configured(self) -> bool:
-        return bool(self.api_key and self.api_key.strip() and not self.api_key.startswith("mock_"))
+        key = self.api_key
+        return bool(key and key.strip() and not key.startswith("mock_"))
 
     async def generate_response(
         self,
@@ -53,8 +57,11 @@ class GeminiClient:
                         parts = candidates[0]["content"].get("parts", [])
                         if parts and "text" in parts[0]:
                             return parts[0]["text"]
-                return f"Gemini API returned status {response.status_code}: {response.text}"
+                logger.warning(f"[GeminiClient] API returned status {response.status_code}: {response.text}")
+                return None
         except Exception as e:
-            return f"Gemini API Exception: {str(e)}"
+            logger.error(f"[GeminiClient] Exception: {e}")
+            return None
 
 gemini_client = GeminiClient()
+

@@ -7,7 +7,12 @@ import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 import numpy as np
-import cv2
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    cv2 = None
+    CV2_AVAILABLE = False
 
 from sqlalchemy.orm import Session
 from app.db import models
@@ -18,6 +23,7 @@ try:
     from ultralytics import YOLO
     ULTRALYTICS_AVAILABLE = True
 except ImportError:
+    YOLO = None
     ULTRALYTICS_AVAILABLE = False
 
 CLASS_NAMES = [

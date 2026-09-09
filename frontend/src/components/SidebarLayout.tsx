@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UrgentAlertsDropdown } from './UrgentAlertsDropdown';
+import { FloatingChatbot } from './FloatingChatbot';
 import { useAuth } from '../context/AuthContext';
 import { useProvenance } from '../context/ProvenanceContext';
 import { getEvents } from '../api/events';
@@ -434,6 +435,8 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
         </main>
       </div>
 
+      {/* Floating Global AI Chatbot Widget */}
+      {location.pathname !== '/assistant' && <FloatingChatbot />}
     </div>
   );
 };

@@ -13,13 +13,19 @@ from app.config import settings, AppEnvironment
 
 def apply_facility_filter(
     query, 
-    facility_id: Optional[str], 
-    current_user: models.User, 
-    include_fixtures: bool = False
+    facility_id: Optional[str] = None, 
+    current_user: Optional[models.User] = None, 
+    include_fixtures: bool = True
 ):
-    target_facility = current_user.facility_id if (current_user.role != "ADMIN" and current_user.facility_id) else facility_id
-    if target_facility:
-        query = query.filter(models.Event.facility_id == target_facility)
+    actual_facility = None
+    if isinstance(facility_id, str) and facility_id.strip():
+        actual_facility = facility_id.strip()
+    
+    if current_user and current_user.role != "ADMIN" and current_user.facility_id:
+        actual_facility = current_user.facility_id
+
+    if actual_facility:
+        query = query.filter(models.Event.facility_id == actual_facility)
 
     # Data Governance & Environment Contamination Shield
     if settings.ENVIRONMENT == AppEnvironment.PRODUCTION:
@@ -27,12 +33,6 @@ def apply_facility_filter(
             (models.Event.is_test_data.is_(False) | models.Event.is_test_data.is_(None)),
             (models.Event.is_demo_data.is_(False) | models.Event.is_demo_data.is_(None)),
             (models.Event.environment == "PRODUCTION") | (models.Event.environment.is_(None))
-        )
-    elif not include_fixtures:
-        query = query.filter(
-            (models.Event.is_test_data.is_(False) | models.Event.is_test_data.is_(None)),
-            (models.Event.is_demo_data.is_(False) | models.Event.is_demo_data.is_(None)),
-            (models.Event.provenance_type != "DEMO_FIXTURE")
         )
     return query
 

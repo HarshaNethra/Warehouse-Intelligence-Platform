@@ -101,5 +101,11 @@ export async function batchUpdateIncidentStatus(incidentIds: string[], status: s
   return await apiClient.patch<{ updated_count: number; incident_ids: string[]; status: string }>('/incidents/batch-status', { incident_ids: incidentIds, status }, options);
 }
 
+export async function createEvent(eventData: Partial<Event>, options?: RequestOptions): Promise<Event> {
+  const raw = await apiClient.post<Event>('/events', eventData, options);
+  return normalizeEvent(raw);
+}
+
+
 
 

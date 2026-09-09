@@ -6,9 +6,9 @@ Implementation Plan\
 **Project:** AI-Powered Field Intelligence Assistant for Safer,
 Damage-Free Warehouse Operations\
 **Target Prototype:** Web application\
-**Primary Stack:** React + TypeScript + Tailwind CSS / Python + FastAPI
-/ Ultralytics YOLO / ByteTrack / OpenCV / SQLite / Claude API\
-**Training/Optional Fine-tuning:** Google Colab + Roboflow Universe\
+**Primary Stack:** React 19 + TypeScript + Vite + Tailwind CSS / Python 3.13 + FastAPI
+/ Ultralytics YOLO11s / ByteTrack / Roboflow Universe / SQLite & Supabase PostgreSQL / Google Gemini 2.5 Flash\
+**Deployment & Hosting:** Vercel (Frontend) + Render (Backend) + Supabase (Database)\
 **Version Control:** Git + GitHub
 
 ------------------------------------------------------------------------

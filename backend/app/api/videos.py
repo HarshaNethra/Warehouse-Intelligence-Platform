@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.db.database import get_db
@@ -18,7 +18,13 @@ def get_videos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @router.get("/videos/{video_id}/frames/{frame_number}")
 def get_video_frame(video_id: str, frame_number: int, db: Session = Depends(get_db)):
-    import cv2
+    try:
+        import cv2
+    except ImportError:
+        raise HTTPException(
+            status_code=503, 
+            detail="OpenCV (cv2) is not installed on the server. Install opencv-python or use Roboflow hosted inference."
+        )
     import urllib.parse
     from fastapi.responses import Response
 
