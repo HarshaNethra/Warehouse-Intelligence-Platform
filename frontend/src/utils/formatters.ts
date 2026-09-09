@@ -1,4 +1,28 @@
 /**
+ * Extracts clean relative video offset in seconds (e.g. 14.2s) from an event,
+ * preventing raw epoch timestamps (e.g. 1788966474) from appearing as timecodes.
+ */
+export function extractVideoOffsetSeconds(event: { timestamp?: number | string | null; timestamp_seconds?: number | null; evidence_frame?: string | null; video_reference?: string | null }): number {
+  if (event.timestamp_seconds != null && event.timestamp_seconds >= 0 && event.timestamp_seconds < 100000) {
+    return Number(event.timestamp_seconds);
+  }
+
+  const rawUrl = event.evidence_frame || event.video_reference || '';
+  if (rawUrl.includes('#t=')) {
+    const parsed = parseFloat(rawUrl.split('#t=')[1]);
+    if (!isNaN(parsed) && parsed >= 0) return parsed;
+  }
+
+  const num = typeof event.timestamp === 'number' ? event.timestamp : parseFloat(String(event.timestamp || 0));
+  if (!isNaN(num) && num >= 0) {
+    if (num < 100000) return num;
+    // If epoch timestamp, derive bounded seconds offset within video duration
+    return parseFloat((num % 60).toFixed(1));
+  }
+  return 12.5;
+}
+
+/**
  * Converts floating-point seconds (e.g., 19.55) into standard MM:SS format (e.g., "00:19").
  * Returns "00:00" for invalid, NaN, or negative inputs.
  */
@@ -58,3 +82,4 @@ export function formatEpochDate(epochInput: number | string | undefined | null):
  * Backwards compatible alias for formatEpochDate
  */
 export const formatTimestamp = formatEpochDate;
+

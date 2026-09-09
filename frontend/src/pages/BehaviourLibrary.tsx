@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../api/events';
 import { getBehaviourAnalytics } from '../api/analytics';
+import { extractVideoOffsetSeconds } from '../utils/formatters';
 import type { Event } from '../types/event';
 
 interface TaxonomyItem {
@@ -350,7 +351,7 @@ export const BehaviourLibrary: React.FC = () => {
                 {detectedEvents.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                     {detectedEvents.map((ev) => {
-                      const tSec = typeof ev.timestamp === 'number' ? ev.timestamp.toFixed(1) : '12.5';
+                      const tSec = extractVideoOffsetSeconds(ev).toFixed(1);
                       return (
                         <div
                           key={ev.event_id}

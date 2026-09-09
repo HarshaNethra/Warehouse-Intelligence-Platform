@@ -3,7 +3,7 @@ import { useEvents } from '../hooks/useEvents';
 import { exportEventsCsv, acknowledgeIncident, dispatchIncident, batchDeleteIncidents, batchUpdateIncidentStatus } from '../api/events';
 import { exportComprehensiveEventsCsv, generateSafetyAuditPdfReport } from '../utils/reportExporter';
 import { RiskBadge } from './RiskBadge';
-import { formatTimestamp } from '../utils/formatters';
+import { formatTimestamp, extractVideoOffsetSeconds } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -557,7 +557,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
               const isAcknowledged = statusUpper === 'ACKNOWLEDGED';
               const isDispatched = statusUpper === 'DISPATCHED';
               const isSelected = selectedIds.includes(event.event_id);
-              const tSec = typeof event.timestamp === 'number' ? event.timestamp.toFixed(1) : '12.5';
+              const tSec = extractVideoOffsetSeconds(event).toFixed(1);
 
               return (
                 <div
