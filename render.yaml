@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: warehouse-intelligence-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ENVIRONMENT
+        value: PRODUCTION
+      - key: API_PREFIX
+        value: /api
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: ROBOFLOW_API_KEY
+        sync: false
+      - key: MODEL_ENGINE
+        value: ROBOFLOW_HOSTED

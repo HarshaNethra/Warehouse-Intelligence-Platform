@@ -23,6 +23,7 @@ import { useEvents } from '../hooks/useEvents';
 import { useRealtimeTelemetry } from '../hooks/useRealtimeTelemetry';
 import { generateTelemetryForVideo, type VideoTelemetryPayload } from '../types/telemetry';
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 
 const INITIAL_VIDEO_PAYLOAD = generateTelemetryForVideo(
   'Rolling and dropping carton.mp4',
@@ -33,6 +34,7 @@ const INITIAL_VIDEO_PAYLOAD = generateTelemetryForVideo(
 );
 
 export const LiveMonitoring: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const videoRef = useRef<HTMLVideoElement>(null);
   const { isConnected } = useRealtimeTelemetry();
   const { events } = useEvents();
@@ -80,6 +82,24 @@ export const LiveMonitoring: React.FC = () => {
   useEffect(() => {
     fetchCameraFeeds();
   }, []);
+
+  useEffect(() => {
+    const videoParam = searchParams.get('video');
+    const bayParam = searchParams.get('bay');
+    if (videoParam) {
+      const decodedVideo = decodeURIComponent(videoParam);
+      const decodedBay = bayParam ? decodeURIComponent(bayParam) : 'Loading Bay';
+      const videoUrl = `/videos/${encodeURIComponent(decodedVideo)}`;
+      const payload = generateTelemetryForVideo(
+        decodedVideo,
+        18 * 1024 * 1024,
+        decodedBay,
+        videoUrl,
+        60
+      );
+      handleVideoSelect(payload);
+    }
+  }, [searchParams]);
 
   const handleRefresh = () => {
     setLoading(true);

@@ -639,8 +639,8 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
 
                         {/* Reason / Kinematic Callout */}
                         <p className="text-xs text-slate-600 line-clamp-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-                          <strong className="text-slate-800">Trigger: </strong>
-                          {event.reason || event.description || 'Rapid velocity deceleration spike detected.'}
+                          <strong className="text-slate-800">Observation: </strong>
+                          {event.description || event.reason || 'Rapid velocity deceleration spike detected.'}
                         </p>
                       </div>
                     </div>

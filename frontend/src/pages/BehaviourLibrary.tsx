@@ -204,16 +204,20 @@ export const BehaviourLibrary: React.FC = () => {
 
     if (!rawUrl || !rawUrl.endsWith('.mp4')) {
       const beh = (event.behaviour || '').toLowerCase();
-      if (beh.includes('drop')) {
+      if (beh.includes('drop') || beh.includes('freefall')) {
         rawUrl = '/videos/Rolling%20and%20dropping%20carton.mp4';
-      } else if (beh.includes('drag') || beh.includes('cupboard')) {
+      } else if (beh.includes('cupboard') || (beh.includes('drag') && !beh.includes('wet'))) {
         rawUrl = '/videos/Dock%20level%2C%20dragging%20cupboard.mp4';
-      } else if (beh.includes('stack')) {
-        rawUrl = '/videos/Improper%20stacking.mp4';
-      } else if (beh.includes('mattress') || beh.includes('throw')) {
-        rawUrl = '/videos/throwing%20mattresses.mp4';
-      } else if (beh.includes('step')) {
-        rawUrl = '/videos/Stepping%20on%20carton.mp4';
+      } else if (beh.includes('stack') || beh.includes('overhang')) {
+        rawUrl = '/videos/KD%20packets%20dragged%2C%20heavy%20box%20kept%20on%20other%20packets.mp4';
+      } else if (beh.includes('mattress')) {
+        rawUrl = '/videos/Throwing%20Mattresses.mp4';
+      } else if (beh.includes('step') || beh.includes('orientation')) {
+        rawUrl = '/videos/Stepping%20on%20cartons%2C%20vertical%20product%20kept%20horizontally%2C%20heavy%20product%20kept%20on%20top.mp4';
+      } else if (beh.includes('strap') || beh.includes('seating')) {
+        rawUrl = '/videos/Throwing%20seating%20cartons%2C%20using%20strap%20to%20hold.mp4';
+      } else if (beh.includes('wet') || beh.includes('rough')) {
+        rawUrl = '/videos/Rolling%20and%20dragging%20on%20wet%20floor.mp4';
       } else {
         rawUrl = '/videos/Rolling%20and%20dropping%20carton.mp4';
       }
@@ -423,7 +427,7 @@ export const BehaviourLibrary: React.FC = () => {
                             </div>
 
                             <p className="text-[11px] text-slate-600 line-clamp-2 leading-snug">
-                              {ev.reason || ev.description || 'Kinematic motion threshold exceeded.'}
+                              {ev.description || ev.reason || 'Kinematic motion threshold exceeded.'}
                             </p>
                           </div>
 

@@ -16,7 +16,9 @@ import {
   BookOpen,
   Truck,
   Search,
-  ChevronDown
+  ChevronDown,
+  Building2,
+  Check
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UrgentAlertsDropdown } from './UrgentAlertsDropdown';
@@ -29,6 +31,37 @@ import type { Event } from '../types/event';
 
 const READ_NOTIFICATIONS_KEY = 'wms_read_notifications';
 
+export const CANONICAL_FACILITIES: Facility[] = [
+  {
+    id: 'FAC-001',
+    name: 'Bengaluru Distribution Center',
+    location: 'Hoskote Logistics Park • 4 Active Docks',
+    timezone: 'Asia/Kolkata',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'FAC-002',
+    name: 'Mumbai Mega Hub',
+    location: 'Bhiwandi Logistics Gateway • 6 Active Docks',
+    timezone: 'Asia/Kolkata',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'FAC-003',
+    name: 'Delhi NCR Fulfillment Center',
+    location: 'Bilaspur Industrial Corridor • 8 Active Docks',
+    timezone: 'Asia/Kolkata',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'FAC-004',
+    name: 'Chennai Port Logistics Depot',
+    location: 'Sriperumbudur Automotive Hub • 4 Active Docks',
+    timezone: 'Asia/Kolkata',
+    status: 'ACTIVE',
+  },
+];
+
 interface SidebarLayoutProps {
   children: React.ReactNode;
 }
@@ -38,9 +71,18 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [facilityDropdownOpen, setFacilityDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<Event[]>([]);
-  const [, setFacilities] = useState<Facility[]>([]);
-  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [facilities, setFacilities] = useState<Facility[]>(CANONICAL_FACILITIES);
+  const [selectedFacility, setSelectedFacility] = useState<Facility>(() => {
+    try {
+      const savedId = localStorage.getItem('wms_active_facility_id');
+      const match = CANONICAL_FACILITIES.find((f) => f.id === savedId);
+      return match || CANONICAL_FACILITIES[0];
+    } catch {
+      return CANONICAL_FACILITIES[0];
+    }
+  });
   const [globalQuery, setGlobalQuery] = useState('');
   const [readIds, setReadIds] = useState<string[]>(() => {
     try {
@@ -53,6 +95,8 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
 
   const popoverRef = useRef<HTMLDivElement>(null);
   const bellButtonRef = useRef<HTMLButtonElement>(null);
+  const facilityRef = useRef<HTMLDivElement>(null);
+  const facilityBtnRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -60,8 +104,12 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
     getFacilities()
       .then((data) => {
         if (!isMounted) return;
-        setFacilities(data);
-        if (data.length > 0) setSelectedFacility(data[0]);
+        if (data && data.length > 0) {
+          setFacilities(data);
+          const savedId = localStorage.getItem('wms_active_facility_id');
+          const matched = data.find((f) => f.id === savedId) || data[0];
+          setSelectedFacility(matched);
+        }
       })
       .catch((err) => console.warn('Failed to load facilities:', err));
 
@@ -91,11 +139,22 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
       ) {
         setNotificationOpen(false);
       }
+
+      if (
+        facilityDropdownOpen &&
+        facilityRef.current &&
+        !facilityRef.current.contains(e.target as Node) &&
+        facilityBtnRef.current &&
+        !facilityBtnRef.current.contains(e.target as Node)
+      ) {
+        setFacilityDropdownOpen(false);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setNotificationOpen(false);
+        setFacilityDropdownOpen(false);
         setMobileMenuOpen(false);
       }
     };
@@ -106,7 +165,18 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [notificationOpen]);
+  }, [notificationOpen, facilityDropdownOpen]);
+
+  const handleSelectFacility = (fac: Facility) => {
+    setSelectedFacility(fac);
+    setFacilityDropdownOpen(false);
+    try {
+      localStorage.setItem('wms_active_facility_id', fac.id);
+      window.dispatchEvent(new CustomEvent('wms:facility-changed', { detail: fac }));
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const markAllAsRead = () => {
     const allIds = notifications.map((n) => n.event_id);
@@ -231,7 +301,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-500 font-mono truncate">
-                  Facility: Bengaluru DC ({user?.facility_id || 'FAC-001'})
+                  Site: {selectedFacility?.name || 'Bengaluru DC'} ({selectedFacility?.id || user?.facility_id || 'FAC-001'})
                 </p>
               </div>
             </div>
@@ -342,15 +412,96 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Location / Facility Selector */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 hover:border-slate-300 transition-colors cursor-pointer shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="font-bold text-slate-900 truncate">{selectedFacility?.name || 'Bengaluru Distribution Center'}</span>
-                <span className="text-slate-300">/</span>
-                <span className="text-slate-500 font-medium text-[11px] whitespace-nowrap">Active Docks</span>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5 shrink-0" />
+            {/* Location / Facility Selector Dropdown */}
+            <div className="relative">
+              <button
+                ref={facilityBtnRef}
+                type="button"
+                onClick={() => setFacilityDropdownOpen((prev) => !prev)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs text-slate-800 transition-all cursor-pointer shadow-2xs ${
+                  facilityDropdownOpen
+                    ? 'bg-blue-50/70 border-blue-400 ring-2 ring-blue-500/20'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                }`}
+                title="Switch Warehouse Facility / Site"
+                aria-label="Switch Facility"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <div className="flex items-center gap-1.5 min-w-0 text-left">
+                  <span className="font-bold text-slate-900 truncate">
+                    {selectedFacility?.name || 'Bengaluru Distribution Center'}
+                  </span>
+                  <span className="text-slate-300">/</span>
+                  <span className="text-slate-500 font-medium text-[11px] whitespace-nowrap">Active Docks</span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-400 ml-0.5 shrink-0 transition-transform ${
+                    facilityDropdownOpen ? 'rotate-180 text-blue-600' : ''
+                  }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {facilityDropdownOpen && (
+                  <motion.div
+                    ref={facilityRef}
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute left-0 mt-2 w-80 bg-white rounded-xl border border-slate-200 shadow-xl z-50 overflow-hidden"
+                  >
+                    <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-4 h-4 text-blue-600" />
+                        <span className="text-xs font-bold text-slate-900">Switch Warehouse Site</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-500 font-bold bg-white px-2 py-0.5 rounded border border-slate-200">
+                        {facilities.length} Active Hubs
+                      </span>
+                    </div>
+
+                    <div className="p-1.5 space-y-1 max-h-72 overflow-y-auto">
+                      {facilities.map((fac) => {
+                        const isSelected = selectedFacility?.id === fac.id;
+                        return (
+                          <button
+                            key={fac.id}
+                            type="button"
+                            onClick={() => handleSelectFacility(fac)}
+                            className={`w-full text-left p-2.5 rounded-lg flex items-center justify-between transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-50/80 border border-blue-200 text-blue-900'
+                                : 'hover:bg-slate-50 text-slate-700 border border-transparent'
+                            }`}
+                          >
+                            <div className="min-w-0 pr-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-xs truncate">{fac.name}</span>
+                                <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                                  {fac.id}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                                {fac.location || 'Distribution & Logistics Center'}
+                              </p>
+                            </div>
+                            {isSelected && (
+                              <Check className="w-4 h-4 text-blue-600 shrink-0 font-bold" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                      <p className="text-[10px] text-slate-500 font-medium">
+                        Live telemetry and video inference sync automatically with selected hub.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 

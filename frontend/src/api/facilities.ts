@@ -45,7 +45,7 @@ export async function getLoadingBays(facilityId?: string): Promise<LoadingBay[]>
   try {
     const params: Record<string, string> = {};
     if (facilityId) params.facility_id = facilityId;
-    return await apiClient.get<LoadingBay[]>('/bays', { params });
+    return await apiClient.get<LoadingBay[]>('/bays', params);
   } catch (err) {
     console.warn('Failed to fetch bays from API:', err);
     return [];
@@ -56,7 +56,7 @@ export async function getCameras(bayId?: string): Promise<Camera[]> {
   try {
     const params: Record<string, string> = {};
     if (bayId) params.bay_id = bayId;
-    return await apiClient.get<Camera[]>('/cameras', { params });
+    return await apiClient.get<Camera[]>('/cameras', params);
   } catch (err) {
     console.warn('Failed to fetch cameras from API:', err);
     return [];

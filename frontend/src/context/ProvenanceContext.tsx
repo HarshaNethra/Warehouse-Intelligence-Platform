@@ -9,7 +9,7 @@ interface ProvenanceContextType {
 const ProvenanceContext = createContext<ProvenanceContextType | undefined>(undefined);
 
 export const ProvenanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [provenanceEnabled, setProvenanceEnabled] = useState<boolean>(true);
+  const [provenanceEnabled, setProvenanceEnabled] = useState<boolean>(false);
 
   const toggleProvenance = () => {
     setProvenanceEnabled((prev) => !prev);

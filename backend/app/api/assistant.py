@@ -113,14 +113,15 @@ async def chat(
 
     # 3. Vector Retrieval (ChromaDB)
     rag_matches = []
-    try:
-        rag_matches = rag_vector_store.query_incidents(
-            query_text=request.question,
-            n_results=2,
-            facility_id=target_facility_id
-        )
-    except Exception as e:
-        print(f"[Assistant] Vector store query error (falling back to SQL): {e}")
+    if len(all_facility_events) > 0 or specific_event_requested:
+        try:
+            rag_matches = rag_vector_store.query_incidents(
+                query_text=request.question,
+                n_results=2,
+                facility_id=target_facility_id
+            )
+        except Exception as e:
+            print(f"[Assistant] Vector store query error (falling back to SQL): {e}")
 
     # 4. Construct Citations List with Relative Timecodes
     citations_dict = {}

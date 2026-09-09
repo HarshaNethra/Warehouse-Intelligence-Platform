@@ -230,6 +230,7 @@ class Event(Base):
     evidence_clip_start = Column(Float, nullable=True)
     evidence_clip_end = Column(Float, nullable=True)
     processing_latency_ms = Column(Float, nullable=True)
+    rule_version = Column(String, default="RULE-v1.0", nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

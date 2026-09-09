@@ -87,29 +87,45 @@ def get_loading_bays(
         .all()
     )
 
+    from sqlalchemy import or_
     events = (
         db.query(models.Event)
-        .filter(models.Event.facility_id == target_facility_id)
+        .filter(
+            or_(
+                models.Event.facility_id == target_facility_id,
+                models.Event.facility_id.is_(None)
+            )
+        )
         .order_by(models.Event.timestamp.desc())
         .all()
     )
 
-    events_by_bay = {}
-    for e in events:
-        key = e.bay_id
-        if key not in events_by_bay:
-            events_by_bay[key] = []
-        events_by_bay[key].append(e)
+    def normalize_bay_str(s: Optional[str]) -> str:
+        if not s:
+            return ""
+        return s.lower().replace("-", "").replace(" ", "").replace("_", "")
 
     result = []
     for bay in bays:
         cam_count = cam_counts.get(bay.id, 0)
-        bay_events = events_by_bay.get(bay.id, []) + (events_by_bay.get(bay.name, []) if bay.name != bay.id else [])
+        b_id_norm = normalize_bay_str(bay.id)
+        b_name_norm = normalize_bay_str(bay.name)
+        b_code_norm = normalize_bay_str(bay.code)
+
+        # Match any event that corresponds to this bay by ID, Name, or Code
+        bay_events = [
+            e for e in events
+            if e.bay_id and (
+                normalize_bay_str(e.bay_id) in [b_id_norm, b_name_norm, b_code_norm] or
+                b_id_norm in normalize_bay_str(e.bay_id) or
+                normalize_bay_str(e.bay_id) in b_name_norm
+            )
+        ]
         
-        active_count = sum(1 for e in bay_events if e.status in ["UNRESOLVED", "OPEN"])
+        active_count = sum(1 for e in bay_events if (e.status or "UNRESOLVED").upper() in ["UNRESOLVED", "OPEN", "FLAGGED"])
         latest_event = bay_events[0] if bay_events else None
         
-        highest_score = max([e.risk_score for e in bay_events], default=0.0)
+        highest_score = max([e.risk_score for e in bay_events if e.risk_score is not None], default=0.0)
         risk_level = "Critical" if highest_score >= 85 else "High" if highest_score >= 60 else "Medium" if highest_score >= 35 else "Low"
 
         result.append(LoadingBayDTO(

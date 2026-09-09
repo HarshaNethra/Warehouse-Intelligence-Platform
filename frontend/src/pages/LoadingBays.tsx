@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Truck, 
   ArrowUpRight, 
@@ -12,269 +12,183 @@ import {
   Plus,
   X,
   CheckCircle2,
-  Radio
+  Radio,
+  RotateCcw,
+  Trash2,
+  ShieldCheck,
+  Film
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-
-interface DockBayDetail {
-  id: string;
-  name: string;
-  code: string;
-  zone: string;
-  videoUrl?: string;
-  videoTitle?: string;
-  cameraId: string;
-  status: 'DOCK_ACTIVE' | 'UNLOADING' | 'STAGING' | 'INSPECTION' | 'IDLE' | 'UNASSIGNED';
-  truckNumber: string;
-  supervisor: string;
-  palletCount: number;
-  maxPallets: number;
-  riskLevel: 'Critical' | 'High' | 'Medium' | 'Low' | 'Nominal';
-  riskScore: number;
-  primaryHazard: string;
-  fps: number;
-  resolution: string;
-  latencyMs: number;
-}
-
-const INITIAL_BAYS: DockBayDetail[] = [
-  {
-    id: 'bay-01',
-    name: 'Loading Bay 01 — Inbound Freight',
-    code: 'DOCK-01',
-    zone: 'North Dock Logistics Hub',
-    videoUrl: '/videos/Rolling%20and%20dropping%20carton.mp4',
-    videoTitle: 'Rolling and dropping carton.mp4',
-    cameraId: 'CAM-01',
-    status: 'UNLOADING',
-    truckNumber: 'MH-04-GC-4482 (Godrej Logistics)',
-    supervisor: 'Rajesh Kumar (Shift Lead)',
-    palletCount: 16,
-    maxPallets: 24,
-    riskLevel: 'Critical',
-    riskScore: 94.6,
-    primaryHazard: 'Carton Drop & Freefall Deceleration (>12.4 m/s²)',
-    fps: 30,
-    resolution: '1920x1080',
-    latencyMs: 18,
-  },
-  {
-    id: 'bay-02',
-    name: 'Loading Bay 02 — Outbound Distribution',
-    code: 'DOCK-02',
-    zone: 'East Dock Bay Terminal',
-    videoUrl: '/videos/Dock%20level%2C%20dragging%20cupboard.mp4',
-    videoTitle: 'Dock level, dragging cupboard.mp4',
-    cameraId: 'CAM-02',
-    status: 'DOCK_ACTIVE',
-    truckNumber: 'KA-01-AK-9182 (Godrej Express)',
-    supervisor: 'Suresh Patil',
-    palletCount: 20,
-    maxPallets: 24,
-    riskLevel: 'High',
-    riskScore: 82.5,
-    primaryHazard: 'Cupboard Floor Dragging & Seal Abrasion',
-    fps: 30,
-    resolution: '1920x1080',
-    latencyMs: 16,
-  },
-  {
-    id: 'bay-03',
-    name: 'Bay 03 — Inbound Conveyor Staging',
-    code: 'STG-03',
-    zone: 'Central Sorting & Conveyance',
-    videoUrl: '/videos/sliding%20box.mp4',
-    videoTitle: 'sliding box.mp4',
-    cameraId: 'CAM-05',
-    status: 'STAGING',
-    truckNumber: 'Internal Transfer Line #4',
-    supervisor: 'Amit Verma',
-    palletCount: 12,
-    maxPallets: 18,
-    riskLevel: 'Medium',
-    riskScore: 54.0,
-    primaryHazard: 'Sliding Box Surface Friction',
-    fps: 30,
-    resolution: '1920x1080',
-    latencyMs: 14,
-  },
-  {
-    id: 'bay-04',
-    name: 'Aisle 04 — High-Rack Pallet Storage',
-    code: 'RACK-04',
-    zone: 'Heavy Aisle Pallet Racking',
-    videoUrl: '/videos/Improper%20stacking.mp4',
-    videoTitle: 'Improper stacking.mp4',
-    cameraId: 'CAM-06',
-    status: 'DOCK_ACTIVE',
-    truckNumber: 'Forklift Fleet #02 & #05',
-    supervisor: 'Vikas Sharma',
-    palletCount: 38,
-    maxPallets: 40,
-    riskLevel: 'High',
-    riskScore: 76.8,
-    primaryHazard: 'Improper Column Stacking & Top Load Stress',
-    fps: 30,
-    resolution: '1920x1080',
-    latencyMs: 19,
-  },
-  {
-    id: 'bay-05',
-    name: 'Aisle 05 — Heavy Goods Staging',
-    code: 'STG-05',
-    zone: 'Mattress & Bulky Parcels Staging',
-    videoUrl: '/videos/throwing%20mattresses.mp4',
-    videoTitle: 'throwing mattresses.mp4',
-    cameraId: 'CAM-04',
-    status: 'UNLOADING',
-    truckNumber: 'DL-01-EA-3310 (Heavy Cargo)',
-    supervisor: 'Praveen Nair',
-    palletCount: 8,
-    maxPallets: 15,
-    riskLevel: 'Critical',
-    riskScore: 92.4,
-    primaryHazard: 'Throwing Mattresses & Ballistic Shock',
-    fps: 30,
-    resolution: '1920x1080',
-    latencyMs: 22,
-  },
-  {
-    id: 'bay-06',
-    name: 'QC Buffer & Returns Inspection Bay',
-    code: 'QC-06',
-    zone: 'Quality Check Quarantine Buffer',
-    videoUrl: '/videos/Stepping%20on%20carton.mp4',
-    videoTitle: 'Stepping on carton.mp4',
-    cameraId: 'CAM-07',
-    status: 'INSPECTION',
-    truckNumber: 'Damage Claim Audit Batch #109',
-    supervisor: 'Ananya Deshmukh (QC Lead)',
-    palletCount: 6,
-    maxPallets: 10,
-    riskLevel: 'High',
-    riskScore: 68.2,
-    primaryHazard: 'Stepping on Carton Top Surface & Puncture',
-    fps: 30,
-    resolution: '1920x1080',
-    latencyMs: 15,
-  },
-  {
-    id: 'bay-07',
-    name: 'Loading Bay 07 — South Yard Overflow',
-    code: 'DOCK-07',
-    zone: 'South Logistics Overflow Ramp',
-    videoUrl: undefined,
-    videoTitle: undefined,
-    cameraId: 'CAM-08',
-    status: 'UNASSIGNED',
-    truckNumber: 'Pending Truck Assignment',
-    supervisor: 'Unassigned Supervisor',
-    palletCount: 0,
-    maxPallets: 24,
-    riskLevel: 'Nominal',
-    riskScore: 0.0,
-    primaryHazard: 'No Active Optical Feed (Awaiting Video / CCTV Assignment)',
-    fps: 0,
-    resolution: 'No Feed',
-    latencyMs: 0,
-  }
-];
-
-const PRESET_VIDEOS = [
-  { name: 'Rolling and dropping carton.mp4', url: '/videos/Rolling%20and%20dropping%20carton.mp4', risk: 'Critical', hazard: 'Carton Drop & Freefall Deceleration' },
-  { name: 'Dock level, dragging cupboard.mp4', url: '/videos/Dock%20level%2C%20dragging%20cupboard.mp4', risk: 'High', hazard: 'Cupboard Floor Dragging' },
-  { name: 'Improper stacking.mp4', url: '/videos/Improper%20stacking.mp4', risk: 'High', hazard: 'Improper Column Stacking' },
-  { name: 'throwing mattresses.mp4', url: '/videos/throwing%20mattresses.mp4', risk: 'Critical', hazard: 'Throwing Mattresses' },
-  { name: 'Stepping on carton.mp4', url: '/videos/Stepping%20on%20carton.mp4', risk: 'High', hazard: 'Stepping on Carton Top Surface' },
-  { name: 'sliding box.mp4', url: '/videos/sliding%20box.mp4', risk: 'Medium', hazard: 'Sliding Box Surface Friction' },
-  { name: 'Throwing seating cartons, using strap to hold.mp4', url: '/videos/Throwing%20seating%20cartons%2C%20using%20strap%20to%20hold.mp4', risk: 'High', hazard: 'Strap Pulling & Throwing' },
-];
+import { 
+  getStoredBays, 
+  assignVideoToBay, 
+  clearBayFeed, 
+  resetAllBaysToDefault, 
+  WAREHOUSE_SCENARIOS, 
+  type DockBay 
+} from '../utils/bayStore';
+import { formatEpochDate } from '../utils/formatters';
 
 export const LoadingBays: React.FC = () => {
   const navigate = useNavigate();
-  const [bays, setBays] = useState<DockBayDetail[]>(INITIAL_BAYS);
+  const [bays, setBays] = useState<DockBay[]>([]);
   const [filterRisk, setFilterRisk] = useState<string>('ALL');
 
-  // Upload/Assign Video Modal State
-  const [uploadModalBay, setUploadModalBay] = useState<DockBayDetail | null>(null);
-  const [selectedPresetVideo, setSelectedPresetVideo] = useState<string>(PRESET_VIDEOS[0].name);
-  const [uploadedFileName, setUploadedFileName] = useState<string>('');
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Assign Video Modal State
+  const [modalBay, setModalBay] = useState<DockBay | null>(null);
+  const [selectedScenarioName, setSelectedScenarioName] = useState<string>(WAREHOUSE_SCENARIOS[0].name);
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; url: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const modalFileInputRef = useRef<HTMLInputElement>(null);
+  const quickFileInputRef = useRef<HTMLInputElement>(null);
+  const [quickUploadBayId, setQuickUploadBayId] = useState<string | null>(null);
+
+  // Load from persistent bayStore on mount
+  useEffect(() => {
+    setBays(getStoredBays());
+  }, []);
+
+  const activeFeedsCount = bays.filter((b) => b.status === 'ACTIVE_FEED' && Boolean(b.videoUrl)).length;
+  const criticalCount = bays.filter((b) => b.status === 'ACTIVE_FEED' && b.riskLevel === 'Critical').length;
+  const highRiskCount = bays.filter((b) => b.status === 'ACTIVE_FEED' && b.riskLevel === 'High').length;
 
   const filteredBays = bays.filter((bay) => {
     if (filterRisk === 'ALL') return true;
+    if (filterRisk === 'UNASSIGNED') return bay.status === 'UNASSIGNED';
+    if (filterRisk === 'ACTIVE') return bay.status === 'ACTIVE_FEED';
     return bay.riskLevel.toUpperCase() === filterRisk.toUpperCase();
   });
 
-  const handleOpenUploadModal = (bay: DockBayDetail) => {
-    setUploadModalBay(bay);
-    setSelectedPresetVideo(PRESET_VIDEOS[0].name);
-    setUploadedFileName('');
+  const handleOpenAssignModal = (bay: DockBay) => {
+    setModalBay(bay);
+    setSelectedScenarioName(WAREHOUSE_SCENARIOS[0].name);
+    setUploadedFile(null);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleModalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setUploadedFileName(file.name);
+      const objectUrl = URL.createObjectURL(file);
+      setUploadedFile({
+        name: file.name,
+        url: objectUrl,
+      });
     }
   };
 
-  const handleAssignVideoToBay = () => {
-    if (!uploadModalBay) return;
-    setIsUploading(true);
+  // Direct quick-upload on bay dropzone
+  const handleQuickUploadClick = (bayId: string) => {
+    setQuickUploadBayId(bayId);
+    if (quickFileInputRef.current) {
+      quickFileInputRef.current.value = '';
+      quickFileInputRef.current.click();
+    }
+  };
+
+  const handleQuickFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !quickUploadBayId) return;
+
+    const objectUrl = URL.createObjectURL(file);
+    const updated = assignVideoToBay(quickUploadBayId, {
+      videoUrl: objectUrl,
+      videoTitle: file.name,
+      isCustomUpload: true,
+      riskLevel: 'High',
+      riskScore: 78.5,
+      hazard: 'Custom Ingested CCTV Stream Under Real-Time YOLO11 Inference',
+      incidentTimecode: 't=03.5s',
+      incidentEvent: 'Custom Video Material Handling Telemetry',
+      duration: 60,
+    });
+    setBays(updated);
+    setQuickUploadBayId(null);
+  };
+
+  // Quick 1-click preset assignment directly on bay card
+  const handleQuickAssignPreset = (bayId: string, scenario: typeof WAREHOUSE_SCENARIOS[0]) => {
+    const updated = assignVideoToBay(bayId, {
+      videoUrl: scenario.url,
+      videoTitle: scenario.name,
+      isCustomUpload: false,
+      riskLevel: scenario.risk,
+      riskScore: scenario.riskScore,
+      hazard: scenario.hazard,
+      incidentTimecode: scenario.incidentTimecode,
+      incidentEvent: scenario.incidentEvent,
+      duration: scenario.duration,
+    });
+    setBays(updated);
+  };
+
+  const handleConfirmModalAssignment = () => {
+    if (!modalBay) return;
+    setIsSubmitting(true);
 
     setTimeout(() => {
-      let chosenVideoUrl = '';
+      let chosenUrl = '';
       let chosenTitle = '';
-      let chosenHazard = 'Real-time Optical Monitoring Active';
-      let chosenRisk: DockBayDetail['riskLevel'] = 'Medium';
+      let isCustom = false;
+      let chosenRisk: DockBay['riskLevel'] = 'Medium';
       let chosenScore = 65.0;
+      let chosenHazard = 'Real-time Optical Monitoring Active';
+      let chosenTimecode = 't=03.0s';
+      let chosenEvent = 'Kinematic Motion Detected';
+      let duration = 60;
 
-      if (uploadedFileName) {
-        chosenTitle = uploadedFileName;
-        chosenVideoUrl = `/videos/${encodeURIComponent(uploadedFileName)}`;
-        chosenHazard = 'Custom Uploaded CCTV Stream (Under Real-Time YOLO11 Inference)';
+      if (uploadedFile) {
+        chosenTitle = uploadedFile.name;
+        chosenUrl = uploadedFile.url;
+        isCustom = true;
         chosenRisk = 'High';
         chosenScore = 78.5;
+        chosenHazard = 'Custom Uploaded CCTV Stream (YOLO11 Tracking Active)';
+        chosenTimecode = 't=03.5s';
+        chosenEvent = 'Custom Stream Analysis In Progress';
       } else {
-        const foundPreset = PRESET_VIDEOS.find(p => p.name === selectedPresetVideo);
-        if (foundPreset) {
-          chosenTitle = foundPreset.name;
-          chosenVideoUrl = foundPreset.url;
-          chosenHazard = foundPreset.hazard;
-          chosenRisk = foundPreset.risk as DockBayDetail['riskLevel'];
-          chosenScore = chosenRisk === 'Critical' ? 92.5 : chosenRisk === 'High' ? 76.0 : 50.0;
+        const found = WAREHOUSE_SCENARIOS.find((s) => s.name === selectedScenarioName);
+        if (found) {
+          chosenTitle = found.name;
+          chosenUrl = found.url;
+          chosenRisk = found.risk;
+          chosenScore = found.riskScore;
+          chosenHazard = found.hazard;
+          chosenTimecode = found.incidentTimecode;
+          chosenEvent = found.incidentEvent;
+          duration = found.duration;
         }
       }
 
-      setBays(prev =>
-        prev.map(b =>
-          b.id === uploadModalBay.id
-            ? {
-                ...b,
-                videoUrl: chosenVideoUrl || '/videos/Rolling%20and%20dropping%20carton.mp4',
-                videoTitle: chosenTitle || 'Warehouse_CCTV.mp4',
-                status: 'DOCK_ACTIVE',
-                primaryHazard: chosenHazard,
-                riskLevel: chosenRisk,
-                riskScore: chosenScore,
-                fps: 30,
-                resolution: '1920x1080',
-                latencyMs: 16,
-                palletCount: b.palletCount === 0 ? 14 : b.palletCount
-              }
-            : b
-        )
-      );
+      const updated = assignVideoToBay(modalBay.id, {
+        videoUrl: chosenUrl || '/videos/Rolling%20and%20dropping%20carton.mp4',
+        videoTitle: chosenTitle || 'Warehouse_CCTV.mp4',
+        isCustomUpload: isCustom,
+        riskLevel: chosenRisk,
+        riskScore: chosenScore,
+        hazard: chosenHazard,
+        incidentTimecode: chosenTimecode,
+        incidentEvent: chosenEvent,
+        duration,
+      });
 
-      setIsUploading(false);
-      setUploadModalBay(null);
-    }, 400);
+      setBays(updated);
+      setIsSubmitting(false);
+      setModalBay(null);
+    }, 200);
   };
 
-  const activeFeedsCount = bays.filter(b => b.videoUrl != null).length;
+  const handleClearBay = (bayId: string) => {
+    const updated = clearBayFeed(bayId);
+    setBays(updated);
+  };
+
+  const handleResetAll = () => {
+    if (window.confirm('Reset all loading bays to factory default configuration?')) {
+      const reset = resetAllBaysToDefault();
+      setBays(reset);
+    }
+  };
 
   return (
     <motion.div
@@ -282,6 +196,15 @@ export const LoadingBays: React.FC = () => {
       animate={{ opacity: 1 }}
       className="max-w-[1440px] mx-auto space-y-6 p-4 text-slate-900"
     >
+      {/* Hidden File Input for Direct Dropzone Upload */}
+      <input
+        ref={quickFileInputRef}
+        type="file"
+        accept="video/mp4,video/x-m4v,video/*"
+        onChange={handleQuickFileSelected}
+        className="hidden"
+      />
+
       {/* Top Executive Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -290,18 +213,18 @@ export const LoadingBays: React.FC = () => {
               <Truck className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Facility Loading Bays & Dock CCTV Command Center
+              Facility Loading Bays & Optical CCTV Command Center
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Real-time optical video surveillance, per-bay video feed assignment, dock leveler status, and AI kinematic risk telemetry.
+            Real-time per-bay video feed assignment, dynamic upload timestamps, AI kinematic incident timecodes, and dock telemetry.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Risk Filter Buttons */}
+          {/* Risk & Status Filter Buttons */}
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
-            {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM'].map((lvl) => (
+            {['ALL', 'ACTIVE', 'CRITICAL', 'HIGH', 'UNASSIGNED'].map((lvl) => (
               <button
                 key={lvl}
                 type="button"
@@ -317,10 +240,15 @@ export const LoadingBays: React.FC = () => {
             ))}
           </div>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            {activeFeedsCount} of {bays.length} Bays Active • 100% Optical Health
-          </span>
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-2xs transition-colors cursor-pointer"
+            title="Reset bays to default setup"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Setup</span>
+          </button>
         </div>
       </div>
 
@@ -329,15 +257,19 @@ export const LoadingBays: React.FC = () => {
         <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Monitored Docks</span>
-            <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">{activeFeedsCount} Active Bays</p>
+            <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">
+              {activeFeedsCount} of {bays.length} Active
+            </p>
           </div>
           <Truck className="w-5 h-5 text-blue-600" />
         </div>
 
         <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Active Shifts Cargo</span>
-            <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">100 / 160 Pallets</p>
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Optical Coverage</span>
+            <p className="text-xl font-bold font-mono text-indigo-600 mt-0.5">
+              {bays.length > 0 ? Math.round((activeFeedsCount / bays.length) * 100) : 0}% Complete
+            </p>
           </div>
           <Package className="w-5 h-5 text-indigo-600" />
         </div>
@@ -352,57 +284,100 @@ export const LoadingBays: React.FC = () => {
 
         <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Critical Incidents</span>
-            <p className="text-xl font-bold font-mono text-red-600 mt-0.5">2 Flagged</p>
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Flagged Incidents</span>
+            <p className="text-xl font-bold font-mono text-red-600 mt-0.5">
+              {criticalCount + highRiskCount} Active ({criticalCount} Critical)
+            </p>
           </div>
           <AlertTriangle className="w-5 h-5 text-red-600" />
         </div>
       </div>
 
-      {/* Real Live CCTV Dock Matrix */}
+      {/* Grid of Dynamic Loading Bays */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredBays.map((bay) => {
-          const hasVideo = Boolean(bay.videoUrl);
+          const isActive = bay.status === 'ACTIVE_FEED' && Boolean(bay.videoUrl);
           const isCrit = bay.riskLevel === 'Critical';
           const isHigh = bay.riskLevel === 'High';
 
-          if (!hasVideo) {
-            // Unassigned / Idle Bay Dropzone Card
+          // -------------------------------------------------------------
+          // UNASSIGNED / EMPTY BAY: Clean Upload Dropzone ("Say Upload Like That")
+          // -------------------------------------------------------------
+          if (!isActive) {
             return (
               <div
                 key={bay.id}
-                className="bg-white rounded-2xl border-2 border-dashed border-slate-300 p-6 flex flex-col items-center justify-between text-center shadow-2xs hover:border-blue-400 hover:bg-blue-50/20 transition-all min-h-[380px]"
+                className="bg-white rounded-2xl border-2 border-dashed border-slate-300 p-5 flex flex-col justify-between shadow-2xs hover:border-blue-400 hover:bg-blue-50/20 transition-all min-h-[420px]"
               >
-                <div className="w-full flex items-center justify-between text-xs text-slate-400 font-mono border-b border-slate-100 pb-2">
-                  <span className="font-bold text-slate-700">{bay.name}</span>
-                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 uppercase font-bold">UNASSIGNED</span>
+                {/* Header Strip */}
+                <div className="w-full flex items-center justify-between text-xs text-slate-500 font-mono border-b border-slate-100 pb-2">
+                  <span className="font-bold text-slate-800">{bay.name}</span>
+                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] uppercase font-bold">
+                    {bay.code} • UNASSIGNED
+                  </span>
                 </div>
 
-                <div className="my-auto space-y-3 py-6">
-                  <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-2xs">
+                {/* Center Content: Dropzone Messaging */}
+                <div className="my-auto text-center space-y-3 py-4">
+                  <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-xs">
                     <UploadCloud className="w-7 h-7" />
                   </div>
+
                   <div>
                     <h3 className="font-bold text-sm text-slate-900">No CCTV Stream Assigned</h3>
                     <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
                       Upload footage or assign a warehouse camera stream to activate optical AI monitoring for this bay.
                     </p>
                   </div>
+
+                  {/* 1-Click Warehouse Preset Quick Assign Chips */}
+                  <div className="pt-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                      Or Quick-Assign Camera Preset:
+                    </span>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {WAREHOUSE_SCENARIOS.slice(0, 3).map((scen) => (
+                        <button
+                          key={scen.name}
+                          type="button"
+                          onClick={() => handleQuickAssignPreset(bay.id, scen)}
+                          className="px-2 py-1 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-blue-100 hover:text-blue-700 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
+                          title={`Assign ${scen.name}`}
+                        >
+                          + {scen.name.replace('.mp4', '').split(',')[0]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleOpenUploadModal(bay)}
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Upload Video / Assign Stream to {bay.code}</span>
-                </button>
+                {/* Bottom Action Buttons: Direct File Upload & Modal Assignment */}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickUploadClick(bay.id)}
+                    className="py-2.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <FileVideo className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Upload MP4</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenAssignModal(bay)}
+                    className="py-2.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Assign Stream</span>
+                  </button>
+                </div>
               </div>
             );
           }
 
-          // Active Bay Card with Live Video Stream
+          // -------------------------------------------------------------
+          // ACTIVE BAY: Live Video Stream, Upload Timestamp & Incident Timecodes
+          // -------------------------------------------------------------
           return (
             <div
               key={bay.id}
@@ -455,7 +430,7 @@ export const LoadingBays: React.FC = () => {
 
                 {/* Hover Inspect CTA Overlay */}
                 <div
-                  onClick={() => navigate(`/?video=${encodeURIComponent(bay.videoTitle || '')}`)}
+                  onClick={() => navigate(`/?video=${encodeURIComponent(bay.videoTitle || '')}&bay=${encodeURIComponent(bay.code)}`)}
                   className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer flex items-center justify-center backdrop-blur-[2px]"
                 >
                   <span className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-xl flex items-center gap-1.5 transition-transform group-hover:scale-105">
@@ -465,91 +440,122 @@ export const LoadingBays: React.FC = () => {
                 </div>
               </div>
 
-              {/* Dock Operational Details & Active Manifest */}
-              <div className="p-4 space-y-3.5">
+              {/* Dock Operational Details, Upload Timestamp & Incident Info */}
+              <div className="p-4 space-y-3">
+                {/* Title & Status */}
                 <div>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">{bay.name}</h3>
-                    <span
-                      className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded uppercase ${
-                        bay.status === 'UNLOADING'
-                          ? 'bg-blue-100 text-blue-800'
-                          : bay.status === 'DOCK_ACTIVE'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {bay.status.replace('_', ' ')}
+                    <h3 className="text-sm font-bold text-slate-900 truncate">{bay.name}</h3>
+                    <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded uppercase bg-emerald-100 text-emerald-800">
+                      LIVE STREAM
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-0.5">{bay.zone}</p>
                 </div>
 
-                {/* Manifest & Vehicle Details */}
-                <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Active Transport</span>
-                    <p className="font-semibold text-slate-800 text-[11px] truncate mt-0.5">{bay.truckNumber}</p>
+                {/* Upload Timestamp & Video Title Badge */}
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1 text-xs font-mono">
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
+                      <Film className="w-3 h-3 text-blue-600" /> Assigned Clip:
+                    </span>
+                    <span className="font-semibold text-slate-900 text-[11px] truncate max-w-[170px]">
+                      {bay.videoTitle || 'Warehouse_Feed.mp4'}
+                    </span>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Shift Supervisor</span>
-                    <p className="font-semibold text-slate-800 text-[11px] truncate mt-0.5">{bay.supervisor}</p>
+
+                  <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-slate-400" /> Ingestion Time:
+                    </span>
+                    <span className="text-slate-700 font-medium">
+                      {bay.uploadedAt ? formatEpochDate(bay.uploadedAt) : 'Active Feed'}
+                    </span>
                   </div>
                 </div>
 
-                {/* Pallet Load Progress Bar */}
+                {/* AI Detected Incident Timecode Box */}
+                {bay.detectedIncident ? (
+                  <div
+                    className={`p-2.5 rounded-xl border text-xs flex items-start gap-2 ${
+                      isCrit
+                        ? 'bg-red-50 text-red-900 border-red-200'
+                        : isHigh
+                        ? 'bg-orange-50 text-orange-900 border-orange-200'
+                        : 'bg-amber-50 text-amber-900 border-amber-200'
+                    }`}
+                  >
+                    <AlertTriangle
+                      className={`w-4 h-4 shrink-0 mt-0.5 ${
+                        isCrit ? 'text-red-600 animate-bounce' : 'text-orange-600'
+                      }`}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <span className="px-1.5 py-0.2 rounded bg-red-200/80 text-red-900 font-bold text-[10px]">
+                          {bay.detectedIncident.timecode}
+                        </span>
+                        <span className="font-bold text-[11px] truncate">
+                          {bay.detectedIncident.event}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 line-clamp-1 mt-0.5 font-sans">
+                        {bay.primaryHazard}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="text-[11px] font-medium">No critical hazards flagged in current optical window.</span>
+                  </div>
+                )}
+
+                {/* Cargo Staging Capacity Bar */}
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between text-[11px] text-slate-600">
                     <span className="font-medium">Cargo Staging Capacity:</span>
                     <span className="font-mono font-bold text-slate-900">{bay.palletCount} / {bay.maxPallets} Pallets</span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
                         (bay.palletCount / bay.maxPallets) > 0.8 ? 'bg-amber-500' : 'bg-blue-600'
                       }`}
-                      style={{ width: `${(bay.palletCount / bay.maxPallets) * 100}%` }}
+                      style={{ width: `${Math.min(100, (bay.palletCount / bay.maxPallets) * 100)}%` }}
                     />
                   </div>
                 </div>
 
-                {/* Active Hazard Warning Banner */}
-                <div
-                  className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
-                    isCrit
-                      ? 'bg-red-50 text-red-900 border-red-200'
-                      : isHigh
-                      ? 'bg-orange-50 text-orange-900 border-orange-200'
-                      : 'bg-amber-50 text-amber-900 border-amber-200'
-                  }`}
-                >
-                  <AlertTriangle
-                    className={`w-4 h-4 shrink-0 ${
-                      isCrit ? 'text-red-600 animate-bounce' : 'text-orange-600'
-                    }`}
-                  />
-                  <span className="font-medium text-[11px] truncate">
-                    {bay.primaryHazard}
-                  </span>
-                </div>
-
-                {/* Action Buttons: Inspect Feed + Change Video */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
+                {/* Action Buttons: Inspect Feed, Change Video, Clear Bay */}
+                <div className="grid grid-cols-3 gap-1.5 pt-1">
                   <button
                     type="button"
-                    onClick={() => handleOpenUploadModal(bay)}
-                    className="py-2 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    onClick={() => handleOpenAssignModal(bay)}
+                    className="py-2 px-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                    title="Change video stream"
                   >
                     <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Change Video</span>
+                    <span>Change</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => navigate(`/?video=${encodeURIComponent(bay.videoTitle || '')}`)}
-                    className="py-2 px-2 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                    onClick={() => handleClearBay(bay.id)}
+                    className="py-2 px-1 bg-slate-100 hover:bg-red-50 hover:text-red-700 text-slate-600 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                    title="Unassign video stream"
                   >
-                    <span>Inspect Feed</span>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/?video=${encodeURIComponent(bay.videoTitle || '')}&bay=${encodeURIComponent(bay.code)}`)}
+                    className="py-2 px-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-xs cursor-pointer"
+                    title="Inspect optical feed in Live Monitoring"
+                  >
+                    <span>Inspect</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -561,7 +567,7 @@ export const LoadingBays: React.FC = () => {
 
       {/* Upload Video & Assign Stream to Bay Modal */}
       <AnimatePresence>
-        {uploadModalBay && (
+        {modalBay && (
           <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -572,12 +578,12 @@ export const LoadingBays: React.FC = () => {
               {/* Modal Header */}
               <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold">Assign Video Stream to {uploadModalBay.name}</h3>
+                  <h3 className="text-base font-bold">Assign Video Stream to {modalBay.name}</h3>
                   <p className="text-xs text-slate-400">Choose a warehouse optical clip or upload a local CCTV recording</p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setUploadModalBay(null)}
+                  onClick={() => setModalBay(null)}
                   className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -592,20 +598,20 @@ export const LoadingBays: React.FC = () => {
                     Option 1: Upload Local CCTV Footage (.mp4)
                   </label>
                   <div
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => modalFileInputRef.current?.click()}
                     className="p-4 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl bg-slate-50 hover:bg-blue-50/30 transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-2"
                   >
                     <input
-                      ref={fileInputRef}
+                      ref={modalFileInputRef}
                       type="file"
                       accept="video/mp4,video/x-m4v,video/*"
-                      onChange={handleFileChange}
+                      onChange={handleModalFileChange}
                       className="hidden"
                     />
                     <FileVideo className="w-8 h-8 text-blue-600" />
-                    {uploadedFileName ? (
+                    {uploadedFile ? (
                       <div className="text-xs text-slate-800 font-medium">
-                        <p className="font-bold text-blue-600">{uploadedFileName}</p>
+                        <p className="font-bold text-blue-600">{uploadedFile.name}</p>
                         <p className="text-[11px] text-slate-500 mt-0.5">Click to choose a different file</p>
                       </div>
                     ) : (
@@ -620,17 +626,17 @@ export const LoadingBays: React.FC = () => {
                 {/* Preset Warehouse Catalog Selection */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Option 2: Select from Warehouse Camera Feeds
+                    Option 2: Select from Standard Warehouse Scenarios
                   </label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {PRESET_VIDEOS.map((preset) => {
-                      const isSelected = !uploadedFileName && selectedPresetVideo === preset.name;
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {WAREHOUSE_SCENARIOS.map((preset) => {
+                      const isSelected = !uploadedFile && selectedScenarioName === preset.name;
                       return (
                         <div
                           key={preset.name}
                           onClick={() => {
-                            setSelectedPresetVideo(preset.name);
-                            setUploadedFileName('');
+                            setSelectedScenarioName(preset.name);
+                            setUploadedFile(null);
                           }}
                           className={`p-2.5 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-all ${
                             isSelected
@@ -638,7 +644,7 @@ export const LoadingBays: React.FC = () => {
                               : 'border-slate-200 hover:bg-slate-50'
                           }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2.5 min-w-0">
                             <Radio className={`w-4 h-4 shrink-0 ${isSelected ? 'text-blue-600' : 'text-slate-300'}`} />
                             <div className="truncate min-w-0">
                               <p className="font-semibold text-slate-900 truncate">{preset.name}</p>
@@ -646,12 +652,17 @@ export const LoadingBays: React.FC = () => {
                             </div>
                           </div>
 
-                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase shrink-0 ${
-                            preset.risk === 'Critical' ? 'bg-red-100 text-red-800' :
-                            preset.risk === 'High' ? 'bg-orange-100 text-orange-800' : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {preset.risk}
-                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                              {preset.incidentTimecode}
+                            </span>
+                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
+                              preset.risk === 'Critical' ? 'bg-red-100 text-red-800' :
+                              preset.risk === 'High' ? 'bg-orange-100 text-orange-800' : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {preset.risk}
+                            </span>
+                          </div>
                         </div>
                       );
                     })}
@@ -663,19 +674,19 @@ export const LoadingBays: React.FC = () => {
               <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setUploadModalBay(null)}
+                  onClick={() => setModalBay(null)}
                   className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleAssignVideoToBay}
-                  disabled={isUploading}
+                  onClick={handleConfirmModalAssignment}
+                  disabled={isSubmitting}
                   className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>{isUploading ? 'Ingesting Stream...' : `Assign Stream to ${uploadModalBay.code}`}</span>
+                  <span>{isSubmitting ? 'Ingesting Stream...' : `Assign Stream to ${modalBay.code}`}</span>
                 </button>
               </div>
             </motion.div>
@@ -686,3 +697,4 @@ export const LoadingBays: React.FC = () => {
   );
 };
 
+export default LoadingBays;

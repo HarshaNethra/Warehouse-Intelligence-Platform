@@ -19,7 +19,7 @@ export const IncidentLog: React.FC = () => {
         </p>
       </div>
 
-      <div className="h-[760px]">
+      <div className="w-full">
         <EventList />
       </div>
     </motion.div>

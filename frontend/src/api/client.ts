@@ -10,7 +10,17 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '');
+function getBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (!envUrl) return '/api';
+  const clean = envUrl.trim().replace(/\/+$/, '');
+  if (!clean.endsWith('/api') && !clean.includes('/api/')) {
+    return `${clean}/api`;
+  }
+  return clean;
+}
+
+const BASE_URL = getBaseUrl();
 const DEFAULT_TIMEOUT_MS = 15000;
 
 export function buildSafeUrl(endpoint: string, params?: Record<string, any>): string {
