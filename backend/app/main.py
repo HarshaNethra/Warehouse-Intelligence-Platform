@@ -490,7 +490,6 @@ app.include_router(events.router, prefix=settings.API_PREFIX, tags=["events"])
 app.include_router(analytics.router, prefix=settings.API_PREFIX, tags=["analytics"])
 app.include_router(assistant.router, prefix=settings.API_PREFIX, tags=["assistant"])
 app.include_router(ml_metrics.router, prefix=f"{settings.API_PREFIX}/ml", tags=["ml"])
-app.include_router(ml_metrics.router, prefix=settings.API_PREFIX, tags=["ml"])
 app.include_router(routes.router, prefix=settings.API_PREFIX, tags=["routes"])
 app.include_router(ws_router, tags=["websocket"])
 
