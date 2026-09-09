@@ -7,7 +7,7 @@ import sqlite3
 import sys
 from pathlib import Path
 from sqlalchemy.dialects import postgresql
-from sqlalchemy import Integer
+from sqlalchemy import Integer, Boolean
 
 backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
@@ -120,19 +120,33 @@ for t in creation_order:
         cols = [d[0] for d in cur.description]
         if not rows:
             continue
+
+        table_meta = Base.metadata.tables.get(t)
+
         lines.append(f"-- Ingesting {len(rows)} records into {t}")
         for r in rows:
             vals = []
             for col_name, v in zip(cols, r):
                 if v is None:
                     vals.append("NULL")
-                elif isinstance(v, bool):
-                    vals.append("TRUE" if v else "FALSE")
+                    continue
+
+                col_meta = table_meta.columns.get(col_name) if table_meta is not None else None
+                is_bool_col = col_meta is not None and isinstance(col_meta.type, Boolean)
+
+                if is_bool_col:
+                    if v in (1, "1", "true", "TRUE", True):
+                        vals.append("TRUE")
+                    elif v in (0, "0", "false", "FALSE", False):
+                        vals.append("FALSE")
+                    else:
+                        vals.append("NULL")
                 elif isinstance(v, (int, float)):
                     vals.append(str(v))
                 else:
                     escaped = str(v).replace("'", "''")
                     vals.append(f"'{escaped}'")
+
             pk_col = cols[0]
             lines.append(f"INSERT INTO {t} ({', '.join(cols)}) VALUES ({', '.join(vals)}) ON CONFLICT ({pk_col}) DO NOTHING;")
         lines.append("")
