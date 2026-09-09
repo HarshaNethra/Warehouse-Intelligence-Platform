@@ -53,19 +53,19 @@ export const FloatingChatbot: React.FC = () => {
             className="fixed bottom-6 right-6 z-50 w-[92vw] sm:w-[420px] md:w-[460px] h-[600px] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-slate-200/80 flex flex-col overflow-hidden text-slate-900"
           >
             {/* Custom Top Navigation Bar */}
-            <div className="p-3.5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between shadow-md">
+            <div className="p-3.5 bg-white border-b border-slate-200 text-slate-900 flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center border border-indigo-500/30">
-                  <Bot className="w-4 h-4 text-indigo-300" />
+                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200">
+                  <Bot className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-white flex items-center gap-1.5 leading-none">
+                  <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 leading-none">
                     Warehouse AI Assistant
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono border border-emerald-500/30 font-bold">
-                      GEMINI 2.5
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-mono border border-emerald-200 font-bold">
+                      GROUNDED AI
                     </span>
                   </h3>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Real-time Grounded Facility Copilot</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Real-time Grounded Facility Copilot</p>
                 </div>
               </div>
 
@@ -73,7 +73,7 @@ export const FloatingChatbot: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                   title="Minimize Chat"
                 >
                   <Minimize2 className="w-4 h-4" />
@@ -81,7 +81,7 @@ export const FloatingChatbot: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                   title="Close Chat"
                 >
                   <X className="w-4 h-4" />

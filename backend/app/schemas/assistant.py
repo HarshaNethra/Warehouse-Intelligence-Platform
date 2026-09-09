@@ -23,6 +23,7 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = None
     camera_id: Optional[str] = None
     bay_id: Optional[str] = None
+    video_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
     answer: str
