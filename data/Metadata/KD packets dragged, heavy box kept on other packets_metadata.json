@@ -1,0 +1,20 @@
+{
+  "video_id": "KD packets dragged, heavy box kept on other packets",
+  "filename": "KD packets dragged, heavy box kept on other packets.mp4",
+  "fps": 30.0,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "total_frames": 1012,
+  "duration_seconds": 33.73,
+  "model_name": "best.pt",
+  "tracking_method": "bytetrack.yaml",
+  "classes_detected": [
+    "carton",
+    "forklift",
+    "pallet",
+    "person"
+  ],
+  "trajectory_row_count": 2290,
+  "unique_object_count": 80,
+  "quality_warnings_count": 0
+}

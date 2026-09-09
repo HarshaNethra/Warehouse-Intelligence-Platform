@@ -1,0 +1,3 @@
+# Keep this directory tracked in git.
+# Model weights (*.pt, *.onnx, *.pth) are intentionally excluded from git tracking.
+# Place best.pt or pretrained YOLO weights here locally.

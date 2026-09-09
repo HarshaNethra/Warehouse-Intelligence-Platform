@@ -1,0 +1,18 @@
+{
+  "video_id": "Throwing seating cartons, using strap to hold",
+  "filename": "Throwing seating cartons, using strap to hold.mp4",
+  "fps": 30.0,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "total_frames": 451,
+  "duration_seconds": 15.03,
+  "model_name": "best.pt",
+  "tracking_method": "bytetrack.yaml",
+  "classes_detected": [
+    "carton",
+    "person"
+  ],
+  "trajectory_row_count": 1654,
+  "unique_object_count": 24,
+  "quality_warnings_count": 0
+}

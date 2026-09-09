@@ -1,0 +1,18 @@
+{
+  "video_id": "Dock level, dragging cupboard",
+  "filename": "Dock level, dragging cupboard.mp4",
+  "fps": 30.0,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "total_frames": 930,
+  "duration_seconds": 31.0,
+  "model_name": "best.pt",
+  "tracking_method": "bytetrack.yaml",
+  "classes_detected": [
+    "carton",
+    "person"
+  ],
+  "trajectory_row_count": 1500,
+  "unique_object_count": 60,
+  "quality_warnings_count": 0
+}

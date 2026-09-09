@@ -1,0 +1,37 @@
+[
+  {
+    "event_id": "EVT-THROWI-001",
+    "video_id": "Throwing seating cartons, using strap to hold",
+    "timestamp": 11.67,
+    "start_timestamp": 11.67,
+    "end_timestamp": 12.6,
+    "duration": 0.93,
+    "object_id": 1691,
+    "behaviour": "rough_handling",
+    "confidence": 0.8,
+    "risk_score": 56,
+    "risk_level": "medium",
+    "description": "Rough handling detected: box rolling/tumbling over 0.93s.",
+    "reason": "MEDIUM RISK (56/100): Observed rough handling, combined with significant deceleration impact (2761px/s\u00b2). Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 364,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 2760.8,
+      "aspect_ratio_swing": 0.45,
+      "direction_reversals": 0,
+      "displacement_px": 106.8,
+      "peak_speed_px_s": 171.5,
+      "duration_seconds": 0.93,
+      "nature": [
+        "box rolling/tumbling"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 0.0,
+        "location_factor": 0.0
+      }
+    }
+  }
+]

@@ -1,0 +1,471 @@
+{
+  "evidence_run_id": "RUN-3CD82CD9",
+  "timestamp_utc": "2026-09-08T22:59:40.748289Z",
+  "input_video": {
+    "filename": "Rolling and dropping carton.mp4",
+    "video_id": "Rolling and dropping carton",
+    "total_file_frames": 282,
+    "duration_sec": 9.4,
+    "fps": 20.5
+  },
+  "inference_run": {
+    "id": "RUN-9ECCFCFBE9",
+    "video_id": "Rolling and dropping carton",
+    "camera_id": "CAM-01",
+    "model_name": "YOLO11s-Baseline",
+    "model_version": "best.pt",
+    "inference_engine": "LOCAL_YOLO11",
+    "device": "cpu",
+    "status": "COMPLETED",
+    "started_at": "2026-09-08 22:59:34.893260",
+    "completed_at": "2026-09-08 22:59:40.731854",
+    "provenance_type": "REAL_INFERENCE"
+  },
+  "model": {
+    "model_name": "YOLO11s-Baseline",
+    "model_version": "best.pt",
+    "inference_engine": "LOCAL_YOLO11",
+    "device": "cpu"
+  },
+  "execution_telemetry": {
+    "frames_processed": 120,
+    "total_detections": 675,
+    "unique_tracks": 17,
+    "processing_time_sec": 5.85,
+    "effective_fps": 20.5
+  },
+  "sample_detections": [
+    {
+      "id": 265,
+      "frame_number": 1,
+      "track_id": 101,
+      "object_type": "PERSON",
+      "confidence": 0.61,
+      "bbox": [
+        626.1,
+        192.0,
+        113.10000000000002,
+        357.20000000000005
+      ]
+    },
+    {
+      "id": 266,
+      "frame_number": 1,
+      "track_id": 102,
+      "object_type": "PERSON",
+      "confidence": 0.39,
+      "bbox": [
+        484.0,
+        296.4,
+        141.29999999999995,
+        264.70000000000005
+      ]
+    },
+    {
+      "id": 267,
+      "frame_number": 1,
+      "track_id": 103,
+      "object_type": "CARTON",
+      "confidence": 0.3,
+      "bbox": [
+        709.0,
+        421.3,
+        157.39999999999998,
+        134.2
+      ]
+    },
+    {
+      "id": 268,
+      "frame_number": 1,
+      "track_id": 104,
+      "object_type": "PERSON",
+      "confidence": 0.28,
+      "bbox": [
+        630.4,
+        198.1,
+        109.60000000000002,
+        136.6
+      ]
+    },
+    {
+      "id": 269,
+      "frame_number": 1,
+      "track_id": 105,
+      "object_type": "PERSON",
+      "confidence": 0.2,
+      "bbox": [
+        515.6,
+        260.5,
+        73.10000000000002,
+        114.80000000000001
+      ]
+    }
+  ],
+  "object_tracks": [
+    {
+      "id": 35,
+      "track_id": 101,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.61
+    },
+    {
+      "id": 36,
+      "track_id": 102,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.39
+    },
+    {
+      "id": 37,
+      "track_id": 103,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.3
+    },
+    {
+      "id": 38,
+      "track_id": 104,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.28
+    },
+    {
+      "id": 39,
+      "track_id": 105,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.2
+    },
+    {
+      "id": 40,
+      "track_id": 106,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.14
+    },
+    {
+      "id": 41,
+      "track_id": 107,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 0.0,
+      "end_timestamp_ms": 0.0,
+      "confidence": 0.14
+    },
+    {
+      "id": 42,
+      "track_id": 108,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 133.0,
+      "end_timestamp_ms": 133.0,
+      "confidence": 0.11
+    },
+    {
+      "id": 43,
+      "track_id": 109,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.19
+    },
+    {
+      "id": 44,
+      "track_id": 110,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.15
+    },
+    {
+      "id": 45,
+      "track_id": 111,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.14
+    },
+    {
+      "id": 46,
+      "track_id": 112,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 47,
+      "track_id": 113,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 48,
+      "track_id": 114,
+      "object_type": "CARTON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 49,
+      "track_id": 115,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 467.0,
+      "end_timestamp_ms": 467.0,
+      "confidence": 0.12
+    },
+    {
+      "id": 50,
+      "track_id": 2,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 1133.0,
+      "end_timestamp_ms": 1133.0,
+      "confidence": 0.74
+    },
+    {
+      "id": 51,
+      "track_id": 3,
+      "object_type": "PERSON",
+      "start_timestamp_ms": 1133.0,
+      "end_timestamp_ms": 1133.0,
+      "confidence": 0.64
+    }
+  ],
+  "behaviour_observation": {
+    "id": "OBS-D3B100A2",
+    "behaviour_type": "Product Freefall / Drop (carton)",
+    "confidence": 0.92,
+    "details": {
+      "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "rule_id": "RULE_KINEMATICS_FREEFALL"
+    }
+  },
+  "risk_assessment": {
+    "id": "RA-E851D48D",
+    "risk_level": "CRITICAL",
+    "risk_score": 92.4,
+    "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+    "confidence": 0.92
+  },
+  "incident_event": {
+    "event_id": "EVT-2EFFF036",
+    "video_id": "Rolling and dropping carton",
+    "camera_id": "CAM-01",
+    "bay_id": "Loading Bay 1",
+    "frame_number": 8,
+    "video_fps": 30.0,
+    "timestamp_seconds": 0.267,
+    "evidence_frame": "/api/videos/Rolling and dropping carton/frames/8",
+    "video_reference": "/stream/video/Rolling and dropping carton.mp4#t=0.27",
+    "evidence_clip_start": 0.0,
+    "evidence_clip_end": 3.267,
+    "behaviour": "Product Freefall / Drop (carton)",
+    "risk_score": 92.4,
+    "risk_level": "CRITICAL",
+    "description": "Product Freefall / Drop (carton) detected in Loading Bay 1. Target object #107 triggered violation: Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+    "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+    "status": "UNRESOLVED",
+    "inference_run_id": "RUN-9ECCFCFBE9",
+    "behaviour_observation_id": "OBS-D3B100A2",
+    "risk_assessment_id": "RA-E851D48D",
+    "provenance_type": "REAL_INFERENCE",
+    "model_name": "YOLO11s-Baseline",
+    "model_version": "best.pt",
+    "inference_engine": "LOCAL_YOLO11"
+  },
+  "api_responses": {
+    "get_incident": {
+      "event_id": "EVT-2EFFF036",
+      "facility_id": "FAC-001",
+      "video_id": "Rolling and dropping carton",
+      "timestamp": 0.267,
+      "camera_id": "CAM-01",
+      "bay_id": "Loading Bay 1",
+      "object_id": 107,
+      "behaviour": "Product Freefall / Drop (carton)",
+      "risk_score": 92.4,
+      "risk_level": "CRITICAL",
+      "description": "Product Freefall / Drop (carton) detected in Loading Bay 1. Target object #107 triggered violation: Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "evidence_frame": "/api/videos/Rolling and dropping carton/frames/8",
+      "video_reference": "/stream/video/Rolling and dropping carton.mp4#t=0.27",
+      "recommended_action": "Dispatch supervisor to inspect Product Freefall / Drop (carton)",
+      "status": "UNRESOLVED",
+      "acknowledged_by_user_id": null,
+      "acknowledged_at": null,
+      "model_name": "YOLO11s-Baseline",
+      "model_version": "best.pt",
+      "inference_engine": "LOCAL_YOLO11",
+      "confidence": 0.92,
+      "rule_version": null,
+      "provenance_type": "REAL_INFERENCE",
+      "inference_run_id": "RUN-9ECCFCFBE9",
+      "frame_number": 8,
+      "video_fps": 30.0,
+      "timestamp_seconds": 0.267,
+      "timestamp_utc": "2026-09-08T22:59:35.666040",
+      "evidence_clip_start": 0.0,
+      "evidence_clip_end": 3.267,
+      "processing_latency_ms": 44.53,
+      "created_at": "2026-09-08T22:59:35.666797"
+    },
+    "supervisor_acknowledge": {
+      "behaviour": "Product Freefall / Drop (carton)",
+      "recommended_action": "Dispatch supervisor to inspect Product Freefall / Drop (carton)",
+      "provenance_type": "REAL_INFERENCE",
+      "frame_number": 8,
+      "event_id": "EVT-2EFFF036",
+      "risk_score": 92.4,
+      "status": "ACKNOWLEDGED",
+      "environment": "DEVELOPMENT",
+      "video_fps": 30.0,
+      "facility_id": "FAC-001",
+      "risk_level": "CRITICAL",
+      "acknowledged_by_user_id": "user-sup-01",
+      "timestamp_seconds": 0.267,
+      "timestamp_utc": "2026-09-08T22:59:35.666040",
+      "video_id": "Rolling and dropping carton",
+      "description": "Product Freefall / Drop (carton) detected in Loading Bay 1. Target object #107 triggered violation: Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "acknowledged_at": "2026-09-08T22:59:40.739819",
+      "is_test_data": false,
+      "evidence_clip_start": 0.0,
+      "timestamp": 0.267,
+      "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "model_name": "YOLO11s-Baseline",
+      "is_demo_data": false,
+      "evidence_clip_end": 3.267,
+      "camera_id": "CAM-01",
+      "evidence_frame": "/api/videos/Rolling and dropping carton/frames/8",
+      "model_version": "best.pt",
+      "inference_run_id": "RUN-9ECCFCFBE9",
+      "processing_latency_ms": 44.53,
+      "organization_id": "ORG-001",
+      "bay_id": "Loading Bay 1",
+      "video_reference": "/stream/video/Rolling and dropping carton.mp4#t=0.27",
+      "inference_engine": "LOCAL_YOLO11",
+      "risk_assessment_id": "RA-E851D48D",
+      "created_at": "2026-09-08T22:59:35.666797",
+      "object_id": 107,
+      "confidence": 0.92,
+      "behaviour_observation_id": "OBS-D3B100A2",
+      "updated_at": "2026-09-08T22:59:40.739824"
+    },
+    "incident_resolve": {
+      "behaviour": "Product Freefall / Drop (carton)",
+      "recommended_action": "Dispatch supervisor to inspect Product Freefall / Drop (carton)",
+      "provenance_type": "REAL_INFERENCE",
+      "frame_number": 8,
+      "event_id": "EVT-2EFFF036",
+      "risk_score": 92.4,
+      "status": "RESOLVED",
+      "environment": "DEVELOPMENT",
+      "video_fps": 30.0,
+      "facility_id": "FAC-001",
+      "risk_level": "CRITICAL",
+      "acknowledged_by_user_id": "user-sup-01",
+      "timestamp_seconds": 0.267,
+      "timestamp_utc": "2026-09-08T22:59:35.666040",
+      "video_id": "Rolling and dropping carton",
+      "description": "Product Freefall / Drop (carton) detected in Loading Bay 1. Target object #107 triggered violation: Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "acknowledged_at": "2026-09-08T22:59:40.743294",
+      "is_test_data": false,
+      "evidence_clip_start": 0.0,
+      "timestamp": 0.267,
+      "reason": "Vertical Y-acceleration ay = 4500.0 m/s\u00b2 exceeds 8.0 m/s\u00b2 threshold.",
+      "model_name": "YOLO11s-Baseline",
+      "is_demo_data": false,
+      "evidence_clip_end": 3.267,
+      "camera_id": "CAM-01",
+      "evidence_frame": "/api/videos/Rolling and dropping carton/frames/8",
+      "model_version": "best.pt",
+      "inference_run_id": "RUN-9ECCFCFBE9",
+      "processing_latency_ms": 44.53,
+      "organization_id": "ORG-001",
+      "bay_id": "Loading Bay 1",
+      "video_reference": "/stream/video/Rolling and dropping carton.mp4#t=0.27",
+      "inference_engine": "LOCAL_YOLO11",
+      "risk_assessment_id": "RA-E851D48D",
+      "created_at": "2026-09-08T22:59:35.666797",
+      "object_id": 107,
+      "confidence": 0.92,
+      "behaviour_observation_id": "OBS-D3B100A2",
+      "updated_at": "2026-09-08T22:59:40.743297"
+    }
+  },
+  "websocket_notification": {
+    "event_type": "INCIDENT_DETECTED",
+    "event_id": "EVT-2EFFF036",
+    "inference_run_id": "RUN-9ECCFCFBE9",
+    "facility_id": "FAC-001",
+    "bay_id": "Loading Bay 1",
+    "behaviour": "Product Freefall / Drop (carton)",
+    "risk_score": 92.4,
+    "risk_level": "CRITICAL",
+    "timestamp_seconds": 0.267,
+    "frame_number": 8,
+    "evidence_frame": "/api/videos/Rolling and dropping carton/frames/8",
+    "provenance_type": "REAL_INFERENCE"
+  },
+  "database_state": {
+    "before": {
+      "inference_runs_count": 4,
+      "detections_count": 264,
+      "object_tracks_count": 34,
+      "behaviour_observations_count": 12,
+      "risk_assessments_count": 14,
+      "events_count": 34
+    },
+    "after": {
+      "inference_runs_count": 5,
+      "detections_count": 396,
+      "object_tracks_count": 51,
+      "behaviour_observations_count": 18,
+      "risk_assessments_count": 20,
+      "events_count": 40
+    },
+    "diff": {
+      "inference_runs": 1,
+      "detections": 132,
+      "object_tracks": 17,
+      "behaviour_observations": 6,
+      "risk_assessments": 6,
+      "events": 6
+    }
+  },
+  "analytics": {
+    "before": {
+      "summary": {
+        "totalEvents": 26,
+        "criticalEvents": 8,
+        "highRiskEvents": 5,
+        "mediumRiskEvents": 6,
+        "lowRiskEvents": 7,
+        "preventionIndex": 64.4,
+        "activeIncidents": 26,
+        "resolvedIncidents": 0,
+        "repeatBehaviourPct": 80.8
+      }
+    },
+    "after": {
+      "summary": {
+        "totalEvents": 32,
+        "criticalEvents": 14,
+        "highRiskEvents": 5,
+        "mediumRiskEvents": 6,
+        "lowRiskEvents": 7,
+        "preventionIndex": 57.0,
+        "activeIncidents": 31,
+        "resolvedIncidents": 1,
+        "repeatBehaviourPct": 84.4
+      }
+    }
+  }
+}

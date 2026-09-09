@@ -1,0 +1,19 @@
+{
+  "video_id": "Rolling and dropping carton",
+  "filename": "Rolling and dropping carton.mp4",
+  "fps": 30.0,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "total_frames": 282,
+  "duration_seconds": 9.4,
+  "model_name": "best.pt",
+  "tracking_method": "bytetrack.yaml",
+  "classes_detected": [
+    "carton",
+    "pallet",
+    "person"
+  ],
+  "trajectory_row_count": 1015,
+  "unique_object_count": 44,
+  "quality_warnings_count": 0
+}

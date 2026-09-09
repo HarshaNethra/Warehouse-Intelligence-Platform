@@ -1,0 +1,3 @@
+# Keep this directory tracked in git.
+# Large video files (*.mp4, *.avi, *.mov, *.mkv) are intentionally excluded from git tracking.
+# Place warehouse CCTV video files here locally.

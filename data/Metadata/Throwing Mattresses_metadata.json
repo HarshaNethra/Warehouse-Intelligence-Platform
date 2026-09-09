@@ -1,0 +1,18 @@
+{
+  "video_id": "Throwing Mattresses",
+  "filename": "Throwing Mattresses.mp4",
+  "fps": 30.0,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "total_frames": 1249,
+  "duration_seconds": 41.63,
+  "model_name": "best.pt",
+  "tracking_method": "bytetrack.yaml",
+  "classes_detected": [
+    "carton",
+    "person"
+  ],
+  "trajectory_row_count": 1506,
+  "unique_object_count": 40,
+  "quality_warnings_count": 0
+}

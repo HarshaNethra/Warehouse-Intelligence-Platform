@@ -1,0 +1,18 @@
+{
+  "video_id": "Rolling and dragging on wet floor",
+  "filename": "Rolling and dragging on wet floor.mp4",
+  "fps": 30.0,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "total_frames": 183,
+  "duration_seconds": 6.1,
+  "model_name": "best.pt",
+  "tracking_method": "bytetrack.yaml",
+  "classes_detected": [
+    "carton",
+    "person"
+  ],
+  "trajectory_row_count": 518,
+  "unique_object_count": 28,
+  "quality_warnings_count": 0
+}

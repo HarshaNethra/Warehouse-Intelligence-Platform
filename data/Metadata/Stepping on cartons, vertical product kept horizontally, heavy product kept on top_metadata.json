@@ -1,0 +1,17 @@
+{
+  "video_id": "Stepping on cartons, vertical product kept horizontally, heavy product kept on top",
+  "filename": "Stepping on cartons, vertical product kept horizontally, heavy product kept on top.mp4",
+  "fps": 30.0,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "total_frames": 1471,
+  "duration_seconds": 49.03,
+  "model_name": "best.pt",
+  "tracking_method": "bytetrack.yaml",
+  "classes_detected": [
+    "person"
+  ],
+  "trajectory_row_count": 6048,
+  "unique_object_count": 72,
+  "quality_warnings_count": 0
+}

@@ -1,0 +1,385 @@
+[
+  {
+    "event_id": "EVT-KDPAC-001",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 7.43,
+    "start_timestamp": 7.43,
+    "end_timestamp": 9.8,
+    "duration": 2.37,
+    "object_id": 455,
+    "behaviour": "rough_handling",
+    "confidence": 0.85,
+    "risk_score": 64,
+    "risk_level": "high",
+    "description": "Rough handling detected: severe acceleration spike (22288px/s\u00b2), erratic zigzag trajectory over 0.47s.",
+    "reason": "HIGH RISK (64/100): Observed rough handling, combined with significant deceleration impact (11881px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 258,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 11881.1,
+      "aspect_ratio_swing": 0.04,
+      "direction_reversals": 2,
+      "displacement_px": 39.1,
+      "peak_speed_px_s": 334.5,
+      "duration_seconds": 0.57,
+      "nature": [
+        "erratic zigzag trajectory"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 8.2,
+        "frequency_factor": 30.0,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-002",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 7.53,
+    "start_timestamp": 7.53,
+    "end_timestamp": 7.73,
+    "duration": 0.2,
+    "object_id": 455,
+    "behaviour": "product_thrown",
+    "confidence": 0.85,
+    "risk_score": 64,
+    "risk_level": "high",
+    "description": "Product thrown / launched in air: traveled 112px at peak speed of 1074px/s over 0.20s.",
+    "reason": "HIGH RISK (64/100): Observed product thrown, combined with repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 229,
+    "recommended_action": "Halt unassisted tossing of items. Mandate two-person team lifts or conveyor transfer for cartons and mattresses.",
+    "evidence": {
+      "flight_distance_px": 112.4,
+      "max_speed_px_s": 1074.2,
+      "average_speed_px_s": 599.4,
+      "duration_seconds": 0.2,
+      "has_ballistic_arc": false,
+      "launched_near_worker": true,
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 0.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 22.5,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-003",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 13.27,
+    "start_timestamp": 13.27,
+    "end_timestamp": 15.23,
+    "duration": 1.96,
+    "object_id": 525,
+    "behaviour": "product_thrown",
+    "confidence": 0.85,
+    "risk_score": 76,
+    "risk_level": "high",
+    "description": "Product thrown / launched in air: traveled 312px at peak speed of 1081px/s over 1.97s.",
+    "reason": "HIGH RISK (76/100): Observed product thrown, combined with significant deceleration impact (26899px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 427,
+    "recommended_action": "Halt unassisted tossing of items. Mandate two-person team lifts or conveyor transfer for cartons and mattresses.",
+    "evidence": {
+      "flight_distance_px": 312.4,
+      "max_speed_px_s": 1081.2,
+      "average_speed_px_s": 259.8,
+      "duration_seconds": 1.97,
+      "has_ballistic_arc": false,
+      "launched_near_worker": true,
+      "max_acceleration_px_s2": 26898.9,
+      "subsumed_rough_handling": true,
+      "landing_drop": {
+        "drop_start_frame": 429,
+        "drop_end_frame": 444,
+        "impact_drop_height_px": 107.5,
+        "max_downward_speed_px_s": 0.0
+      },
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 5.8,
+        "frequency_factor": 22.5,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-004",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 15.43,
+    "start_timestamp": 15.43,
+    "end_timestamp": 15.97,
+    "duration": 0.54,
+    "object_id": 607,
+    "behaviour": "rough_handling",
+    "confidence": 0.7,
+    "risk_score": 62,
+    "risk_level": "high",
+    "description": "Rough handling detected: erratic zigzag trajectory over 0.53s.",
+    "reason": "HIGH RISK (62/100): Observed rough handling, combined with significant deceleration impact (19072px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 471,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 19072.4,
+      "aspect_ratio_swing": 0.17,
+      "direction_reversals": 2,
+      "displacement_px": 113.4,
+      "peak_speed_px_s": 1111.6,
+      "duration_seconds": 0.53,
+      "nature": [
+        "erratic zigzag trajectory"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 30.0,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-005",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 21.1,
+    "start_timestamp": 21.1,
+    "end_timestamp": 21.57,
+    "duration": 0.47,
+    "object_id": 607,
+    "behaviour": "rough_handling",
+    "confidence": 0.75,
+    "risk_score": 62,
+    "risk_level": "high",
+    "description": "Rough handling detected: severe acceleration spike (4704px/s\u00b2) over 0.47s.",
+    "reason": "HIGH RISK (62/100): Observed rough handling, combined with significant deceleration impact (4704px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 640,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 4704.2,
+      "aspect_ratio_swing": 0.01,
+      "direction_reversals": 1,
+      "displacement_px": 47.3,
+      "peak_speed_px_s": 248.9,
+      "duration_seconds": 0.47,
+      "nature": [
+        "severe acceleration spike (4704px/s\u00b2)"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 30.0,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-006",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 23.5,
+    "start_timestamp": 23.5,
+    "end_timestamp": 23.97,
+    "duration": 0.47,
+    "object_id": 607,
+    "behaviour": "rough_handling",
+    "confidence": 0.7,
+    "risk_score": 62,
+    "risk_level": "high",
+    "description": "Rough handling detected: erratic zigzag trajectory over 0.47s.",
+    "reason": "HIGH RISK (62/100): Observed rough handling, combined with significant deceleration impact (11537px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 712,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 11536.8,
+      "aspect_ratio_swing": 0.04,
+      "direction_reversals": 2,
+      "displacement_px": 37.9,
+      "peak_speed_px_s": 281.0,
+      "duration_seconds": 0.47,
+      "nature": [
+        "erratic zigzag trajectory"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 30.0,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-007",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 25.5,
+    "start_timestamp": 25.5,
+    "end_timestamp": 26.33,
+    "duration": 0.83,
+    "object_id": 700,
+    "behaviour": "rough_handling",
+    "confidence": 0.95,
+    "risk_score": 62,
+    "risk_level": "high",
+    "description": "Rough handling detected: box rolling/tumbling, severe acceleration spike (6475px/s\u00b2), erratic zigzag trajectory over 0.83s.",
+    "reason": "HIGH RISK (62/100): Observed rough handling, combined with significant deceleration impact (6475px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 777,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 6474.7,
+      "aspect_ratio_swing": 0.32,
+      "direction_reversals": 2,
+      "displacement_px": 69.2,
+      "peak_speed_px_s": 289.2,
+      "duration_seconds": 0.83,
+      "nature": [
+        "box rolling/tumbling",
+        "severe acceleration spike (6475px/s\u00b2)",
+        "erratic zigzag trajectory"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 30.0,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-008",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 29.33,
+    "start_timestamp": 29.33,
+    "end_timestamp": 29.9,
+    "duration": 0.57,
+    "object_id": 700,
+    "behaviour": "rough_handling",
+    "confidence": 0.7,
+    "risk_score": 62,
+    "risk_level": "high",
+    "description": "Rough handling detected: erratic zigzag trajectory over 0.57s.",
+    "reason": "HIGH RISK (62/100): Observed rough handling, combined with significant deceleration impact (17783px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 888,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 17783.3,
+      "aspect_ratio_swing": 0.07,
+      "direction_reversals": 2,
+      "displacement_px": 85.2,
+      "peak_speed_px_s": 953.2,
+      "duration_seconds": 0.57,
+      "nature": [
+        "erratic zigzag trajectory"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 30.0,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-009",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 29.63,
+    "start_timestamp": 29.63,
+    "end_timestamp": 29.93,
+    "duration": 0.3,
+    "object_id": 700,
+    "behaviour": "product_thrown",
+    "confidence": 0.85,
+    "risk_score": 64,
+    "risk_level": "high",
+    "description": "Product thrown / launched in air: traveled 99px at peak speed of 969px/s over 0.30s.",
+    "reason": "HIGH RISK (64/100): Observed product thrown, combined with repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 893,
+    "recommended_action": "Halt unassisted tossing of items. Mandate two-person team lifts or conveyor transfer for cartons and mattresses.",
+    "evidence": {
+      "flight_distance_px": 98.8,
+      "max_speed_px_s": 968.9,
+      "average_speed_px_s": 638.6,
+      "duration_seconds": 0.3,
+      "has_ballistic_arc": false,
+      "launched_near_worker": true,
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 0.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 22.5,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-010",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 31.13,
+    "start_timestamp": 31.13,
+    "end_timestamp": 31.53,
+    "duration": 0.4,
+    "object_id": 741,
+    "behaviour": "product_thrown",
+    "confidence": 0.95,
+    "risk_score": 64,
+    "risk_level": "high",
+    "description": "Product thrown / launched in air: traveled 97px at peak speed of 428px/s over 0.40s.",
+    "reason": "HIGH RISK (64/100): Observed product thrown, combined with repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 940,
+    "recommended_action": "Halt unassisted tossing of items. Mandate two-person team lifts or conveyor transfer for cartons and mattresses.",
+    "evidence": {
+      "flight_distance_px": 97.5,
+      "max_speed_px_s": 428.1,
+      "average_speed_px_s": 282.4,
+      "duration_seconds": 0.4,
+      "has_ballistic_arc": true,
+      "launched_near_worker": true,
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 0.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 22.5,
+        "location_factor": 0.0
+      }
+    }
+  },
+  {
+    "event_id": "EVT-KDPAC-011",
+    "video_id": "KD packets dragged, heavy box kept on other packets",
+    "timestamp": 32.17,
+    "start_timestamp": 32.17,
+    "end_timestamp": 32.63,
+    "duration": 0.46,
+    "object_id": 741,
+    "behaviour": "rough_handling",
+    "confidence": 0.7,
+    "risk_score": 62,
+    "risk_level": "high",
+    "description": "Rough handling detected: erratic zigzag trajectory over 0.47s.",
+    "reason": "HIGH RISK (62/100): Observed rough handling, combined with significant deceleration impact (10504px/s\u00b2), repeated handling violations in this session. Kinematic trajectory indicates potential handling risk to product integrity.",
+    "evidence_frame": 972,
+    "recommended_action": "Examine package structural corners for crush damage. Conduct refresher briefing on controlled carton placement.",
+    "evidence": {
+      "max_acceleration_px_s2": 10503.7,
+      "aspect_ratio_swing": 0.03,
+      "direction_reversals": 2,
+      "displacement_px": 42.4,
+      "peak_speed_px_s": 400.7,
+      "duration_seconds": 0.47,
+      "nature": [
+        "erratic zigzag trajectory"
+      ],
+      "risk_factors": {
+        "height_factor": 0.0,
+        "impact_factor": 30.0,
+        "duration_factor": 0.0,
+        "frequency_factor": 30.0,
+        "location_factor": 0.0
+      }
+    }
+  }
+]

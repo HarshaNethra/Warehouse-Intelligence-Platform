@@ -1,0 +1,36 @@
+# ==============================================================================
+# Unified Godrej Warehouse Intelligence Platform — Core Dependencies
+# ==============================================================================
+# Platform: Windows / Linux / macOS
+# Python: 3.10 - 3.13
+# Note: Install torch and torchvision separately with platform-specific CUDA support
+# if GPU acceleration is desired (e.g., pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121)
+# ==============================================================================
+
+# Computer Vision & Machine Learning
+ultralytics>=8.3.0
+opencv-python>=4.8.0
+pandas>=2.2.0
+pyyaml>=6.0
+matplotlib>=3.8.0
+pillow>=10.0.0
+tqdm>=4.66.0
+roboflow>=1.1.0
+numpy>=1.26.0
+
+# Backend Web API & Intelligence Services
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+sqlalchemy>=2.0.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+websockets>=12.0
+python-multipart>=0.0.9
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Test & Quality Assurance
+pytest>=8.0.0
+anyio>=4.0.0
