@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from pydantic import BaseModel
 from app.db.database import get_db
 from app.db import models
 from app.api.deps import get_current_user
@@ -108,11 +109,6 @@ def get_event(
         raise HTTPException(status_code=404, detail="Event not found")
     return event
 
-
-class StatusUpdateRequest(PydanticBaseModel if 'PydanticBaseModel' in globals() else object):
-    pass
-
-from pydantic import BaseModel
 
 class StatusChangePayload(BaseModel):
     status: str
@@ -265,4 +261,3 @@ def create_event(
     db.commit()
     db.refresh(db_event)
     return db_event
-
