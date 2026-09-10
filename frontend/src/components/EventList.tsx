@@ -404,7 +404,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
   const riskOptions = ['All', 'Critical', 'High', 'Medium', 'Low'];
 
   return (
-    <div className={`bg-white border border-slate-200 rounded-2xl text-slate-900 shadow-2xs overflow-hidden flex flex-col relative ${className || 'h-[720px]'}`}>
+    <div className={`bg-white border border-slate-200 rounded-xl text-slate-900 shadow-2xs overflow-hidden flex flex-col relative ${className || 'min-h-[450px] lg:h-[calc(100dvh-200px)]'}`}>
       {/* Header & Filters Bar */}
       <div className="p-4 sm:p-5 border-b border-slate-200 bg-white space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

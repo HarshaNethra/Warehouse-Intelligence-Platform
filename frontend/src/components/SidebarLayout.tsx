@@ -18,13 +18,15 @@ import {
   Search,
   ChevronDown,
   Building2,
-  Check
+  Check,
+  Database
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UrgentAlertsDropdown } from './UrgentAlertsDropdown';
 import { FloatingChatbot } from './FloatingChatbot';
 import { LiveAlertToast } from './LiveAlertToast';
 import { useAuth } from '../context/AuthContext';
+import { useProvenance } from '../context/ProvenanceContext';
 import { getEvents } from '../api/events';
 import { getFacilities, type Facility } from '../api/facilities';
 import type { Event } from '../types/event';
@@ -68,6 +70,7 @@ interface SidebarLayoutProps {
 
 export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { provenanceEnabled, toggleProvenance } = useProvenance();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -418,7 +421,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                 ref={facilityBtnRef}
                 type="button"
                 onClick={() => setFacilityDropdownOpen((prev) => !prev)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs text-slate-800 transition-all cursor-pointer shadow-2xs ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs text-slate-800 transition-all cursor-pointer shadow-2xs max-w-[160px] sm:max-w-none truncate ${
                   facilityDropdownOpen
                     ? 'bg-blue-50/70 border-blue-400 ring-2 ring-blue-500/20'
                     : 'bg-slate-50 border-slate-200 hover:border-slate-300'
@@ -427,12 +430,12 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                 aria-label="Switch Facility"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <div className="flex items-center gap-1.5 min-w-0 text-left">
+                <div className="flex items-center gap-1.5 min-w-0 text-left truncate">
                   <span className="font-bold text-slate-900 truncate">
-                    {selectedFacility?.name || 'Bengaluru Distribution Center'}
+                    {selectedFacility?.name || 'Bengaluru DC'}
                   </span>
-                  <span className="text-slate-300">/</span>
-                  <span className="text-slate-500 font-medium text-[11px] whitespace-nowrap">Active Docks</span>
+                  <span className="text-slate-300 hidden sm:inline">/</span>
+                  <span className="text-slate-500 font-medium text-[11px] whitespace-nowrap hidden sm:inline">Active Docks</span>
                 </div>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-slate-400 ml-0.5 shrink-0 transition-transform ${
@@ -449,7 +452,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.98 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute left-0 mt-2 w-80 bg-white rounded-xl border border-slate-200 shadow-xl z-50 overflow-hidden"
+                    className="absolute left-0 mt-2 w-80 max-w-[90vw] bg-white rounded-xl border border-slate-200 shadow-xl z-50 overflow-hidden"
                   >
                     <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
@@ -520,8 +523,24 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
           </form>
 
           {/* Right Header Actions */}
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Dev Provenance Overlay Toggle */}
+            <button
+              type="button"
+              onClick={toggleProvenance}
+              className={`inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-mono px-2 sm:px-2.5 py-1 rounded-lg border transition-all ${
+                provenanceEnabled
+                  ? 'bg-slate-900 text-blue-400 border-slate-700 shadow-xs font-bold'
+                  : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+              }`}
+              title="Toggle Developer Data Provenance Overlay"
+            >
+              <Database className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span className="hidden sm:inline">Dev Overlay: {provenanceEnabled ? 'ON' : 'OFF'}</span>
+              <span className="sm:hidden font-bold">{provenanceEnabled ? 'DEV' : 'OFF'}</span>
+            </button>
+
+            <span className="hidden md:inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-semibold text-emerald-800">AI Vision Active</span>
               <span className="text-slate-400">|</span>

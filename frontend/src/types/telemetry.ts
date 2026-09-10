@@ -1,7 +1,18 @@
 export interface FrameTelemetryPoint {
   time: number; // Timecode in seconds (0 to duration)
+  frame?: number; // Frame index (Math.round(time * fps))
   frameRisk: number; // 0 to 100
+  riskScore?: number; // Alias for frameRisk
+  riskLevel?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  eventType?: string | null;
   event?: string; // Optional active anomaly description
+  anomaly?: boolean; // True if active anomaly
+  confidence?: number; // Explicit detection confidence (0.0 to 1.0)
+  dropRisk?: number; // Contribution score for drop/impact
+  dragRisk?: number; // Contribution score for floor dragging
+  stackRisk?: number; // Contribution score for stacking instability
+  startTime?: number; // Event start interval (seconds)
+  endTime?: number; // Event end interval (seconds)
   accelerationY?: number; // m/s² vertical drop acceleration
   velocityHorizontal?: number; // m/s dragging translation velocity
   bbox?: [number, number, number, number]; // [left%, top%, width%, height%]
@@ -34,6 +45,128 @@ export interface ModelStatus {
   map05: number;
 }
 
+export interface TemporalRiskState {
+  currentTime: number;
+  currentFrame: number;
+  currentRisk: number;
+  currentRiskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  currentEvent: string | null;
+  currentEventType: string | null;
+  isAnomaly: boolean;
+  activePoint: FrameTelemetryPoint;
+  peakPoint: FrameTelemetryPoint;
+  peakRisk: number;
+  peakTime: number;
+  videoDuration: number;
+}
+
+/**
+ * Single source of truth deterministic temporal mapping: Video currentTime -> Risk Data
+ */
+export function getRiskAtTime(
+  timelineData: FrameTelemetryPoint[],
+  currentTime: number,
+  fps: number = 30
+): TemporalRiskState {
+  if (!timelineData || timelineData.length === 0) {
+    const defaultPoint: FrameTelemetryPoint = {
+      time: currentTime,
+      frame: Math.round(currentTime * fps),
+      frameRisk: 0,
+      riskScore: 0,
+      riskLevel: 'LOW',
+      eventType: null,
+      event: undefined,
+      anomaly: false,
+    };
+    return {
+      currentTime,
+      currentFrame: Math.round(currentTime * fps),
+      currentRisk: 0,
+      currentRiskLevel: 'LOW',
+      currentEvent: null,
+      currentEventType: null,
+      isAnomaly: false,
+      activePoint: defaultPoint,
+      peakPoint: defaultPoint,
+      peakRisk: 0,
+      peakTime: 0,
+      videoDuration: 0,
+    };
+  }
+
+  // 1. Single source of truth for Peak Risk & Peak Time across the whole timeline
+  const peakPoint = timelineData.reduce(
+    (max, p) => (p.frameRisk > max.frameRisk ? p : max),
+    timelineData[0]
+  );
+
+  const duration = timelineData[timelineData.length - 1]?.time ?? 0;
+  const clampedTime = Math.max(0, Math.min(currentTime, duration));
+
+  // 2. Find surrounding points for linear interpolation
+  let lower = timelineData[0];
+  let upper = timelineData[timelineData.length - 1];
+
+  for (let i = 0; i < timelineData.length; i++) {
+    if (timelineData[i].time <= clampedTime) {
+      lower = timelineData[i];
+    }
+    if (timelineData[i].time >= clampedTime) {
+      upper = timelineData[i];
+      break;
+    }
+  }
+
+  // Linear interpolation for current risk score
+  let currentRisk = lower.frameRisk;
+  if (upper.time > lower.time) {
+    const ratio = (clampedTime - lower.time) / (upper.time - lower.time);
+    currentRisk = lower.frameRisk + ratio * (upper.frameRisk - lower.frameRisk);
+  }
+  currentRisk = Number(currentRisk.toFixed(1));
+
+  // Nearest point for discrete metadata
+  const closestPoint = (clampedTime - lower.time <= upper.time - clampedTime) ? lower : upper;
+
+  // Active event lookup across temporal event interval
+  const activeIntervalPoint = timelineData.find((p) => {
+    if (!p.event) return false;
+    const start = p.startTime ?? (p.time - 1.5);
+    const end = p.endTime ?? (p.time + 1.5);
+    return clampedTime >= start && clampedTime <= end;
+  });
+
+  const activeEventDescription = activeIntervalPoint?.event || closestPoint.event || null;
+  const activeEventType = activeIntervalPoint?.eventType || closestPoint.eventType || null;
+
+  const currentRiskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' =
+    currentRisk >= 80 ? 'CRITICAL' : currentRisk >= 60 ? 'HIGH' : currentRisk >= 35 ? 'MEDIUM' : 'LOW';
+
+  const isAnomaly = currentRisk >= 60 || !!activeIntervalPoint || !!closestPoint.anomaly || !!closestPoint.event;
+
+  return {
+    currentTime: clampedTime,
+    currentFrame: Math.round(clampedTime * fps),
+    currentRisk,
+    currentRiskLevel,
+    currentEvent: activeEventDescription,
+    currentEventType: activeEventType,
+    isAnomaly,
+    activePoint: {
+      ...closestPoint,
+      event: activeEventDescription || closestPoint.event,
+      frameRisk: currentRisk,
+      riskScore: currentRisk,
+      riskLevel: currentRiskLevel,
+    },
+    peakPoint,
+    peakRisk: Number(peakPoint.frameRisk.toFixed(1)),
+    peakTime: peakPoint.time,
+    videoDuration: duration,
+  };
+}
+
 /**
  * Dynamic Kinematic & Risk Telemetry Generator
  * Evaluates video filenames and native duration to generate frame-by-frame time-series data
@@ -50,8 +183,6 @@ export function generateTelemetryForVideo(
   const duration = Math.max(5, Math.ceil(actualDuration));
 
   const timelineData: FrameTelemetryPoint[] = [];
-  let compositeScore = 70.0;
-  let riskLevel: 'Low' | 'Medium' | 'High' | 'Critical' = 'Medium';
   let behaviors: string[] = ['Standard Warehousing Handling', 'ByteTrack Target Active'];
 
   const isThrowing = cleanName.includes('throwing') || cleanName.includes('mattress');
@@ -64,10 +195,8 @@ export function generateTelemetryForVideo(
   const peak2Time = Math.floor(duration * 0.7);
 
   if (isThrowing) {
-    compositeScore = 92.4;
-    riskLevel = 'Critical';
     behaviors = ['Throwing Mattresses', 'High Impact Impulse', 'Strap Misuse Hazard'];
-    for (let t = 0; t < duration; t++) {
+    for (let t = 0; t <= duration; t++) {
       let risk = 15 + Math.sin(t * 0.2) * 5;
       let evt: string | undefined = undefined;
 
@@ -85,10 +214,15 @@ export function generateTelemetryForVideo(
         }
       }
       const isPeakPoint = t === peak1Time || t === peak2Time;
+      const frameRisk = Math.min(99.9, Math.max(5, Number(risk.toFixed(1))));
       timelineData.push({
         time: t,
-        frameRisk: Math.min(99.9, Math.max(5, Number(risk.toFixed(1)))),
+        frame: t * 30,
+        frameRisk,
+        riskScore: frameRisk,
+        riskLevel: frameRisk >= 80 ? 'CRITICAL' : frameRisk >= 60 ? 'HIGH' : frameRisk >= 35 ? 'MEDIUM' : 'LOW',
         event: evt,
+        anomaly: frameRisk >= 60,
         accelerationY: evt ? 14.2 : 2.1,
         velocityHorizontal: 1.2,
         isPeak: isPeakPoint,
@@ -98,10 +232,8 @@ export function generateTelemetryForVideo(
       });
     }
   } else if (isSteppingStacking) {
-    compositeScore = 96.1;
-    riskLevel = 'Critical';
     behaviors = ['Stepping on Cartons', 'Improper Heavy-on-Light Stacking', 'Off-Orientation Placement'];
-    for (let t = 0; t < duration; t++) {
+    for (let t = 0; t <= duration; t++) {
       let risk = 20 + Math.sin(t * 0.15) * 8;
       let evt: string | undefined = undefined;
 
@@ -111,10 +243,15 @@ export function generateTelemetryForVideo(
         if (t === peak1Time) evt = 'CRITICAL: Package Stepping & Heavy Box Kept on Light Packets';
       }
       const isPeakPoint = t === peak1Time;
+      const frameRisk = Math.min(99.9, Math.max(8, Number(risk.toFixed(1))));
       timelineData.push({
         time: t,
-        frameRisk: Math.min(99.9, Math.max(8, Number(risk.toFixed(1)))),
+        frame: t * 30,
+        frameRisk,
+        riskScore: frameRisk,
+        riskLevel: frameRisk >= 80 ? 'CRITICAL' : frameRisk >= 60 ? 'HIGH' : frameRisk >= 35 ? 'MEDIUM' : 'LOW',
         event: evt,
+        anomaly: frameRisk >= 60,
         accelerationY: evt ? 8.4 : 1.5,
         velocityHorizontal: 0.9,
         isPeak: isPeakPoint,
@@ -124,10 +261,8 @@ export function generateTelemetryForVideo(
       });
     }
   } else if (isDropping) {
-    compositeScore = 85.2;
-    riskLevel = 'High';
     behaviors = ['Product Dropped from Height', 'Impact Acceleration Spike > 9.8m/s²'];
-    for (let t = 0; t < duration; t++) {
+    for (let t = 0; t <= duration; t++) {
       let risk = 12 + Math.cos(t * 0.1) * 4;
       let evt: string | undefined = undefined;
 
@@ -137,10 +272,15 @@ export function generateTelemetryForVideo(
         if (t === peak1Time) evt = 'Product Dropped • Impact Acceleration Spike 11.5 m/s²';
       }
       const isPeakPoint = t === peak1Time;
+      const frameRisk = Math.min(99.9, Math.max(5, Number(risk.toFixed(1))));
       timelineData.push({
         time: t,
-        frameRisk: Math.min(99.9, Math.max(5, Number(risk.toFixed(1)))),
+        frame: t * 30,
+        frameRisk,
+        riskScore: frameRisk,
+        riskLevel: frameRisk >= 80 ? 'CRITICAL' : frameRisk >= 60 ? 'HIGH' : frameRisk >= 35 ? 'MEDIUM' : 'LOW',
         event: evt,
+        anomaly: frameRisk >= 60,
         accelerationY: evt ? 11.5 : 1.2,
         velocityHorizontal: 0.6,
         isPeak: isPeakPoint,
@@ -150,10 +290,8 @@ export function generateTelemetryForVideo(
       });
     }
   } else if (isDragging) {
-    compositeScore = 78.8;
-    riskLevel = 'High';
     behaviors = ['Product Dragged on Floor', 'Unsafe Concrete Dragging Translation'];
-    for (let t = 0; t < duration; t++) {
+    for (let t = 0; t <= duration; t++) {
       let risk = 18;
       let evt: string | undefined = undefined;
 
@@ -162,10 +300,15 @@ export function generateTelemetryForVideo(
         if (t === peak1Time) evt = 'Continuous Carton Dragging on Wet Floor (v > 1.4 m/s)';
       }
       const isPeakPoint = t === peak1Time;
+      const frameRisk = Math.min(99.9, Math.max(10, Number(risk.toFixed(1))));
       timelineData.push({
         time: t,
-        frameRisk: Math.min(99.9, Math.max(10, Number(risk.toFixed(1)))),
+        frame: t * 30,
+        frameRisk,
+        riskScore: frameRisk,
+        riskLevel: frameRisk >= 80 ? 'CRITICAL' : frameRisk >= 60 ? 'HIGH' : frameRisk >= 35 ? 'MEDIUM' : 'LOW',
         event: evt,
+        anomaly: frameRisk >= 60,
         accelerationY: 0.8,
         velocityHorizontal: evt ? 1.8 : 0.4,
         isPeak: isPeakPoint,
@@ -181,11 +324,9 @@ export function generateTelemetryForVideo(
       hash |= 0;
     }
     const seed = Math.abs(hash) % 100;
-    compositeScore = Number((62.0 + (seed % 16)).toFixed(1));
-    riskLevel = compositeScore >= 75 ? 'High' : 'Medium';
     behaviors = ['Motion Anomaly Detected', 'YOLO11 Object Tracking Active'];
 
-    for (let t = 0; t < duration; t++) {
+    for (let t = 0; t <= duration; t++) {
       const noise = Math.sin(t * 0.25 + seed) * 12;
       const spikePoint = Math.floor(duration * 0.4);
       let evt: string | undefined = undefined;
@@ -197,15 +338,28 @@ export function generateTelemetryForVideo(
       }
 
       const isPeakPoint = t === spikePoint;
+      const frameRisk = Math.min(99.9, Math.max(5, Number(risk.toFixed(1))));
       timelineData.push({
         time: t,
-        frameRisk: Math.min(99.9, Math.max(5, Number(risk.toFixed(1)))),
+        frame: t * 30,
+        frameRisk,
+        riskScore: frameRisk,
+        riskLevel: frameRisk >= 80 ? 'CRITICAL' : frameRisk >= 60 ? 'HIGH' : frameRisk >= 35 ? 'MEDIUM' : 'LOW',
         event: evt,
+        anomaly: frameRisk >= 60,
         isPeak: isPeakPoint,
         bbox: [35 + Math.sin(t) * 4, 30 + Math.cos(t) * 4, 25, 20]
       });
     }
   }
+
+  // Derive peak risk from timeline points directly
+  const peakPoint = timelineData.reduce(
+    (max, p) => (p.frameRisk > max.frameRisk ? p : max),
+    timelineData[0]
+  );
+  const compositeScore = peakPoint ? peakPoint.frameRisk : 75.0;
+  const riskLevel = compositeScore >= 80 ? 'Critical' : compositeScore >= 60 ? 'High' : compositeScore >= 35 ? 'Medium' : 'Low';
 
   const defaultUrl = customVideoUrl || `/videos/${encodeURIComponent(fileName)}`;
 

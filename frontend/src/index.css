@@ -2,11 +2,25 @@
 @config "../tailwind.config.js";
 
 @layer base {
-  body {
+  *, ::before, ::after {
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
     background-color: #F5F7FA;
     color: #111827;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
   }
 }
 

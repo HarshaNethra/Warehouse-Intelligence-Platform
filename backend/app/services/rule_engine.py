@@ -172,8 +172,13 @@ class KinematicsEngine:
 
         latest_vx, latest_vy = velocities[-1]
         
-        # Pixel Acceleration ay_pixels = (vy_t - vy_{t-1}) / dt
-        if len(velocities) >= 2:
+        # Apply median filtering on vy if rolling history exists to prevent tracking jitter noise
+        if len(velocities) >= 3:
+            vy_history = [v[1] for v in velocities]
+            smoothed_vy = float(np.median(vy_history[-3:]))
+            prev_vy = float(np.median(vy_history[:-1]))
+            ay_pixels = (smoothed_vy - prev_vy) / self.dt
+        elif len(velocities) == 2:
             prev_vy = velocities[-2][1]
             ay_pixels = (latest_vy - prev_vy) / self.dt
         else:
@@ -495,6 +500,10 @@ class SafetyRuleEngine:
             "video_id": video_id,
             "timestamp": timestamp_sec,
             "timestamp_seconds": timestamp_sec,
+            "start_time": max(0.0, round(timestamp_sec - 1.0, 3)),
+            "end_time": round(timestamp_sec + 1.5, 3),
+            "peak_time": timestamp_sec,
+            "peak_risk": float(alert["risk_score"]),
             "timestamp_utc": now_utc,
             "video_fps": calc_fps,
             "evidence_clip_start": clip_start,

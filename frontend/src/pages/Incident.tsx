@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getEventById, acknowledgeIncident, dispatchIncident, markFalsePositiveIncident } from '../api/events';
 import { getVideoById } from '../api/videos';
 import type { Event } from '../types/event';
 import { useAuth } from '../context/AuthContext';
 import { VideoPlayer } from '../components/VideoPlayer';
+import { RiskTimeline } from '../components/RiskTimeline';
 import { RiskBadge } from '../components/RiskBadge';
 import { AssistantChat } from '../components/AssistantChat';
 import { formatTimestamp } from '../utils/formatters';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2, ShieldAlert, CheckCircle2, Send, XCircle } from 'lucide-react';
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
+import { generateTelemetryForVideo } from '../types/telemetry';
 
 export const Incident: React.FC = () => {
   const { eventId, id } = useParams<{ eventId?: string; id?: string }>();
@@ -18,6 +20,7 @@ export const Incident: React.FC = () => {
   const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [videoDuration, setVideoDuration] = useState<number | undefined>(undefined);
+  const [currentTime, setCurrentTime] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +36,8 @@ export const Incident: React.FC = () => {
       .then((data) => {
         if (!isMounted) return;
         setEvent(data);
+        const targetSec = data.timestamp_seconds ?? data.timestamp ?? 0;
+        setCurrentTime(targetSec);
         if (data.video_id) {
           getVideoById(data.video_id)
             .then((v) => {
@@ -109,6 +114,23 @@ export const Incident: React.FC = () => {
     }
   };
 
+  let rawVideoUrl = event?.video_reference || (event?.video_id ? `/videos/${encodeURIComponent(event.video_id)}` : '/videos/Rolling%20and%20dropping%20carton.mp4');
+  const targetTs = event?.timestamp_seconds ?? event?.timestamp;
+  if (targetTs && targetTs > 0 && !rawVideoUrl.includes('#t=')) {
+    rawVideoUrl = `${rawVideoUrl}#t=${targetTs.toFixed(2)}`;
+  }
+  const videoUrl = rawVideoUrl;
+
+  const videoPayload = useMemo(() => {
+    return generateTelemetryForVideo(
+      event?.video_id || event?.behaviour || 'Incident Replay',
+      15 * 1024 * 1024,
+      event?.bay_id || 'Loading Bay 01',
+      videoUrl,
+      videoDuration || 60
+    );
+  }, [event, videoUrl, videoDuration]);
+
   if (loading) {
     return (
       <div className="max-w-[1440px] mx-auto p-6 space-y-6 animate-pulse">
@@ -139,13 +161,6 @@ export const Incident: React.FC = () => {
       </div>
     );
   }
-
-  let rawVideoUrl = event.video_reference || (event.video_id ? `/videos/${encodeURIComponent(event.video_id)}` : '/videos/Rolling%20and%20dropping%20carton.mp4');
-  const targetTs = event.timestamp_seconds ?? event.timestamp;
-  if (targetTs && targetTs > 0 && !rawVideoUrl.includes('#t=')) {
-    rawVideoUrl = `${rawVideoUrl}#t=${targetTs.toFixed(2)}`;
-  }
-  const videoUrl = rawVideoUrl;
 
   const statusUpper = (event.status || 'UNRESOLVED').toUpperCase();
   const isAcknowledged = statusUpper === 'ACKNOWLEDGED';
@@ -189,13 +204,13 @@ export const Incident: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
             {isFalsePos ? (
-              <span className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold font-mono flex items-center gap-1.5">
+              <span className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold font-mono flex items-center gap-1.5 w-full sm:w-auto justify-center">
                 <XCircle className="w-3.5 h-3.5 text-slate-500" /> False Positive Reviewed
               </span>
             ) : isDispatched ? (
-              <span className="px-3 py-1.5 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-800 text-xs font-bold font-mono flex items-center gap-1.5">
+              <span className="px-3 py-1.5 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-800 text-xs font-bold font-mono flex items-center gap-1.5 w-full sm:w-auto justify-center">
                 <Send className="w-3.5 h-3.5" /> Response Team Dispatched
               </span>
             ) : (
@@ -205,10 +220,10 @@ export const Incident: React.FC = () => {
                     type="button"
                     onClick={handleAcknowledge}
                     disabled={isAcknowledging}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 shadow-xs btn-interactive"
+                    className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow-xs btn-interactive"
                   >
                     {isAcknowledging ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    <span>Acknowledge Incident</span>
+                    <span>Acknowledge</span>
                   </button>
                 ) : (
                   <span className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
@@ -220,17 +235,17 @@ export const Incident: React.FC = () => {
                   type="button"
                   onClick={handleDispatch}
                   disabled={isDispatching}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 shadow-xs btn-interactive"
+                  className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow-xs btn-interactive"
                 >
                   {isDispatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  <span>Dispatch Supervisor</span>
+                  <span>Dispatch</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleFalsePositive}
                   disabled={isFalsePositive}
-                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg flex items-center gap-1.5 border border-slate-200"
+                  className="flex-none px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 border border-slate-200"
                   title="Mark as false positive for ML feedback"
                 >
                   {isFalsePositive ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 text-slate-500" />}
@@ -243,20 +258,31 @@ export const Incident: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Video Replay Player */}
+        {/* Left Column: Video Replay Player & Synchronized Risk Timeline */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-slate-950 rounded-xl overflow-hidden shadow-xl border border-slate-800">
             <VideoPlayer 
               videoUrl={videoUrl}
               videoId={event.video_id || `Incident ${event.event_id}`} 
               timestamp={event.timestamp}
+              currentTime={currentTime}
+              onTimeUpdate={(t) => setCurrentTime(t)}
               duration={videoDuration}
               objectId={event.object_id}
               behaviour={event.behaviour}
               riskScore={event.risk_score}
               riskLevel={event.risk_level}
+              timelineData={videoPayload.timelineData}
             />
           </div>
+
+          <RiskTimeline
+            timelineData={videoPayload.timelineData}
+            currentTime={currentTime}
+            videoDuration={videoDuration || 60}
+            compositeRiskScore={videoPayload.riskScore}
+            onSeek={(t) => setCurrentTime(t)}
+          />
         </div>
         
         {/* Right Column: Incident Intelligence Panel */}

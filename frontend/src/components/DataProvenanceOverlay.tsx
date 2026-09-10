@@ -62,13 +62,13 @@ export const DataProvenanceOverlay: React.FC<DataProvenanceOverlayProps> = ({
 
       {/* Detailed Lineage Hover Tooltip */}
       {showDetails && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-slate-950 text-slate-100 rounded-xl text-[11px] font-mono shadow-2xl border border-slate-800 pointer-events-none whitespace-nowrap animate-in fade-in space-y-1">
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-slate-950 text-slate-100 rounded-xl text-[11px] font-mono shadow-2xl border border-slate-800 pointer-events-none max-w-[90vw] sm:max-w-md whitespace-normal animate-in fade-in space-y-1">
           <div className="flex items-center gap-1.5 font-bold text-blue-400 border-b border-slate-800 pb-1.5 mb-1.5">
-            <Code2 className="w-3.5 h-3.5 text-blue-400" /> Developer Data Provenance Overlay
+            <Code2 className="w-3.5 h-3.5 text-blue-400 shrink-0" /> Developer Data Provenance Overlay
           </div>
-          <div><span className="text-slate-400">Source API Endpoint:</span> <code className="text-emerald-400 font-bold">{endpoint}</code></div>
+          <div><span className="text-slate-400">Source API Endpoint:</span> <code className="text-emerald-400 font-bold break-all">{endpoint}</code></div>
           <div><span className="text-slate-400">Facility Scope:</span> <code className="text-amber-300 font-bold">{facilityScope}</code></div>
-          {filter && <div><span className="text-slate-400">Query / Filter:</span> <code className="text-indigo-300 font-bold">{filter}</code></div>}
+          {filter && <div><span className="text-slate-400">Query / Filter:</span> <code className="text-indigo-300 font-bold break-all">{filter}</code></div>}
           <div><span className="text-slate-400">Mapped DB Entity:</span> <code className="text-cyan-400 font-bold">{entity}</code></div>
           <div><span className="text-slate-400">Last Telemetry Fetch:</span> <code className="text-slate-300 font-bold">{nowStr}</code></div>
         </div>

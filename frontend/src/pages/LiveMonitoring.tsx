@@ -21,7 +21,7 @@ import {
 import { getLoadingBays, type LoadingBay } from '../api/facilities';
 import { useEvents } from '../hooks/useEvents';
 import { useRealtimeTelemetry } from '../hooks/useRealtimeTelemetry';
-import { generateTelemetryForVideo, type VideoTelemetryPayload } from '../types/telemetry';
+import { generateTelemetryForVideo, getRiskAtTime, type VideoTelemetryPayload } from '../types/telemetry';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 
@@ -157,7 +157,10 @@ export const LiveMonitoring: React.FC = () => {
     peakRiskValue >= 60 ? 'HIGH' :
     peakRiskValue >= 35 ? 'MEDIUM' : 'LOW';
 
-  const activeBehavior = activeEventAtTime?.event || videoPayload.behaviors[0] || 'Standard Warehouse Material Handling';
+  // Single source of truth temporal risk state for current video timestamp
+  const temporalState = getRiskAtTime(videoPayload.timelineData || [], currentTime);
+
+  const activeBehavior = activeEventAtTime?.event || temporalState.currentEvent || videoPayload.behaviors[0] || 'Standard Warehouse Material Handling';
 
   // Dynamic explanation generation based on detected telemetry
   const isDropping = activeBehavior.toLowerCase().includes('drop') || activeBehavior.toLowerCase().includes('impact');

@@ -9,7 +9,7 @@ export const SummaryCards: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-pulse">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 animate-pulse">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="h-28 glass-panel rounded-xl" />
         ))}
@@ -55,7 +55,7 @@ export const SummaryCards: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       {cards.map((card, idx) => (
         <Link
           key={card.title}

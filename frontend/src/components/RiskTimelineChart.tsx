@@ -1,7 +1,7 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Activity, TrendingUp, Zap } from 'lucide-react';
-import type { FrameTelemetryPoint } from '../types/telemetry';
+import { getRiskAtTime, type FrameTelemetryPoint } from '../types/telemetry';
 
 export interface RiskTimelineChartProps {
   timelineData: FrameTelemetryPoint[];
@@ -16,11 +16,13 @@ export const RiskTimelineChart: React.FC<RiskTimelineChartProps> = ({
   timelineData,
   currentTime = 0,
   compositeRiskScore = 85.0,
-  peakRisk = 94.6,
+  peakRisk,
   onDataPointClick,
   className,
 }) => {
-  const roundedCurrentTime = Math.round(currentTime);
+  const temporalState = getRiskAtTime(timelineData, currentTime);
+  const roundedCurrentTime = Math.round(temporalState.currentTime);
+  const maxDurationSec = Math.max(5, Math.ceil(temporalState.videoDuration || 60));
 
   const chartData = timelineData.map((point) => ({
     time: point.time,
@@ -31,7 +33,7 @@ export const RiskTimelineChart: React.FC<RiskTimelineChartProps> = ({
     velocity: point.velocityHorizontal,
   }));
 
-  const activePoint = timelineData.find((p) => p.time === roundedCurrentTime);
+  const displayPeakPoint = temporalState.peakPoint;
 
   return (
     <div className={`glass-panel p-5 bg-white border border-slate-200 text-slate-900 rounded-2xl shadow-xs space-y-3 ${className || ''}`}>
@@ -51,7 +53,7 @@ export const RiskTimelineChart: React.FC<RiskTimelineChartProps> = ({
           <div className="flex items-center gap-1.5 text-xs bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
             <TrendingUp className="w-3.5 h-3.5 text-rose-600" />
             <span className="text-slate-500">Peak R(t):</span>
-            <span className="font-mono font-bold text-rose-600">{peakRisk.toFixed(1)}%</span>
+            <span className="font-mono font-bold text-rose-600">{(peakRisk !== undefined ? peakRisk : displayPeakPoint.frameRisk).toFixed(1)}%</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
@@ -63,15 +65,23 @@ export const RiskTimelineChart: React.FC<RiskTimelineChartProps> = ({
       </div>
 
       {/* Active Timecode Event Banner */}
-      {activePoint?.event && (
+      {temporalState.currentEvent ? (
         <div className="bg-rose-50 border border-rose-200 p-2.5 rounded-xl text-xs flex items-center justify-between text-rose-900 animate-pulse">
           <span className="font-semibold flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-rose-600"></span>
-            Active Incident at {activePoint.time}s: {activePoint.event}
+            Active Incident at {roundedCurrentTime}s: {temporalState.currentEvent}
           </span>
           <span className="font-mono text-[10px] bg-rose-100 px-2 py-0.5 rounded border border-rose-300 font-bold text-rose-800">
-            R(t): {activePoint.frameRisk}%
+            R(t): {temporalState.currentRisk.toFixed(1)}%
           </span>
+        </div>
+      ) : (
+        <div className="bg-slate-50 border border-slate-200 p-2 rounded-xl text-xs flex items-center justify-between text-slate-600">
+          <span className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Frame {roundedCurrentTime}s: Nominal Handling Stream (Risk R(t): {temporalState.currentRisk.toFixed(1)}%)
+          </span>
+          <span className="text-[10px] font-mono text-slate-500 font-semibold">YOLO11 Telemetry</span>
         </div>
       )}
 
@@ -96,7 +106,7 @@ export const RiskTimelineChart: React.FC<RiskTimelineChartProps> = ({
               </linearGradient>
             </defs>
             
-            <XAxis dataKey="timeLabel" stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 10 }} />
+            <XAxis dataKey="time" type="number" domain={[0, maxDurationSec]} stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 10 }} />
             <YAxis domain={[0, 100]} stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 10 }} />
             
             <Tooltip
@@ -121,7 +131,7 @@ export const RiskTimelineChart: React.FC<RiskTimelineChartProps> = ({
             
             {/* Active Video Playback Position Reference Line */}
             <ReferenceLine 
-              x={`${roundedCurrentTime}s`} 
+              x={roundedCurrentTime} 
               stroke="#10b981" 
               strokeWidth={2} 
               label={{ value: `▶ ${roundedCurrentTime}s`, fill: '#10b981', fontSize: 10, position: 'top' }} 

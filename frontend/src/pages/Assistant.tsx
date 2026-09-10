@@ -26,7 +26,7 @@ export const Assistant: React.FC = () => {
         entity="RAG Vector Engine + SQLite DB"
         filter="Conversational Grounded Query"
       >
-        <div className="h-[700px]">
+        <div className="min-h-[450px] lg:h-[calc(100dvh-200px)]">
           <AssistantChat className="h-full" />
         </div>
       </DataProvenanceOverlay>

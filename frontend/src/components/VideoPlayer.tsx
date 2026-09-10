@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Film, Activity, Clock } from 'lucide-react';
 import { formatTimecode } from '../utils/formatters';
 import { VideoTrajectoryOverlay } from './VideoTrajectoryOverlay';
+import { getRiskAtTime, type FrameTelemetryPoint } from '../types/telemetry';
 
 export interface VideoPlayerProps {
   videoUrl?: string;
@@ -17,6 +18,7 @@ export interface VideoPlayerProps {
   timestamp?: number;
   behaviour?: string;
   riskScore?: number;
+  timelineData?: FrameTelemetryPoint[];
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -29,7 +31,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   currentTime: externalCurrentTime,
   timestamp,
   behaviour,
-  riskScore,
+  riskScore: explicitRiskScore,
+  timelineData,
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,6 +63,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, []);
 
   const displayTime = externalCurrentTime !== undefined ? externalCurrentTime : (timestamp !== undefined ? timestamp : internalTime);
+
+  // Bidirectional sync: Seek HTML5 video when externalCurrentTime changes from graph click
+  useEffect(() => {
+    const videoEl = videoElementRef.current;
+    if (videoEl && externalCurrentTime !== undefined && !isNaN(externalCurrentTime)) {
+      if (Math.abs(videoEl.currentTime - externalCurrentTime) > 0.35) {
+        videoEl.currentTime = externalCurrentTime;
+      }
+    }
+  }, [externalCurrentTime, videoElementRef]);
 
   const handleNativeTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const current = e.currentTarget.currentTime;
@@ -102,9 +115,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     offsetY = (containerSize.height - renderedHeight) / 2;
   }
 
-  // Active risk state evaluation
-  const activeRisk = riskScore !== undefined ? riskScore : ((displayTime >= 15 && displayTime <= 24) || (displayTime >= 40 && displayTime <= 46) ? 94.6 : 15.0);
-  const isCritical = activeRisk >= 75.0;
+  // Derive temporal risk state from single source of truth timeline
+  const temporalState = getRiskAtTime(timelineData || [], displayTime);
+  const activeRisk = timelineData && timelineData.length > 0
+    ? temporalState.currentRisk
+    : (explicitRiskScore !== undefined ? explicitRiskScore : 15.0);
+  
+  const isCritical = activeRisk >= 75.0 || temporalState.currentRiskLevel === 'CRITICAL';
 
   // Interactive AI Annotations Toggle Controls
   const [showBoxes, setShowBoxes] = useState<boolean>(true);
@@ -168,6 +185,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <VideoTrajectoryOverlay
           currentTime={displayTime}
           duration={videoNaturalSize.width ? displayTime : 60}
+          timelineData={timelineData}
           renderedWidth={renderedWidth}
           renderedHeight={renderedHeight}
           offsetX={offsetX}
@@ -180,17 +198,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       )}
 
       {/* Top-Left Glassmorphic Overlay HUD */}
-      <div className="absolute top-3 left-3 pointer-events-none z-20 flex items-center gap-2.5 text-xs font-mono bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-slate-800 shadow-lg text-white">
-        <span className="relative flex h-2.5 w-2.5">
+      <div className="absolute top-2 left-2 sm:top-3 sm:left-3 pointer-events-none z-20 flex items-center gap-1.5 sm:gap-2.5 text-[10px] sm:text-xs font-mono bg-slate-900/90 backdrop-blur-md px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-lg border border-slate-800 shadow-lg text-white max-w-[85vw] truncate">
+        <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
           {isCritical && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />}
-          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isCritical ? 'bg-red-500' : 'bg-emerald-500'}`} />
+          <span className={`relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 ${isCritical ? 'bg-red-500' : 'bg-emerald-500'}`} />
         </span>
-        <span className="font-bold text-white tracking-wide">{videoId}</span>
-        <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
-          <Clock className="w-3 h-3 text-blue-400" />
+        <span className="font-bold text-white tracking-wide truncate max-w-[100px] sm:max-w-none">{videoId}</span>
+        <span className="text-[9px] sm:text-[11px] font-bold font-mono px-1.5 sm:px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1 shrink-0">
+          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400" />
           {formatTimecode(displayTime)}
         </span>
-        <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded ${
+        <span className={`text-[9px] sm:text-[10px] font-bold font-mono px-1.5 sm:px-2 py-0.5 rounded shrink-0 ${
           isCritical ? 'bg-red-600 text-white' : 'bg-emerald-950/80 text-emerald-400 border border-emerald-800'
         }`}>
           {isCritical ? `CRITICAL ${activeRisk.toFixed(1)}%` : `NOMINAL ${activeRisk.toFixed(1)}%`}
@@ -198,7 +216,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       </div>
 
       {/* Top-Right Active Badge & Annotation Controls */}
-      <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 flex items-center gap-2">
         <div className="hidden sm:flex items-center gap-1 bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-lg border border-slate-800 shadow-lg">
           <button
             type="button"

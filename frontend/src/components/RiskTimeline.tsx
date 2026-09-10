@@ -1,7 +1,7 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Activity, TrendingUp } from 'lucide-react';
-import type { FrameTelemetryPoint } from '../types/telemetry';
+import { getRiskAtTime, type FrameTelemetryPoint } from '../types/telemetry';
 
 export interface RiskTimelineProps {
   timelineData: FrameTelemetryPoint[];
@@ -19,43 +19,43 @@ export const RiskTimeline: React.FC<RiskTimelineProps> = ({
   currentTime = 0,
   videoDuration = 60,
   compositeRiskScore = 85.0,
-  peakRisk = 94.6,
   onSeek,
   onDataPointClick,
   className,
 }) => {
-  const roundedCurrentTime = Math.min(Math.round(currentTime), Math.floor(videoDuration));
-  const maxDurationSec = Math.max(5, Math.ceil(videoDuration));
+  const temporalState = getRiskAtTime(timelineData, currentTime);
+  const maxDurationSec = Math.max(5, Math.ceil(videoDuration || temporalState.videoDuration || 60));
 
-  // Truncate telemetry points to match actual video duration
-  const activeTimeline = timelineData.filter((p) => p.time < maxDurationSec);
+  const activeTimeline: FrameTelemetryPoint[] = timelineData && timelineData.length > 0
+    ? timelineData.filter((p) => p.time <= maxDurationSec)
+    : Array.from({ length: maxDurationSec + 1 }, (_, i) => ({
+        time: i,
+        frameRisk: i === Math.floor(maxDurationSec * 0.4) ? 75.0 : 15.0,
+        event: i === Math.floor(maxDurationSec * 0.4) ? 'Motion Anomaly Flagged' : undefined,
+        isPeak: i === Math.floor(maxDurationSec * 0.4)
+      }));
 
   const chartData = activeTimeline.map((point, index) => {
     const prevRisk = activeTimeline[index - 1]?.frameRisk || 0;
     const nextRisk = activeTimeline[index + 1]?.frameRisk || 0;
-    // NMS local maxima check to prevent text collisions
-    const isLocalMaxima = point.frameRisk >= 75 && point.frameRisk > prevRisk && point.frameRisk >= nextRisk;
+    const isLocalMaxima = point.frameRisk >= 60 && point.frameRisk > prevRisk && point.frameRisk >= nextRisk;
 
     return {
       timestamp: point.time,
       timeLabel: `${point.time}s`,
       riskScore: point.frameRisk,
       event: point.event || 'Nominal Handling Stream',
-      isPeakMaxima: isLocalMaxima || point.isPeak
+      isPeakMaxima: isLocalMaxima || point.isPeak,
     };
   });
 
-  const peakPoint = activeTimeline.reduce(
-    (max, p) => (p.frameRisk > max.frameRisk ? p : max),
-    activeTimeline[0] || { time: 0, frameRisk: peakRisk }
-  );
-
-  const activePoint = activeTimeline.find((p) => p.time === roundedCurrentTime);
+  const displayPeakPoint = temporalState.peakPoint;
+  const roundedCurrentTime = Math.round(temporalState.currentTime);
 
   const handleChartClick = (state: any) => {
     if (state && state.activePayload && state.activePayload.length > 0) {
       const rawSeconds = state.activePayload[0].payload.timestamp;
-      const clampedSeconds = Math.min(rawSeconds, Math.floor(videoDuration));
+      const clampedSeconds = Math.min(Math.max(0, rawSeconds), Math.floor(maxDurationSec));
       if (onSeek) {
         onSeek(clampedSeconds);
       } else if (onDataPointClick) {
@@ -86,46 +86,46 @@ export const RiskTimeline: React.FC<RiskTimelineProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Activity className="w-4 h-4 text-emerald-600" />
+            <Activity className="w-4 h-4 text-emerald-600 shrink-0" />
             Kinematic Risk Timeline & Scrubber
           </h3>
           <p className="text-[11px] text-slate-500 mt-0.5">
-            Duration: <span className="font-mono text-slate-800 font-bold">{maxDurationSec}s</span> • Peak Anomaly: <strong className="text-red-600">{String(peakPoint.time).padStart(2, '0')}s ({peakPoint.frameRisk || peakRisk}%)</strong>
+            Duration: <span className="font-mono text-slate-800 font-bold">{maxDurationSec}s</span> • Peak Anomaly: <strong className="text-red-600">{String(displayPeakPoint.time).padStart(2, '0')}s ({displayPeakPoint.frameRisk.toFixed(1)}%)</strong>
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
-            <TrendingUp className="w-3.5 h-3.5 text-red-600" />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 text-xs bg-slate-50 px-2.5 sm:px-3 py-1 rounded-lg border border-slate-200">
+            <TrendingUp className="w-3.5 h-3.5 text-red-600 shrink-0" />
             <span className="text-slate-500">Peak Risk:</span>
-            <span className="font-mono font-bold text-red-600">{peakRisk.toFixed(1)}%</span>
+            <span className="font-mono font-bold text-red-600">{displayPeakPoint.frameRisk.toFixed(1)}%</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
-            <span className="text-emerald-700">Composite Index:</span>
+          <div className="flex items-center gap-1.5 text-xs bg-emerald-50 px-2.5 sm:px-3 py-1 rounded-lg border border-emerald-200">
+            <span className="text-emerald-700">Composite:</span>
             <span className="font-mono font-bold text-emerald-700">{compositeRiskScore.toFixed(1)}%</span>
           </div>
         </div>
       </div>
 
-      {/* Active Event Banner */}
-      {activePoint?.event && activePoint.event !== 'Nominal Handling Stream' ? (
-        <div className="bg-red-50 border border-red-200 p-2.5 rounded-xl text-xs flex items-center justify-between text-red-900 animate-pulse">
-          <span className="font-semibold flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-600"></span>
-            Anomaly Detected at {activePoint.time}s: {activePoint.event}
+      {/* Active Event Banner derived directly from Video currentTime */}
+      {temporalState.currentEvent ? (
+        <div className="bg-red-50 border border-red-200 p-2.5 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-red-900 animate-pulse">
+          <span className="font-semibold flex items-center gap-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-red-600 shrink-0"></span>
+            <span className="truncate">Anomaly at {roundedCurrentTime}s: {temporalState.currentEvent}</span>
           </span>
-          <span className="font-mono text-[10px] bg-red-100 px-2 py-0.5 rounded border border-red-300 font-bold text-red-800">
-            R(t): {activePoint.frameRisk}%
+          <span className="font-mono text-[10px] bg-red-100 px-2 py-0.5 rounded border border-red-300 font-bold text-red-800 self-start sm:self-auto shrink-0">
+            Risk R(t): {temporalState.currentRisk.toFixed(1)}%
           </span>
         </div>
       ) : (
-        <div className="bg-slate-50 border border-slate-200 p-2 rounded-xl text-xs flex items-center justify-between text-slate-700">
-          <span className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Frame {roundedCurrentTime}s: Nominal Handling Stream (Risk R(t): {activePoint?.frameRisk || 15}%)
+        <div className="bg-slate-50 border border-slate-200 p-2 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-slate-700">
+          <span className="flex items-center gap-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+            <span className="truncate">Frame {roundedCurrentTime}s: Nominal Stream (Risk: {temporalState.currentRisk.toFixed(1)}%)</span>
           </span>
-          <span className="text-[10px] font-mono text-slate-500 font-semibold">YOLO11 Telemetry</span>
+          <span className="text-[10px] font-mono text-slate-500 font-semibold shrink-0">YOLO11 Telemetry</span>
         </div>
       )}
 
@@ -145,7 +145,7 @@ export const RiskTimeline: React.FC<RiskTimelineProps> = ({
               </linearGradient>
             </defs>
             
-            <XAxis dataKey="timestamp" unit="s" stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 10 }} />
+            <XAxis dataKey="timestamp" type="number" domain={[0, maxDurationSec]} unit="s" stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 10 }} />
             <YAxis domain={[0, 100]} stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 10 }} />
             
             <Tooltip
