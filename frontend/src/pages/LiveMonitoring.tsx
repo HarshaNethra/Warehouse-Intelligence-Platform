@@ -20,6 +20,7 @@ import {
   Maximize2
 } from 'lucide-react';
 import { getLoadingBays, type LoadingBay } from '../api/facilities';
+import { apiClient } from '../api/client';
 import { useEvents } from '../hooks/useEvents';
 import { useRealtimeTelemetry } from '../hooks/useRealtimeTelemetry';
 import { generateTelemetryForVideo, getRiskAtTime, type VideoTelemetryPayload } from '../types/telemetry';
@@ -46,7 +47,8 @@ export const LiveMonitoring: React.FC = () => {
   const [acknowledged, setAcknowledged] = useState<boolean>(false);
   const [dispatched, setDispatched] = useState<boolean>(false);
   const [falsePositive, setFalsePositive] = useState<boolean>(false);
-  
+  const [preventionIndex, setPreventionIndex] = useState<number | null>(null);
+
   // Shared playback state
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [videoDuration, setVideoDuration] = useState<number>(60);
@@ -63,6 +65,17 @@ export const LiveMonitoring: React.FC = () => {
     );
     handleVideoSelect(payload);
     setViewMode('SINGLE');
+  };
+
+  const fetchAnalyticsSummary = async () => {
+    try {
+      const res = await apiClient.get<any>('/analytics/summary');
+      if (res && res.summary && typeof res.summary.preventionIndex === 'number') {
+        setPreventionIndex(res.summary.preventionIndex);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch analytics summary:', err);
+    }
   };
 
   const fetchCameraFeeds = async () => {
@@ -82,6 +95,7 @@ export const LiveMonitoring: React.FC = () => {
 
   useEffect(() => {
     fetchCameraFeeds();
+    fetchAnalyticsSummary();
   }, []);
 
   useEffect(() => {
@@ -308,7 +322,9 @@ export const LiveMonitoring: React.FC = () => {
           <div className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
             <div>
               <p className="text-[11px] text-slate-500 font-medium">Damage Prevention Index</p>
-              <p className="text-xl font-bold font-mono text-emerald-600 mt-0.5">94.2 / 100</p>
+              <p className="text-xl font-bold font-mono text-emerald-600 mt-0.5">
+                {preventionIndex !== null ? `${preventionIndex} / 100` : '100.0 / 100'}
+              </p>
             </div>
             <ShieldCheck className="w-5 h-5 text-emerald-600" />
           </div>

@@ -131,6 +131,8 @@ class KinematicsEngine:
                     alerts.append({
                         "track_id": track_id,
                         "object_class": obj.object_class,
+                        "detector_confidence": det.get("confidence"),
+                        "trigger_bbox": list(bbox) if bbox else None,
                         "rule": "FREEFALL_DETECTED",
                         "rule_id": "RULE_KINEMATICS_FREEFALL",
                         "behaviour": f"Product Freefall / Drop ({obj.object_class})",
@@ -315,6 +317,12 @@ class SafetyRuleEngine:
                     persistence_f = 15
                     reason_str = f"Person detected stepping directly on inventory item {obj_class} (track #{track_id})."
                     
+                    used_kpts = {}
+                    if l_inside:
+                        used_kpts["left_ankle"] = {"x": round(left_ankle[0], 1), "y": round(left_ankle[1], 1), "confidence": round(left_ankle[2], 2)}
+                    if r_inside:
+                        used_kpts["right_ankle"] = {"x": round(right_ankle[0], 1), "y": round(right_ankle[1], 1), "confidence": round(right_ankle[2], 2)}
+
                     risk_factors = {
                         "rule_id": "RULE_01_PERSON_ON_INVENTORY",
                         "behaviour": "Person Stepping on Inventory / Pallet",
@@ -336,7 +344,10 @@ class SafetyRuleEngine:
                         "risk_factors": risk_factors,
                         "potential_consequence": mapping.get("potential_consequence"),
                         "recommended_action": mapping.get("recommended_action"),
-                        "object_id": track_id
+                        "object_id": track_id,
+                        "detector_confidence": inv.get("confidence"),
+                        "trigger_bbox": inv.get("bbox"),
+                        "pose_keypoints": used_kpts
                     })
                     break
         return alerts
@@ -367,6 +378,10 @@ class SafetyRuleEngine:
                         track_id = v.get("track_id", 0)
                         reason_str = f"Pedestrian detected within {measured_dist}px radius of operational vehicle {obj_class} (threshold < {threshold_dist}px)."
                         
+                        used_kpts = {
+                            "nose": {"x": round(px, 1), "y": round(py, 1), "confidence": round(keypoints[NOSE][2], 2)}
+                        }
+
                         risk_factors = {
                             "rule_id": "RULE_02_VEHICLE_PROXIMITY",
                             "behaviour": "Unsafe Vehicle-Pedestrian Proximity",
@@ -389,7 +404,10 @@ class SafetyRuleEngine:
                             "risk_factors": risk_factors,
                             "potential_consequence": mapping.get("potential_consequence"),
                             "recommended_action": mapping.get("recommended_action"),
-                            "object_id": track_id
+                            "object_id": track_id,
+                            "detector_confidence": v.get("confidence"),
+                            "trigger_bbox": v.get("bbox"),
+                            "pose_keypoints": used_kpts
                         })
                         break
         return alerts
@@ -433,7 +451,8 @@ class SafetyRuleEngine:
                             "unit": "ratio",
                             "persistence_frames": persistence_f,
                             "object_type": obj_class,
-                            "severity": "HIGH"
+                            "severity": "HIGH",
+                            "supporting_box_bbox": bot_box.get("bbox")
                         }
 
                         mapping = CONSEQUENCE_MAP.get("RULE_03_UNSTABLE_STACKING", {})
@@ -447,7 +466,9 @@ class SafetyRuleEngine:
                             "risk_factors": risk_factors,
                             "potential_consequence": mapping.get("potential_consequence"),
                             "recommended_action": mapping.get("recommended_action"),
-                            "object_id": track_id
+                            "object_id": track_id,
+                            "detector_confidence": top_box.get("confidence"),
+                            "trigger_bbox": top_box.get("bbox")
                         })
         return alerts
 
@@ -534,26 +555,79 @@ class SafetyRuleEngine:
         if db_session:
             try:
                 from app.db.models import BehaviourObservation, RiskAssessment
+                from app.schemas.provenance import (
+                    BehaviourObservationDetails,
+                    IdentityProvenance,
+                    TemporalProvenance,
+                    PerceptionProvenance,
+                    MotionProvenance,
+                    BehaviourRuleProvenance,
+                    RiskProvenance,
+                    ModelRunProvenance,
+                )
                 obs_id = f"OBS-{uuid.uuid4().hex[:8].upper()}"
                 ra_id = f"RA-{uuid.uuid4().hex[:8].upper()}"
 
                 if inference_run_id:
-                    # BehaviourObservation Layer: PURE CV Observation (track, frame, timestamp, rule_id)
+                    rf = alert.get("risk_factors") or {}
+                    provenance_details = BehaviourObservationDetails(
+                        identity=IdentityProvenance(
+                            observation_id=obs_id,
+                            inference_run_id=inference_run_id,
+                            video_id=video_id,
+                            track_id=int(alert.get("object_id")) if alert.get("object_id") is not None else None
+                        ),
+                        temporal=TemporalProvenance(
+                            frame_number=frame_number or 0,
+                            timestamp_seconds=float(timestamp),
+                            video_fps=calc_fps,
+                            persistence_frames=rf.get("persistence_frames")
+                        ),
+                        perception=PerceptionProvenance(
+                            object_class=rf.get("object_type") or alert.get("object_class"),
+                            detector_confidence=alert.get("detector_confidence"),
+                            trigger_bbox=alert.get("trigger_bbox"),
+                            pose_keypoints=alert.get("pose_keypoints")
+                        ),
+                        motion=MotionProvenance(
+                            velocity_vector_px_s=list(alert["velocity"]) if "velocity" in alert and alert["velocity"] else None,
+                            acceleration_y_px_s2=float(alert["acceleration_y_px"]) if "acceleration_y_px" in alert else None,
+                            acceleration_y_metric_estimate=float(alert["acceleration_y"]) if "acceleration_y" in alert else None
+                        ),
+                        behaviour=BehaviourRuleProvenance(
+                            rule_id=alert.get("rule_id"),
+                            behaviour_type=alert.get("behaviour"),
+                            measured_value=rf.get("measured_value"),
+                            threshold_applied=rf.get("threshold"),
+                            unit=rf.get("unit"),
+                            persistence_frames=rf.get("persistence_frames"),
+                            rule_specific_evidence=rf if rf else None
+                        ),
+                        risk=RiskProvenance(
+                            risk_score=float(alert["risk_score"]),
+                            risk_level=alert.get("severity"),
+                            potential_consequence=potential_cons,
+                            recommended_action=rec_action
+                        ),
+                        model_run=ModelRunProvenance(
+                            model_name=model_name,
+                            model_version=model_version,
+                            inference_engine=inference_engine,
+                            processing_latency_ms=processing_latency_ms
+                        )
+                    )
+
+                    # BehaviourObservation Layer: PURE CV Observation (validated details_json)
                     obs = BehaviourObservation(
                         id=obs_id,
                         inference_run_id=inference_run_id,
                         video_id=video_id,
-                        track_id=alert.get("object_id"),
+                        track_id=int(alert.get("object_id")) if alert.get("object_id") is not None else None,
                         frame_number=frame_number or 0,
                         timestamp=float(timestamp),
                         behaviour_type=alert["behaviour"],
                         confidence=confidence,
-                        details_json=json.dumps({
-                            "rule_id": alert.get("rule_id"),
-                            "track_id": alert.get("object_id"),
-                            "frame_number": frame_number,
-                            "timestamp": float(timestamp)
-                        })
+                        details_json=provenance_details.model_dump_json(exclude_none=True)
                     )
                     db_session.add(obs)
                     event_dict["behaviour_observation_id"] = obs_id
@@ -574,7 +648,8 @@ class SafetyRuleEngine:
                     db_session.add(ra)
                     event_dict["risk_assessment_id"] = ra_id
 
-                db_event = Event(**event_dict)
+                db_event_kwargs = {k: v for k, v in event_dict.items() if hasattr(Event, k)}
+                db_event = Event(**db_event_kwargs)
                 db_session.add(db_event)
                 db_session.commit()
             except Exception as e:

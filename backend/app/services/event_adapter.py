@@ -279,6 +279,66 @@ class EventAdapter:
         obs_id = f"OBS-{uuid.uuid4().hex[:8].upper()}"
         inf_run_id = inference_run.id
 
+        from app.schemas.provenance import (
+            BehaviourObservationDetails,
+            IdentityProvenance,
+            TemporalProvenance,
+            PerceptionProvenance,
+            MotionProvenance,
+            BehaviourRuleProvenance,
+            RiskProvenance,
+            ModelRunProvenance,
+        )
+
+        provenance_details = BehaviourObservationDetails(
+            identity=IdentityProvenance(
+                observation_id=obs_id,
+                inference_run_id=inf_run_id,
+                video_id=video_record.video_id,
+                track_id=int(object_id) if object_id is not None else None
+            ),
+            temporal=TemporalProvenance(
+                frame_number=evidence_frame_number,
+                timestamp_seconds=start_ts,
+                video_fps=fps,
+                persistence_frames=evidence_dict.get("duration_frames")
+            ),
+            perception=PerceptionProvenance(
+                object_class=evidence_dict.get("object_class") or evidence_dict.get("majority_class")
+            ),
+            motion=MotionProvenance(
+                velocity_vector_px_s=[0.0, float(evidence_dict["vertical_velocity_px_s"])] if "vertical_velocity_px_s" in evidence_dict else None,
+                peak_deceleration_px_s2=float(evidence_dict["max_deceleration_px_s2"]) if "max_deceleration_px_s2" in evidence_dict else (
+                    float(evidence_dict["max_acceleration_px_s2"]) if "max_acceleration_px_s2" in evidence_dict else None
+                ),
+                displacement_px=float(evidence_dict["drop_height_px"]) if "drop_height_px" in evidence_dict else (
+                    float(evidence_dict["horizontal_displacement_px"]) if "horizontal_displacement_px" in evidence_dict else (
+                        float(evidence_dict["net_movement_distance_px"]) if "net_movement_distance_px" in evidence_dict else None
+                    )
+                ),
+                duration_seconds=float(evidence_dict["duration_seconds"]) if "duration_seconds" in evidence_dict else None,
+                stationary_tail=bool(evidence_dict["landing_near_floor"]) if "landing_near_floor" in evidence_dict else None
+            ),
+            behaviour=BehaviourRuleProvenance(
+                rule_id=candidate.rule_name if candidate else None,
+                behaviour_type=behaviour,
+                measured_value=candidate.primary_measurement if candidate else None,
+                rule_specific_evidence=evidence_dict
+            ),
+            risk=RiskProvenance(
+                risk_score=risk_score,
+                risk_level=risk_level,
+                potential_consequence=potential_consequence,
+                recommended_action=recommended_action
+            ),
+            model_run=ModelRunProvenance(
+                model_name=inference_run.model_name if inference_run else None,
+                model_version=inference_run.model_version if inference_run else None,
+                inference_engine=inference_engine_name,
+                device=inference_run.device if inference_run else None
+            )
+        )
+
         obs = models.BehaviourObservation(
             id=obs_id,
             inference_run_id=inf_run_id,
@@ -288,7 +348,7 @@ class EventAdapter:
             timestamp=start_ts,
             behaviour_type=behaviour,
             confidence=confidence,
-            details_json=json.dumps(evidence_dict, default=str),
+            details_json=provenance_details.model_dump_json(exclude_none=True),
             created_at=datetime.datetime.utcnow()
         )
         db.add(obs)

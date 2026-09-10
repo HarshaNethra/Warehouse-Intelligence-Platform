@@ -6,23 +6,33 @@ import { motion } from 'framer-motion';
 export interface EvaluationData {
   model_version: string;
   evaluation_timestamp: string;
+  telemetry_status?: 'AVAILABLE' | 'INSUFFICIENT_DATA' | 'BLOCKED' | 'NOT_IMPLEMENTED' | 'NOT_APPLICABLE';
+  status_reason?: string;
   in_distribution: {
     dataset_name: string;
     sample_count: number;
-    mean_average_precision: number;
-    precision: number;
-    recall: number;
-    inference_latency_ms: number;
-    false_positive_rate: number;
+    mean_average_precision: number | null;
+    precision: number | null;
+    recall: number | null;
+    inference_latency_ms: number | null;
+    inference_latency_status?: string;
+    inference_latency_display?: string;
+    false_positive_rate: number | null;
+    status?: string;
+    source?: string;
   };
   out_of_distribution: {
     dataset_name: string;
     sample_count: number;
-    mean_average_precision: number;
-    precision: number;
-    recall: number;
-    inference_latency_ms: number;
-    false_positive_rate: number;
+    mean_average_precision: number | null;
+    precision: number | null;
+    recall: number | null;
+    inference_latency_ms: number | null;
+    inference_latency_status?: string;
+    inference_latency_display?: string;
+    false_positive_rate: number | null;
+    status?: string;
+    source?: string;
   };
   class_performance: Array<{
     class: string;
@@ -31,9 +41,12 @@ export interface EvaluationData {
   }>;
 }
 
-
-
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
+
+const formatPct = (val: number | null | undefined): string => {
+  if (val === null || val === undefined) return 'N/A';
+  return `${(val * 100).toFixed(1)}%`;
+};
 
 export const ModelEvaluation: React.FC = () => {
   const [data, setData] = useState<EvaluationData | null>(null);
@@ -143,8 +156,12 @@ export const ModelEvaluation: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-slate-900">{data.model_version}</span>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                ACTIVE INFERENCE
+              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                data.telemetry_status === 'AVAILABLE'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  : 'bg-amber-50 text-amber-800 border-amber-200'
+              }`}>
+                {data.telemetry_status || 'BLOCKED'}
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
@@ -166,7 +183,9 @@ export const ModelEvaluation: React.FC = () => {
           <div className="h-8 w-[1px] bg-slate-200" />
           <div>
             <span className="text-slate-400 block text-[10px] uppercase">Inference Latency</span>
-            <span className="text-emerald-700 font-bold text-sm">{inDist.inference_latency_ms} ms</span>
+            <span className={`font-bold text-xs ${inDist.inference_latency_ms ? 'text-emerald-700' : 'text-amber-700'}`}>
+              {inDist.inference_latency_display || (inDist.inference_latency_ms ? `${inDist.inference_latency_ms} ms` : 'Blocked / Insufficient Data')}
+            </span>
           </div>
         </div>
       </div>
@@ -191,7 +210,7 @@ export const ModelEvaluation: React.FC = () => {
                 mAP @ 0.5
               </span>
               <span className="text-2xl font-bold font-mono text-emerald-600">
-                {(inDist.mean_average_precision * 100).toFixed(1)}%
+                {formatPct(inDist.mean_average_precision)}
               </span>
             </div>
 
@@ -200,7 +219,7 @@ export const ModelEvaluation: React.FC = () => {
                 Precision
               </span>
               <span className="text-2xl font-bold font-mono text-slate-900">
-                {(inDist.precision * 100).toFixed(1)}%
+                {formatPct(inDist.precision)}
               </span>
             </div>
 
@@ -209,7 +228,7 @@ export const ModelEvaluation: React.FC = () => {
                 Recall
               </span>
               <span className="text-2xl font-bold font-mono text-slate-900">
-                {(inDist.recall * 100).toFixed(1)}%
+                {formatPct(inDist.recall)}
               </span>
             </div>
 
@@ -217,8 +236,8 @@ export const ModelEvaluation: React.FC = () => {
               <span className="text-xs font-mono text-slate-500 uppercase tracking-wide block mb-1">
                 False Positive Rate
               </span>
-              <span className="text-2xl font-bold font-mono text-amber-600">
-                {(inDist.false_positive_rate * 100).toFixed(1)}%
+              <span className="text-xs font-bold font-mono text-slate-500 italic block mt-2">
+                {inDist.false_positive_rate !== null ? formatPct(inDist.false_positive_rate) : 'Insufficient data'}
               </span>
             </div>
           </div>
@@ -241,8 +260,8 @@ export const ModelEvaluation: React.FC = () => {
               <span className="text-xs font-mono text-slate-500 uppercase tracking-wide block mb-1">
                 mAP @ 0.5
               </span>
-              <span className="text-2xl font-bold font-mono text-indigo-600">
-                {(ood.mean_average_precision * 100).toFixed(1)}%
+              <span className="text-xs font-bold font-mono text-slate-500 italic block mt-2">
+                {formatPct(ood.mean_average_precision)}
               </span>
             </div>
 
@@ -250,8 +269,8 @@ export const ModelEvaluation: React.FC = () => {
               <span className="text-xs font-mono text-slate-500 uppercase tracking-wide block mb-1">
                 Precision
               </span>
-              <span className="text-2xl font-bold font-mono text-slate-900">
-                {(ood.precision * 100).toFixed(1)}%
+              <span className="text-xs font-bold font-mono text-slate-500 italic block mt-2">
+                {formatPct(ood.precision)}
               </span>
             </div>
 
@@ -259,8 +278,8 @@ export const ModelEvaluation: React.FC = () => {
               <span className="text-xs font-mono text-slate-500 uppercase tracking-wide block mb-1">
                 Recall
               </span>
-              <span className="text-2xl font-bold font-mono text-slate-900">
-                {(ood.recall * 100).toFixed(1)}%
+              <span className="text-xs font-bold font-mono text-slate-500 italic block mt-2">
+                {formatPct(ood.recall)}
               </span>
             </div>
 
@@ -268,8 +287,8 @@ export const ModelEvaluation: React.FC = () => {
               <span className="text-xs font-mono text-slate-500 uppercase tracking-wide block mb-1">
                 False Positive Rate
               </span>
-              <span className="text-2xl font-bold font-mono text-amber-600">
-                {(ood.false_positive_rate * 100).toFixed(1)}%
+              <span className="text-xs font-bold font-mono text-slate-500 italic block mt-2">
+                {ood.false_positive_rate !== null ? formatPct(ood.false_positive_rate) : 'Insufficient data'}
               </span>
             </div>
           </div>

@@ -117,11 +117,12 @@ def track_accelerations(points: List[TrackPoint], fps: float = 30.0) -> List[Tup
     if len(clean) < 3:
         return []
 
-    vels = instantaneous_velocities(clean, fps)
+    safe_fps = max(1.0, fps)
+    vels = instantaneous_velocities(clean, safe_fps)
     accels = []
     for i in range(1, len(vels)):
         # Midpoint frame deltas
-        dt = max(1, clean[i + 1].frame - clean[i].frame) / fps
+        dt = max(1, clean[i + 1].frame - clean[i].frame) / safe_fps
         ax = (vels[i][0] - vels[i - 1][0]) / dt
         ay = (vels[i][1] - vels[i - 1][1]) / dt
         mag = math.hypot(ax, ay)
@@ -166,7 +167,8 @@ def detect_sudden_impact(points: List[TrackPoint],
     if len(clean) < 3:
         return (False, 0.0)
 
-    vels = instantaneous_velocities(clean, fps)
+    safe_fps = max(1.0, fps)
+    vels = instantaneous_velocities(clean, safe_fps)
     max_decel = 0.0
 
     for i in range(1, len(vels)):
@@ -175,7 +177,7 @@ def detect_sudden_impact(points: List[TrackPoint],
 
         # Significant speed drop
         if prev_speed > curr_speed:
-            dt = max(1, clean[i + 1].frame - clean[i].frame) / fps
+            dt = max(1, clean[i + 1].frame - clean[i].frame) / safe_fps
             decel = (prev_speed - curr_speed) / dt
             if decel > max_decel:
                 max_decel = decel

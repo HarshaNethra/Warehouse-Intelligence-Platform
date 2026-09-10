@@ -104,7 +104,7 @@ class MultiModelInferencePipeline:
             err_msg = str(self.load_error) if self.load_error else "Real YOLO model is not loaded."
             raise ModelLoadError(f"Inference process_frame failed: {err_msg}")
 
-        start_time = time.time()
+        start_time = time.perf_counter()
         detections: List[Dict[str, Any]] = []
         poses: List[Dict[str, Any]] = []
 
@@ -137,9 +137,10 @@ class MultiModelInferencePipeline:
                         "keypoints": kpts
                     })
 
+        latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+
         # 3. Ensure InferenceRun record exists if DB session is present
         inference_run_id = None
-        latency_ms = round((time.time() - start_time) * 1000, 2)
         if db_session:
             try:
                 from app.db import models
@@ -211,7 +212,7 @@ class MultiModelInferencePipeline:
                 "velocity_y": round(vel_y, 2)
             })
 
-        latency_ms = round((time.time() - start_time) * 1000, 2)
+        total_latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
         telemetry_payload = {
             "timestamp": round(timestamp_sec, 2),
@@ -220,12 +221,17 @@ class MultiModelInferencePipeline:
             "status": status,
             "violations": violations,
             "boxes": telemetry_boxes,
-            "inference_latency_ms": latency_ms
+            "inference_latency_ms": total_latency_ms
         }
 
         # 6. DB Logging (Stream TelemetryPoint to Database)
         if db_session:
             try:
+                boxes_payload = {
+                    "boxes": telemetry_boxes,
+                    "inference_latency_ms": total_latency_ms,
+                    "device": self.device
+                }
                 t_point = TelemetryPoint(
                     video_id=video_id,
                     session_id=session_id,
@@ -233,7 +239,7 @@ class MultiModelInferencePipeline:
                     risk_score=round(max_risk, 1),
                     status=status,
                     violations_json=json.dumps(violations),
-                    boxes_json=json.dumps(telemetry_boxes)
+                    boxes_json=json.dumps(boxes_payload)
                 )
                 db_session.add(t_point)
                 db_session.commit()
