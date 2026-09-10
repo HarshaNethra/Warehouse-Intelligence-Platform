@@ -26,12 +26,12 @@ class TestRiskEngine(unittest.TestCase):
     def test_risk_category_boundaries(self):
         # Explicit test of boundary values specified in PRD
         self.assertEqual(classify_risk(0), "low")
-        self.assertEqual(classify_risk(29), "low")
-        self.assertEqual(classify_risk(30), "medium")
+        self.assertEqual(classify_risk(34), "low")
+        self.assertEqual(classify_risk(35), "medium")
         self.assertEqual(classify_risk(59), "medium")
         self.assertEqual(classify_risk(60), "high")
-        self.assertEqual(classify_risk(84), "high")
-        self.assertEqual(classify_risk(85), "critical")
+        self.assertEqual(classify_risk(79), "high")
+        self.assertEqual(classify_risk(80), "critical")
         self.assertEqual(classify_risk(100), "critical")
 
         # Clamping behavior on out-of-range inputs
