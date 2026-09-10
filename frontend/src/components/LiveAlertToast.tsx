@@ -35,24 +35,30 @@ export const LiveAlertToast: React.FC = () => {
     if (!currentFrame) return;
 
     const now = Date.now();
+    const isMediumOrHigher = currentFrame.risk_score >= 35 || currentFrame.status === 'CRITICAL' || currentFrame.status === 'HIGH' || currentFrame.status === 'MEDIUM';
     if (
-      (currentFrame.risk_score >= 60 || currentFrame.status === 'CRITICAL' || currentFrame.status === 'HIGH') &&
+      isMediumOrHigher &&
       now - lastAlertTimestampRef.current > 8000
     ) {
       lastAlertTimestampRef.current = now;
       const riskScore = currentFrame.risk_score;
-      const isCrit = currentFrame.status === 'CRITICAL' || riskScore >= 80;
+      const computedLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' =
+        riskScore >= 80 || currentFrame.status === 'CRITICAL' ? 'CRITICAL' :
+        riskScore >= 60 || currentFrame.status === 'HIGH' ? 'HIGH' :
+        riskScore >= 35 || currentFrame.status === 'MEDIUM' ? 'MEDIUM' : 'LOW';
       
+      if (computedLevel === 'LOW') return; // Suppress LOW operational alerts
+
       const newAlert: AlertNotification = {
         id: `alert-${now}-${Math.random().toString(36).substr(2, 4)}`,
         eventId: `EVT-${Math.floor(now / 1000)}`,
         title: 'POTENTIAL SAFETY INCIDENT',
         bay: currentFrame.bay_id || 'Loading Bay 01',
-        riskLevel: isCrit ? 'CRITICAL' : 'HIGH',
+        riskLevel: computedLevel,
         riskScore: riskScore,
         confidence: 0.91,
-        behaviour: isCrit ? 'Product Drop Detected' : 'Unsafe Material Translation',
-        message: `Kinematic anomaly flagged in ${currentFrame.bay_id || 'Dock Bay'}. Sudden vertical acceleration drop spike (>9.8 m/s²) recorded.`,
+        behaviour: computedLevel === 'CRITICAL' ? 'Product Drop / Impact Anomaly' : computedLevel === 'HIGH' ? 'Unsafe Material Translation' : 'Operational Handling Deviation',
+        message: `Kinematic anomaly flagged in ${currentFrame.bay_id || 'Dock Bay'}. Dynamic telemetry recorded R(t) = ${riskScore.toFixed(1)}%.`,
         timestamp: new Date().toLocaleTimeString(),
         timestampSeconds: 6.0,
       };

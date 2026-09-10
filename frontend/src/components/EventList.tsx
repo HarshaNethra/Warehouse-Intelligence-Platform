@@ -32,7 +32,7 @@ import { apiClient } from '../api/client';
 import { IncidentReviewModal } from './IncidentReviewModal';
 import type { Event } from '../types/event';
 
-const VALID_RISKS = ['All', 'Critical', 'High', 'Medium', 'Low'];
+const VALID_RISKS = ['Medium+', 'All', 'Critical', 'High', 'Medium', 'Low'];
 
 export type SortOption = 'newest' | 'highest-risk' | 'lowest-risk' | 'behaviour';
 
@@ -94,10 +94,11 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
 
   const riskFromUrl = useMemo(() => {
     const rawRisk = searchParams.get('risk');
-    if (!rawRisk) return 'All';
+    if (!rawRisk) return 'Medium+';
     const cleanRisk = rawRisk.trim();
+    if (cleanRisk.toLowerCase() === 'medium+' || cleanRisk.toLowerCase() === 'operational') return 'Medium+';
     const match = VALID_RISKS.find(r => r.toLowerCase() === cleanRisk.toLowerCase());
-    return match || 'All';
+    return match || 'Medium+';
   }, [searchParams]);
 
   const selectedRisk = riskFromUrl;
@@ -124,7 +125,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
 
   const handleRiskChange = (risk: string) => {
     const nextParams = new URLSearchParams(searchParams);
-    if (risk === 'All') {
+    if (risk === 'Medium+') {
       nextParams.delete('risk');
     } else {
       nextParams.set('risk', risk);
@@ -234,9 +235,16 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
 
   const filteredEvents = useMemo(() => {
     return localEvents.filter(e => {
-      let matchRisk = selectedRisk === 'All';
-      if (!matchRisk) {
-        matchRisk = (e.risk_level || '').toLowerCase() === selectedRisk.toLowerCase();
+      let matchRisk = false;
+      const levelUpper = (e.risk_level || '').toUpperCase();
+      const score = e.risk_score ?? 0;
+
+      if (selectedRisk === 'Medium+' || selectedRisk === 'Operational') {
+        matchRisk = levelUpper === 'MEDIUM' || levelUpper === 'HIGH' || levelUpper === 'CRITICAL' || score >= 35;
+      } else if (selectedRisk === 'All') {
+        matchRisk = true;
+      } else {
+        matchRisk = levelUpper === selectedRisk.toUpperCase();
       }
 
       const matchBay = selectedBay === 'All' || (e.bay_id || '').toLowerCase() === selectedBay.toLowerCase();
@@ -407,7 +415,7 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     );
   }
 
-  const riskOptions = ['All', 'Critical', 'High', 'Medium', 'Low'];
+  const riskOptions = ['Medium+', 'All', 'Critical', 'High', 'Medium', 'Low'];
 
   return (
     <div className={`bg-white border border-slate-200 rounded-xl text-slate-900 shadow-2xs overflow-hidden flex flex-col relative ${className || 'min-h-[450px] lg:h-[calc(100dvh-200px)]'}`}>

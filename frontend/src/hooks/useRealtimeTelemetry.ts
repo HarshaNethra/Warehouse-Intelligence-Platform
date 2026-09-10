@@ -6,7 +6,7 @@ export interface TelemetryFrame {
   epoch_timestamp: number;
   bay_id: string;
   risk_score: number;
-  status: "CRITICAL" | "HIGH" | "NOMINAL";
+  status: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NOMINAL";
 }
 
 export const useRealtimeTelemetry = (wsUrl?: string) => {

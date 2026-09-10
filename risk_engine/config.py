@@ -20,10 +20,10 @@ class RiskConfig:
     # -------------------------------------------------------------------------
     # Score Boundaries
     # -------------------------------------------------------------------------
-    low_max: int = 29
+    low_max: int = 34
     medium_max: int = 59
-    high_max: int = 84
-    critical_min: int = 85
+    high_max: int = 79
+    critical_min: int = 80
 
     score_min: int = 0
     score_max: int = 100
