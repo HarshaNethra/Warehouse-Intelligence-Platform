@@ -112,11 +112,20 @@ export const apiClient = {
 
       if (!res.ok) {
         handleResponseError(res.status);
-        let errorData;
+        let errorData: any;
         try {
-          errorData = await res.json();
+          if (typeof res.text === 'function') {
+            const rawText = await res.text();
+            try {
+              errorData = JSON.parse(rawText);
+            } catch {
+              errorData = rawText;
+            }
+          } else if (typeof res.json === 'function') {
+            errorData = await res.json();
+          }
         } catch {
-          errorData = await res.text();
+          errorData = undefined;
         }
         throw new ApiError(
           errorData?.detail || `API request failed with status ${res.status}`,
@@ -178,11 +187,20 @@ export const apiClient = {
 
       if (!res.ok) {
         handleResponseError(res.status);
-        let errorData;
+        let errorData: any;
         try {
-          errorData = await res.json();
+          if (typeof res.text === 'function') {
+            const rawText = await res.text();
+            try {
+              errorData = JSON.parse(rawText);
+            } catch {
+              errorData = rawText;
+            }
+          } else if (typeof res.json === 'function') {
+            errorData = await res.json();
+          }
         } catch {
-          errorData = await res.text();
+          errorData = undefined;
         }
         throw new ApiError(
           errorData?.detail || `API request failed with status ${res.status}`,
@@ -244,11 +262,20 @@ export const apiClient = {
 
       if (!res.ok) {
         handleResponseError(res.status);
-        let errorData;
+        let errorData: any;
         try {
-          errorData = await res.json();
+          if (typeof res.text === 'function') {
+            const rawText = await res.text();
+            try {
+              errorData = JSON.parse(rawText);
+            } catch {
+              errorData = rawText;
+            }
+          } else if (typeof res.json === 'function') {
+            errorData = await res.json();
+          }
         } catch {
-          errorData = await res.text();
+          errorData = undefined;
         }
         throw new ApiError(
           errorData?.detail || `API request failed with status ${res.status}`,
@@ -310,11 +337,20 @@ export const apiClient = {
 
       if (!res.ok) {
         handleResponseError(res.status);
-        let errorData;
+        let errorData: any;
         try {
-          errorData = await res.json();
+          if (typeof res.text === 'function') {
+            const rawText = await res.text();
+            try {
+              errorData = JSON.parse(rawText);
+            } catch {
+              errorData = rawText;
+            }
+          } else if (typeof res.json === 'function') {
+            errorData = await res.json();
+          }
         } catch {
-          errorData = await res.text();
+          errorData = undefined;
         }
         throw new ApiError(
           errorData?.detail || `API request failed with status ${res.status}`,
@@ -376,11 +412,20 @@ export const apiClient = {
 
       if (!res.ok) {
         handleResponseError(res.status);
-        let errorData;
+        let errorData: any;
         try {
-          errorData = await res.json();
+          if (typeof res.text === 'function') {
+            const rawText = await res.text();
+            try {
+              errorData = JSON.parse(rawText);
+            } catch {
+              errorData = rawText;
+            }
+          } else if (typeof res.json === 'function') {
+            errorData = await res.json();
+          }
         } catch {
-          errorData = await res.text();
+          errorData = undefined;
         }
         throw new ApiError(
           errorData?.detail || `API request failed with status ${res.status}`,
@@ -444,11 +489,16 @@ export const apiClient = {
 
       if (!res.ok) {
         handleResponseError(res.status);
-        let errorData;
+        let errorData: any;
         try {
-          errorData = await res.json();
+          const rawText = await res.text();
+          try {
+            errorData = JSON.parse(rawText);
+          } catch {
+            errorData = rawText;
+          }
         } catch {
-          errorData = await res.text();
+          errorData = undefined;
         }
         throw new ApiError(
           errorData?.detail || `API request failed with status ${res.status}`,
