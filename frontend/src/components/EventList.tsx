@@ -24,10 +24,12 @@ import {
   ExternalLink,
   Send,
   Truck,
-  Camera
+  Camera,
+  Eye
 } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
+import { IncidentReviewModal } from './IncidentReviewModal';
 import type { Event } from '../types/event';
 
 const VALID_RISKS = ['All', 'Critical', 'High', 'Medium', 'Low'];
@@ -60,6 +62,10 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
     videoUrl: string;
     timestampSec: number;
   } | null>(null);
+
+  // HITL Review Modal State
+  const [reviewModalEvent, setReviewModalEvent] = useState<Event | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setLocalEvents(fetchedEvents);
@@ -649,6 +655,19 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
                     <div className="flex items-center gap-2 shrink-0 self-end lg:self-center flex-wrap">
                       <button
                         type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReviewModalEvent(event);
+                          setIsReviewModalOpen(true);
+                        }}
+                        className="px-3.5 py-1.5 bg-slate-900 hover:bg-blue-600 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Review Incident</span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={(e) => handleOpenVideoClip(e, event)}
                         className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-xl border border-blue-200 flex items-center gap-1.5 transition-colors cursor-pointer"
                       >
@@ -850,6 +869,17 @@ export const EventList: React.FC<EventListProps> = ({ className }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* HITL Incident Review Modal */}
+      <IncidentReviewModal
+        event={reviewModalEvent}
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onStatusUpdated={(updated) => {
+          setLocalEvents((prev) => prev.map((e) => (e.event_id === updated.event_id ? updated : e)));
+          setIsReviewModalOpen(false);
+        }}
+      />
     </div>
   );
 };

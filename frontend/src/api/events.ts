@@ -88,9 +88,36 @@ export async function dispatchIncident(eventId: string, options?: RequestOptions
   return normalizeEvent(raw);
 }
 
+export async function updateIncidentReviewStatus(
+  eventId: string,
+  status: string,
+  comment?: string,
+  options?: RequestOptions
+): Promise<Event> {
+  try {
+    const raw = await apiClient.put<Event>(`/incidents/${eventId}/status`, { status, comment }, options);
+    return normalizeEvent(raw);
+  } catch (err) {
+    // Fallback attempt via POST endpoint if PUT is offline
+    const raw = await apiClient.post<Event>(`/incidents/${eventId}/false-positive`, { status, reason: comment }, options);
+    return normalizeEvent(raw);
+  }
+}
+
+export async function confirmIncident(eventId: string, comment?: string, options?: RequestOptions): Promise<Event> {
+  return updateIncidentReviewStatus(eventId, 'CONFIRMED', comment, options);
+}
+
 export async function markFalsePositiveIncident(eventId: string, reason?: string, options?: RequestOptions): Promise<Event> {
-  const raw = await apiClient.post<Event>(`/incidents/${eventId}/false-positive`, { reason }, options);
-  return normalizeEvent(raw);
+  return updateIncidentReviewStatus(eventId, 'FALSE_POSITIVE', reason, options);
+}
+
+export async function dismissIncident(eventId: string, comment?: string, options?: RequestOptions): Promise<Event> {
+  return updateIncidentReviewStatus(eventId, 'DISMISSED', comment, options);
+}
+
+export async function markNeedsInvestigationIncident(eventId: string, comment?: string, options?: RequestOptions): Promise<Event> {
+  return updateIncidentReviewStatus(eventId, 'NEEDS_INVESTIGATION', comment, options);
 }
 
 export async function batchDeleteIncidents(incidentIds: string[], options?: RequestOptions): Promise<{ deleted_count: number; deleted_ids: string[]; status: string }> {

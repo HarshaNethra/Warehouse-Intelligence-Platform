@@ -10,8 +10,9 @@ import { RiskBadge } from '../components/RiskBadge';
 import { AssistantChat } from '../components/AssistantChat';
 import { formatTimestamp } from '../utils/formatters';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Loader2, ShieldAlert, CheckCircle2, Send, XCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldAlert, CheckCircle2, Send, XCircle, Eye } from 'lucide-react';
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
+import { IncidentReviewModal } from '../components/IncidentReviewModal';
 import { generateTelemetryForVideo } from '../types/telemetry';
 
 export const Incident: React.FC = () => {
@@ -23,6 +24,7 @@ export const Incident: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const [isAcknowledging, setIsAcknowledging] = useState(false);
   const [isDispatching, setIsDispatching] = useState(false);
@@ -205,6 +207,15 @@ export const Incident: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setIsReviewModalOpen(true)}
+              className="flex-1 sm:flex-none px-4 py-2 bg-slate-900 hover:bg-blue-600 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+            >
+              <Eye className="w-4 h-4" />
+              <span>Human Review Modal</span>
+            </button>
+
             {isFalsePos ? (
               <span className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold font-mono flex items-center gap-1.5 w-full sm:w-auto justify-center">
                 <XCircle className="w-3.5 h-3.5 text-slate-500" /> False Positive Reviewed
@@ -350,6 +361,16 @@ export const Incident: React.FC = () => {
         <h3 className="text-base font-bold text-slate-900 mb-3">AI Incident Q&A Assistant</h3>
         <AssistantChat className="h-[450px]" />
       </div>
+
+      {/* Human Review Modal */}
+      <IncidentReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        event={event}
+        onStatusUpdated={(updatedEvent) => {
+          setEvent(updatedEvent);
+        }}
+      />
     </motion.div>
     </DataProvenanceOverlay>
   );

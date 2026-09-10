@@ -4,6 +4,7 @@ import { VideoIngestionSection } from '../components/VideoIngestionSection';
 import { RiskTimeline } from '../components/RiskTimeline';
 import { DataProvenanceOverlay } from '../components/DataProvenanceOverlay';
 import { MultiCameraGrid, type CameraFeedItem } from '../components/MultiCameraGrid';
+import { ResponsibleAiGovernance } from '../components/ResponsibleAiGovernance';
 import { 
   Camera, 
   RefreshCw, 
@@ -460,6 +461,9 @@ export const LiveMonitoring: React.FC = () => {
 
         {/* Video Ingestion Section (Positioned Below Stream) */}
         <VideoIngestionSection onVideoSelect={handleVideoSelect} />
+
+        {/* Responsible AI Governance & Safeguards Panel */}
+        <ResponsibleAiGovernance />
       </motion.div>
     </DataProvenanceOverlay>
   );

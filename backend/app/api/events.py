@@ -120,14 +120,18 @@ class StatusChangePayload(BaseModel):
 
 
 VALID_TRANSITIONS = {
-    "UNRESOLVED": ["ACKNOWLEDGED", "DISPATCHED", "UNDER_REVIEW", "FALSE_POSITIVE", "RESOLVED"],
-    "OPEN": ["ACKNOWLEDGED", "DISPATCHED", "UNDER_REVIEW", "FALSE_POSITIVE", "RESOLVED"],
-    "ACKNOWLEDGED": ["DISPATCHED", "UNDER_REVIEW", "FALSE_POSITIVE", "RESOLVED"],
-    "DISPATCHED": ["UNDER_REVIEW", "RESOLVED", "FALSE_POSITIVE"],
-    "UNDER_REVIEW": ["CONFIRMED_RISK", "FALSE_POSITIVE", "RESOLVED"],
-    "CONFIRMED_RISK": ["RESOLVED", "FALSE_POSITIVE"],
-    "FALSE_POSITIVE": [],
-    "RESOLVED": []
+    "UNRESOLVED": ["ACKNOWLEDGED", "DISPATCHED", "UNDER_REVIEW", "PENDING_REVIEW", "CONFIRMED", "CONFIRMED_RISK", "FALSE_POSITIVE", "DISMISSED", "NEEDS_INVESTIGATION", "RESOLVED"],
+    "OPEN": ["ACKNOWLEDGED", "DISPATCHED", "UNDER_REVIEW", "PENDING_REVIEW", "CONFIRMED", "CONFIRMED_RISK", "FALSE_POSITIVE", "DISMISSED", "NEEDS_INVESTIGATION", "RESOLVED"],
+    "PENDING_REVIEW": ["ACKNOWLEDGED", "DISPATCHED", "UNDER_REVIEW", "CONFIRMED", "CONFIRMED_RISK", "FALSE_POSITIVE", "DISMISSED", "NEEDS_INVESTIGATION", "RESOLVED"],
+    "ACKNOWLEDGED": ["DISPATCHED", "UNDER_REVIEW", "CONFIRMED", "CONFIRMED_RISK", "FALSE_POSITIVE", "DISMISSED", "NEEDS_INVESTIGATION", "RESOLVED"],
+    "DISPATCHED": ["UNDER_REVIEW", "CONFIRMED", "CONFIRMED_RISK", "RESOLVED", "FALSE_POSITIVE", "DISMISSED", "NEEDS_INVESTIGATION"],
+    "UNDER_REVIEW": ["CONFIRMED", "CONFIRMED_RISK", "FALSE_POSITIVE", "DISMISSED", "RESOLVED", "NEEDS_INVESTIGATION"],
+    "NEEDS_INVESTIGATION": ["CONFIRMED", "CONFIRMED_RISK", "FALSE_POSITIVE", "DISMISSED", "RESOLVED"],
+    "CONFIRMED_RISK": ["RESOLVED", "FALSE_POSITIVE", "DISMISSED", "UNDER_REVIEW"],
+    "CONFIRMED": ["RESOLVED", "FALSE_POSITIVE", "DISMISSED", "UNDER_REVIEW"],
+    "FALSE_POSITIVE": ["UNDER_REVIEW", "PENDING_REVIEW", "NEEDS_INVESTIGATION"],
+    "DISMISSED": ["UNDER_REVIEW", "PENDING_REVIEW", "NEEDS_INVESTIGATION"],
+    "RESOLVED": ["UNDER_REVIEW"]
 }
 
 
@@ -157,18 +161,18 @@ def update_event_status(
         )
 
     event.status = new_status
-    if new_status in ["ACKNOWLEDGED", "DISPATCHED", "RESOLVED"]:
-        event.acknowledged_by_user_id = current_user.id
+    if new_status in ["ACKNOWLEDGED", "DISPATCHED", "RESOLVED", "CONFIRMED", "FALSE_POSITIVE", "DISMISSED"]:
+        event.acknowledged_by_user_id = current_user.id if current_user else None
         event.acknowledged_at = datetime.datetime.utcnow()
     event.updated_at = datetime.datetime.utcnow()
 
-    # Log IncidentReview decision if FALSE_POSITIVE or CONFIRMED_RISK
-    if new_status in ["FALSE_POSITIVE", "CONFIRMED_RISK"]:
+    # Log IncidentReview decision
+    if new_status in ["FALSE_POSITIVE", "CONFIRMED", "CONFIRMED_RISK", "DISMISSED", "NEEDS_INVESTIGATION", "ACKNOWLEDGED", "DISPATCHED"]:
         review_id = f"REV-{uuid.uuid4().hex[:12]}"
         db.add(models.IncidentReview(
             id=review_id,
             event_id=event.event_id,
-            reviewer_id=current_user.id,
+            reviewer_id=current_user.id if current_user else "REV-ANONYMOUS",
             decision=new_status,
             comment=payload.comment or f"Status changed to {new_status}",
             created_at=datetime.datetime.utcnow()

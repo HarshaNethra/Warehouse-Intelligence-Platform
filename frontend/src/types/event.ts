@@ -1,6 +1,14 @@
 export type RiskLevel = 'Low' | 'Medium' | 'High' | 'Critical';
 
-export type IncidentStatus = 'UNRESOLVED' | 'ACKNOWLEDGED' | 'DISPATCHED';
+export type IncidentStatus = 
+  | 'PENDING_REVIEW' 
+  | 'UNRESOLVED' 
+  | 'CONFIRMED' 
+  | 'FALSE_POSITIVE' 
+  | 'DISMISSED' 
+  | 'NEEDS_INVESTIGATION' 
+  | 'ACKNOWLEDGED' 
+  | 'DISPATCHED';
 
 export type ProvenanceType = 'REAL_INFERENCE' | 'DEVELOPMENT_SEED' | 'DEMO_FIXTURE' | 'PERFORMANCE_TEST' | 'UNIT_TEST';
 
@@ -24,6 +32,9 @@ export interface Event {
   status?: IncidentStatus | string;
   acknowledged_by_user_id?: string;
   acknowledged_at?: string;
+  review_notes?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
   model_name?: string;
   model_version?: string;
   inference_engine?: string;
